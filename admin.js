@@ -32,7 +32,7 @@ window.adminLogout = function() {
   document.getElementById('admin-panel').classList.add('hidden');
 };
 
-// ADMIN SIDEBAR DRAWER CONTROLS
+// ADMIN SIDEBAR DRAWER & SECTION SWITCHING
 window.openAdminSidebar = function() {
   document.getElementById('admin-sidebar-drawer').classList.add('open');
   document.getElementById('admin-sidebar-overlay').classList.add('open');
@@ -43,11 +43,13 @@ window.closeAdminSidebar = function() {
   document.getElementById('admin-sidebar-overlay').classList.remove('open');
 };
 
-window.scrollToSection = function(secId) {
+window.showAdminSection = function(secId) {
   closeAdminSidebar();
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+  
   const target = document.getElementById(secId);
   if (target) {
-    target.scrollIntoView({ behavior: 'smooth' });
+    target.classList.remove('hidden');
   }
 };
 
@@ -277,7 +279,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-form-title').innerText = 'VIP প্ল্যান ইডিট করুন';
   document.getElementById('btn-save-plan').innerText = 'আপডেট সেভ করুন';
   document.getElementById('btn-cancel-plan-edit').classList.remove('hidden');
-  scrollToSection('sec-plans');
+  showAdminSection('sec-plans');
 };
 
 window.resetPlanForm = function() {
@@ -289,7 +291,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. TASK EDIT & MANAGEMENT (SUPPORT FREE TASKS)
+// 5. TASK EDIT & MANAGEMENT
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -350,7 +352,7 @@ window.editTask = function(key, title, reward, minVip, isFree) {
   document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
   document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন';
   document.getElementById('btn-cancel-task-edit').classList.remove('hidden');
-  scrollToSection('sec-tasks');
+  showAdminSection('sec-tasks');
 };
 
 window.resetTaskForm = function() {
@@ -362,7 +364,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 6. DEPOSITS & WITHDRAWALS
+// 6. DEPOSITS (AUTO-REMOVE APPROVED / REJECTED)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -372,28 +374,33 @@ function loadDepositsAdmin() {
 
     if (!snap.exists()) {
       document.getElementById('stat-pending-dep').innerText = 0;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং ডিপোজিট নেই</td></tr>';
       return;
     }
 
     snap.forEach(child => {
       const d = child.val();
-      if (d.status === 'pending') pendingCount++;
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.email || 'User'}</td>
-          <td>${d.method}</td>
-          <td>৳${d.amount}</td>
-          <td>${d.trxId}</td>
-          <td>
-            ${d.status === 'pending' ? `
+      // ONLY SHOW PENDING REQUESTS IN TABLE
+      if (d.status === 'pending') {
+        pendingCount++;
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.email || 'User'}</td>
+            <td>${d.method}</td>
+            <td>৳${d.amount}</td>
+            <td>${d.trxId}</td>
+            <td>
               <button onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})" style="background:#10b981; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Approve</button>
               <button onclick="db.ref('deposits/${child.key}/status').set('rejected')" style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Reject</button>
-            ` : d.status}
-          </td>
-        </tr>
-      `;
+            </td>
+          </tr>
+        `;
+      }
     });
+
+    if (pendingCount === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং ডিপোজিট নেই</td></tr>';
+    }
     document.getElementById('stat-pending-dep').innerText = pendingCount;
   });
 }
@@ -409,6 +416,9 @@ window.approveDeposit = function(depId, uid, amount) {
   });
 };
 
+// ----------------------------------------------------
+// 7. WITHDRAWALS (AUTO-REMOVE APPROVED / REJECTED)
+// ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
     const tbody = document.getElementById('admin-wit-table');
@@ -417,28 +427,33 @@ function loadWithdrawsAdmin() {
 
     if (!snap.exists()) {
       document.getElementById('stat-pending-wit').innerText = 0;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং উত্তোলন নেই</td></tr>';
       return;
     }
 
     snap.forEach(child => {
       const w = child.val();
-      if (w.status === 'pending') pendingCount++;
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${w.email || 'User'}</td>
-          <td>${w.method}</td>
-          <td>${w.walletNumber}</td>
-          <td>৳${w.amount}</td>
-          <td>
-            ${w.status === 'pending' ? `
+      // ONLY SHOW PENDING REQUESTS IN TABLE
+      if (w.status === 'pending') {
+        pendingCount++;
+        tbody.innerHTML += `
+          <tr>
+            <td>${w.email || 'User'}</td>
+            <td>${w.method}</td>
+            <td>${w.walletNumber}</td>
+            <td>৳${w.amount}</td>
+            <td>
               <button onclick="db.ref('withdraws/${child.key}/status').set('approved')" style="background:#10b981; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Approve</button>
               <button onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})" style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Reject</button>
-            ` : w.status}
-          </td>
-        </tr>
-      `;
+            </td>
+          </tr>
+        `;
+      }
     });
+
+    if (pendingCount === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং উত্তোলন নেই</td></tr>';
+    }
     document.getElementById('stat-pending-wit').innerText = pendingCount;
   });
 }
@@ -455,7 +470,7 @@ window.rejectWithdraw = function(witId, uid, amount) {
 };
 
 // ----------------------------------------------------
-// 7. PAYMENT METHOD NUMBERS & LOGO IMAGES
+// 8. PAYMENT GATEWAYS & SETTINGS
 // ----------------------------------------------------
 window.savePaymentGateways = function() {
   const bkashNum = document.getElementById('num-bkash').value;
@@ -503,7 +518,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 8. NOTICES & BROADCAST PUSH NOTIFICATIONS
+// 9. NOTICES & BROADCAST PUSH NOTIFICATIONS
 // ----------------------------------------------------
 window.saveMarqueeNotice = function() {
   const text = document.getElementById('admin-notice-input').value;
