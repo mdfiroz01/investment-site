@@ -60,12 +60,90 @@ function loadAdminDashboard() {
   loadPlansAdmin();
   loadTasksAdmin();
   loadSlidersAdmin();
+  loadGatewaysAdmin();
   loadWelcomeNoticeAdmin();
   loadSettingsAdmin();
 }
 
 // ----------------------------------------------------
-// 1. HOMEPAGE SLIDER MANAGEMENT
+// 1. UNLIMITED DYNAMIC PAYMENT GATEWAYS CRUD
+// ----------------------------------------------------
+document.getElementById('admin-gateway-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const editKey = document.getElementById('edit-gateway-key').value;
+  const gatewayData = {
+    name: document.getElementById('gateway-name').value,
+    type: document.getElementById('gateway-type').value,
+    number: document.getElementById('gateway-number').value,
+    logoUrl: document.getElementById('gateway-logo').value
+  };
+
+  if (editKey) {
+    db.ref('payment_gateways/' + editKey).update(gatewayData).then(() => {
+      alert('পেমেন্ট মেথড সফলভাবে আপডেট হয়েছে!');
+      resetGatewayForm();
+    });
+  } else {
+    const newRef = db.ref('payment_gateways').push();
+    gatewayData.id = newRef.key;
+    newRef.set(gatewayData).then(() => {
+      alert('নতুন পেমেন্ট মেথড যোগ করা হয়েছে!');
+      resetGatewayForm();
+    });
+  }
+});
+
+function loadGatewaysAdmin() {
+  db.ref('payment_gateways').on('value', snap => {
+    const list = document.getElementById('admin-gateways-list');
+    list.innerHTML = '';
+    if (!snap.exists()) {
+      list.innerHTML = '<div style="font-size:12px; color:var(--text-muted)">কোনো কাস্টম পেমেন্ট মেথড নেই</div>';
+      return;
+    }
+
+    snap.forEach(child => {
+      const g = child.val();
+      const key = child.key;
+      list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="${g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png'}" style="width:28px; height:28px; object-fit:contain;">
+            <div><b>${g.name}</b> (${g.type})<br><small>${g.number}</small></div>
+          </div>
+          <div>
+            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editGateway('${key}', '${g.name}', '${g.type}', '${g.number}', '${g.logoUrl}')">Edit</button>
+            <button style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('payment_gateways/${key}').remove()">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+}
+
+window.editGateway = function(key, name, type, number, logo) {
+  document.getElementById('edit-gateway-key').value = key;
+  document.getElementById('gateway-name').value = name;
+  document.getElementById('gateway-type').value = type;
+  document.getElementById('gateway-number').value = number;
+  document.getElementById('gateway-logo').value = logo;
+
+  document.getElementById('gateway-form-title').innerText = 'পেমেন্ট মেথড ইডিট করুন';
+  document.getElementById('btn-save-gateway').innerText = 'মেথড আপডেট করুন';
+  document.getElementById('btn-cancel-gateway').classList.remove('hidden');
+  showAdminSection('sec-gateways');
+};
+
+window.resetGatewayForm = function() {
+  document.getElementById('edit-gateway-key').value = '';
+  document.getElementById('admin-gateway-form').reset();
+  document.getElementById('gateway-form-title').innerText = 'আনলিমিটেড পেমেন্ট মেথড তৈরি ও এড';
+  document.getElementById('btn-save-gateway').innerText = 'মেথড সেভ করুন';
+  document.getElementById('btn-cancel-gateway').classList.add('hidden');
+};
+
+// ----------------------------------------------------
+// 2. HOMEPAGE SLIDER MANAGEMENT
 // ----------------------------------------------------
 window.addSliderBannerImage = function() {
   const url = document.getElementById('admin-slider-url-input').value;
@@ -102,7 +180,7 @@ function loadSlidersAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. POP-UP WELCOME NOTICE SETTINGS
+// 3. POP-UP WELCOME NOTICE
 // ----------------------------------------------------
 window.saveWelcomePopUpNotice = function() {
   const title = document.getElementById('welcome-title-input').value;
@@ -134,7 +212,7 @@ function loadWelcomeNoticeAdmin() {
 }
 
 // ----------------------------------------------------
-// 3. USER MANAGEMENT & BAN/BLOCK
+// 4. USER MANAGEMENT & BAN/BLOCK
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -210,7 +288,7 @@ window.toggleBlockUser = function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 4. VIP PLAN EDIT & MANAGEMENT
+// 5. VIP PLAN EDIT & CUSTOM RIBBON BADGE
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -222,7 +300,7 @@ document.getElementById('admin-add-plan-form').addEventListener('submit', (e) =>
     dailyProfit: parseFloat(document.getElementById('plan-daily-profit').value),
     durationDays: parseInt(document.getElementById('plan-duration').value),
     vipLevel: parseInt(document.getElementById('plan-vip-level').value),
-    isPopular: document.getElementById('plan-is-popular').checked,
+    badgeText: document.getElementById('plan-badge-text').value,
     isSoldOut: document.getElementById('plan-is-soldout').checked
   };
 
@@ -252,11 +330,11 @@ function loadPlansAdmin() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div>
             <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
-            ${p.isPopular ? '<span style="color:#ef4444; font-weight:bold;">[Popular]</span>' : ''}
+            ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
             ${p.isSoldOut ? '<span style="color:#64748b; font-weight:bold;">[Sold Out]</span>' : ''}
           </div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.isPopular === true}, ${p.isSoldOut === true})">Edit</button>
+            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
             <button style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -265,7 +343,7 @@ function loadPlansAdmin() {
   });
 }
 
-window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, isPopular, isSoldOut) {
+window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, badgeText, isSoldOut) {
   document.getElementById('edit-plan-key').value = key;
   document.getElementById('plan-name').value = name;
   document.getElementById('plan-price').value = price;
@@ -273,7 +351,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-daily-profit').value = dailyProfit;
   document.getElementById('plan-duration').value = duration;
   document.getElementById('plan-vip-level').value = vip;
-  document.getElementById('plan-is-popular').checked = isPopular;
+  document.getElementById('plan-badge-text').value = badgeText;
   document.getElementById('plan-is-soldout').checked = isSoldOut;
 
   document.getElementById('plan-form-title').innerText = 'VIP প্ল্যান ইডিট করুন';
@@ -291,18 +369,18 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. TASK EDIT & MANAGEMENT
+// 6. TASK EDIT & LEVEL SELECTION
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const editKey = document.getElementById('edit-task-key').value;
-  const isFree = document.getElementById('task-is-free').checked;
+  const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
 
   const taskData = {
     title: document.getElementById('task-title').value,
     reward: parseFloat(document.getElementById('task-reward').value),
-    minVip: isFree ? 0 : parseInt(document.getElementById('task-min-vip').value),
-    isFree: isFree
+    minVip: minVipVal,
+    isFree: minVipVal === 0
   };
 
   if (editKey) {
@@ -331,9 +409,9 @@ function loadTasksAdmin() {
       const key = child.key;
       list.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
-          <div><b>${t.title}</b> - ৳${t.reward} ${t.isFree ? '<span style="color:#0284c7;">[FREE]</span>' : '(VIP ' + t.minVip + ')'}</div>
+          <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip}, ${t.isFree === true})">Edit</button>
+            <button style="background:#3b82f6; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
             <button style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('tasks/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -342,12 +420,11 @@ function loadTasksAdmin() {
   });
 }
 
-window.editTask = function(key, title, reward, minVip, isFree) {
+window.editTask = function(key, title, reward, minVip) {
   document.getElementById('edit-task-key').value = key;
   document.getElementById('task-title').value = title;
   document.getElementById('task-reward').value = reward;
   document.getElementById('task-min-vip').value = minVip;
-  document.getElementById('task-is-free').checked = isFree;
 
   document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
   document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন';
@@ -364,7 +441,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 6. DEPOSITS (AUTO-REMOVE APPROVED / REJECTED)
+// 7. DEPOSITS & WITHDRAWALS
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -380,7 +457,6 @@ function loadDepositsAdmin() {
 
     snap.forEach(child => {
       const d = child.val();
-      // ONLY SHOW PENDING REQUESTS IN TABLE
       if (d.status === 'pending') {
         pendingCount++;
         tbody.innerHTML += `
@@ -416,9 +492,6 @@ window.approveDeposit = function(depId, uid, amount) {
   });
 };
 
-// ----------------------------------------------------
-// 7. WITHDRAWALS (AUTO-REMOVE APPROVED / REJECTED)
-// ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
     const tbody = document.getElementById('admin-wit-table');
@@ -433,7 +506,6 @@ function loadWithdrawsAdmin() {
 
     snap.forEach(child => {
       const w = child.val();
-      // ONLY SHOW PENDING REQUESTS IN TABLE
       if (w.status === 'pending') {
         pendingCount++;
         tbody.innerHTML += `
@@ -470,46 +542,9 @@ window.rejectWithdraw = function(witId, uid, amount) {
 };
 
 // ----------------------------------------------------
-// 8. PAYMENT GATEWAYS & SETTINGS
+// 8. NOTICES & BROADCAST PUSH NOTIFICATIONS
 // ----------------------------------------------------
-window.savePaymentGateways = function() {
-  const bkashNum = document.getElementById('num-bkash').value;
-  const bkashLogo = document.getElementById('logo-bkash').value;
-  const nagadNum = document.getElementById('num-nagad').value;
-  const nagadLogo = document.getElementById('logo-nagad').value;
-  const rocketNum = document.getElementById('num-rocket').value;
-  const rocketLogo = document.getElementById('logo-rocket').value;
-
-  const paymentData = {
-    bkash: { number: bkashNum, logo: bkashLogo || 'https://i.ibb.co/3yn9j8p/bkash.png' },
-    nagad: { number: nagadNum, logo: nagadLogo || 'https://i.ibb.co/6P0zCst/nagad.png' },
-    rocket: { number: rocketNum, logo: rocketLogo || 'https://i.ibb.co/hK8C7hC/rocket.png' }
-  };
-
-  db.ref('payments').set(paymentData).then(() => {
-    alert('পেমেন্ট গেটওয়ে নম্বর ও লোগো সফলভাবে সেভ করা হয়েছে!');
-  });
-};
-
 function loadSettingsAdmin() {
-  db.ref('payments').once('value', snap => {
-    if (snap.exists()) {
-      const p = snap.val();
-      if (p.bkash) {
-        document.getElementById('num-bkash').value = p.bkash.number || p.bkash || '';
-        document.getElementById('logo-bkash').value = p.bkash.logo || '';
-      }
-      if (p.nagad) {
-        document.getElementById('num-nagad').value = p.nagad.number || p.nagad || '';
-        document.getElementById('logo-nagad').value = p.nagad.logo || '';
-      }
-      if (p.rocket) {
-        document.getElementById('num-rocket').value = p.rocket.number || p.rocket || '';
-        document.getElementById('logo-rocket').value = p.rocket.logo || '';
-      }
-    }
-  });
-
   db.ref('notices/main').once('value', snap => {
     if (snap.exists()) {
       document.getElementById('admin-notice-input').value = snap.val().text || '';
@@ -517,9 +552,6 @@ function loadSettingsAdmin() {
   });
 }
 
-// ----------------------------------------------------
-// 9. NOTICES & BROADCAST PUSH NOTIFICATIONS
-// ----------------------------------------------------
 window.saveMarqueeNotice = function() {
   const text = document.getElementById('admin-notice-input').value;
   if (!text) return;
