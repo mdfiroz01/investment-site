@@ -262,7 +262,7 @@ body {
 
 .notice-text {
   white-space: nowrap;
-  animation: marquee 30s linear infinite;
+  animation: marquee 5s linear infinite;
   line-height: 20px;
 }
 
