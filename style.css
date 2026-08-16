@@ -253,7 +253,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--primary-color);
   box-shadow: var(--shadow-light);
   overflow: hidden;
@@ -262,7 +262,7 @@ body {
 
 .notice-text {
   white-space: nowrap;
-  animation: marquee 16s linear infinite;
+  animation: marquee 10s linear infinite;
   line-height: 20px;
 }
 
