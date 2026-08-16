@@ -1,3 +1,4 @@
+
 :root {
   --primary-color: #05b381;
   --primary-dark: #038d65;
@@ -165,6 +166,36 @@ body {
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* REWARD POP-UP CELEBRATION MODAL */
+.reward-pop-card {
+  text-align: center;
+  padding: 25px 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.reward-icon-circle {
+  width: 65px;
+  height: 65px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+}
+
+.gold-coin-glow {
+  font-size: 32px;
+  color: #f59e0b;
+  animation: bounceGlow 1.5s infinite alternate;
+}
+
+@keyframes bounceGlow {
+  from { transform: scale(1); filter: drop-shadow(0 0 2px #f59e0b); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 10px #f59e0b); }
 }
 
 /* SIDEBAR DRAWER */
@@ -651,3 +682,4 @@ body {
 .modal-content { background: white; padding: 22px; border-radius: 18px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .progress-bar-wrap { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 15px 0; }
 .progress-bar-fill { height: 100%; width: 0%; background: var(--primary-color); transition: width 0.3s; }
+
