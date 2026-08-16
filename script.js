@@ -36,7 +36,28 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-// GLOBAL UI FUNCTIONS
+// GLOBAL UI & AUTH FORM SWITCHER FUNCTIONS
+window.showRegisterForm = function(e) {
+  if (e) e.preventDefault();
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
+};
+
+window.showLoginForm = function(e) {
+  if (e) e.preventDefault();
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
+};
+
+window.showForgotForm = function(e) {
+  if (e) e.preventDefault();
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.remove('hidden');
+};
+
 window.openSidebar = function() {
   document.getElementById('sidebar-drawer').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('open');
@@ -398,7 +419,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// TASK SYSTEM: FREE TASKS EXCLUSIVELY FOR VIP 0, VIP TASKS FOR VIP 1+ (EXCLUSIONS APPLIED)
+// TASK SYSTEM
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -414,7 +435,6 @@ function checkUserTaskLimitAndLoadTasks() {
         const tRec = child.val();
         if (tRec.completed) {
           completedTaskIds[child.key] = true;
-          // FREE TASKS DO NOT COUNT TOWARDS VIP PLAN'S DAILY TASK LIMIT!
           if (!tRec.isFreeTask) {
             userTodayCompletedCount++;
           }
@@ -453,9 +473,6 @@ function loadTasks(completedTaskIds = {}) {
     const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
     let availableTasks = [];
 
-    // STRICT RULES:
-    // 1. VIP 0 USERS ONLY GET FREE TASKS (minVip === 0 OR isFree === true)
-    // 2. VIP 1+ USERS ONLY GET VIP TASKS MATCHING THEIR EXACT VIP LEVEL (FREE TASKS HIDDEN COMPLETELY!)
     if (userVip === 0) {
       availableTasks = allTasks.filter(t => (Number(t.minVip || 0) === 0 || t.isFree === true));
     } else {
@@ -551,7 +568,6 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
   updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
   
-  // SAVE TASK COMPLETION RECORD WITH FREE TASK FLAG
   updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
     completed: true, 
     isFreeTask: isFree,
@@ -561,7 +577,6 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   db.ref().update(updates).then(() => {
     document.getElementById('task-modal').classList.add('hidden');
     
-    // RECORD HISTORY
     const histRef = db.ref('history').push();
     histRef.set({
       uid: currentUser.uid,
@@ -773,7 +788,7 @@ window.copyRefLink = function() {
   alert('রেফারেল লিংক কপি করা হয়েছে!');
 };
 
-// REALTIME USER INCOME GRAPH CHART (STRICT ZERO UNTIL TASK EARNINGS)
+// REALTIME USER INCOME GRAPH CHART
 function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
   if (!canvas || !currentUser) return;
@@ -840,22 +855,11 @@ function renderLiveWithdrawsInfinite() {
   if (!container) return;
 
   const mockFeed = [
-    { num: '017****1268', method: 'bKash', amount: '৳৫০০' },
+    { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
     { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
     { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
     { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
-    { num: '013****3456', method: 'Nagad', amount: '৳২০০০' },
-    { num: '016****8016', method: 'rocket', amount: '৳১৫০০' },
-    { num: '019****9366', method: 'bKash', amount: '৳৩০০০' },
-    { num: '017****7267', method: 'nagad', amount: '৳১০৫০০' },
-    { num: '016****9610', method: 'nagad', amount: '৳১০০০০' },
-    { num: '013****8772', method: 'bKash', amount: '৳১৬০০' },
-    { num: '014****4651', method: 'bKash', amount: '৳১৮৫০০' },
-    { num: '017****8047', method: 'rocket', amount: '৳২০০০০' },
-    { num: '019****6375', method: 'bKash', amount: '৳৮০০০' },
-    { num: '014****1748', method: 'nagad', amount: '৳৮০০' },
-    { num: '018****0262', method: 'rocket, amount: '৳১৮০০' },
-    { num: '016****9174', method: 'nagad', amount: '৳২৬০০' },
+    { num: '013****3456', method: 'Nagad', amount: '৳২০০০' }
   ];
 
   let feedIndex = 0;
@@ -909,16 +913,21 @@ document.getElementById('register-form').addEventListener('submit', (e) => {
   }).catch(err => alert(err.message));
 });
 
-document.getElementById('btn-show-register').addEventListener('click', (e) => {
+// FORGOT PASSWORD FORM HANDLER
+document.getElementById('forgot-password-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('register-form').classList.remove('hidden');
-});
+  const email = document.getElementById('reset-email').value;
+  
+  if (!email) {
+    alert('অনুগ্রহ করে ইমেইল অ্যাড্রেস দিন!');
+    return;
+  }
 
-document.getElementById('btn-show-login').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('login-form').classList.remove('hidden');
+  auth.sendPasswordResetEmail(email).then(() => {
+    alert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে! ইমেইলের Inbox বা Spam ফোল্ডার চেক করুন।');
+    document.getElementById('forgot-password-form').reset();
+    window.showLoginForm();
+  }).catch(err => alert('ত্রুটি: ' + err.message));
 });
 
 window.logout = function() { auth.signOut(); };
