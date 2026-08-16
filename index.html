@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EarnerApp - Premium Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-container" class="modal-overlay">
+    <div class="modal-content">
+      <form id="login-form">
+        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">লগইন করুন</h2>
+        <div class="form-group">
+          <label>ইমেইল অ্যাড্রেস</label>
+          <input type="email" id="login-email" class="form-control" required placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label>পাসওয়ার্ড</label>
+          <input type="password" id="login-password" class="form-control" required placeholder="পাসওয়ার্ড লিখুন">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 12px;">
+          <label><input type="checkbox" id="remember-me"> মনে রাখুন</label>
+          <a href="#" id="btn-forgot" style="color: var(--primary-color); text-decoration: none;">পাসওয়ার্ড ভুলে গেছেন?</a>
+        </div>
+        <button type="submit" class="btn-action">লগইন</button>
+        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
+          একাউন্ট নেই? <a href="#" id="btn-show-register" style="color: var(--primary-color); font-weight:700;">রেজিস্ট্রেশন করুন</a>
+        </p>
+      </form>
+
+      <form id="register-form" class="hidden">
+        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">নতুন একাউন্ট</h2>
+        <div class="form-group">
+          <label>সম্পূর্ণ নাম</label>
+          <input type="text" id="reg-name" class="form-control" required placeholder="আপনার নাম">
+        </div>
+        <div class="form-group">
+          <label>ইমেইল</label>
+          <input type="email" id="reg-email" class="form-control" required placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label>ফোন নম্বর</label>
+          <input type="tel" id="reg-phone" class="form-control" required placeholder="01700000000">
+        </div>
+        <div class="form-group">
+          <label>কান্ট্রি</label>
+          <input type="text" id="reg-country" class="form-control" required placeholder="Bangladesh">
+        </div>
+        <div class="form-group">
+          <label>পাসওয়ার্ড</label>
+          <input type="password" id="reg-password" class="form-control" required placeholder="সর্বনিম্ন ৬ অক্ষর">
+        </div>
+        <div class="form-group">
+          <label>রেফারেল কোড (ঐচ্ছিক)</label>
+          <input type="text" id="reg-ref" class="form-control" placeholder="রেফার কোড">
+        </div>
+        <button type="submit" class="btn-action">রেজিস্টার করুন</button>
+        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
+          একাউন্ট আছে? <a href="#" id="btn-show-login" style="color: var(--primary-color); font-weight:700;">লগইন</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- POP-UP WELCOME NOTICE MODAL WITH INLINE BUTTON -->
+  <div id="welcome-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align:center;">
+      <div id="welcome-img-box"></div>
+      <h3 id="welcome-title" style="font-size:18px; color:var(--primary-color); margin-bottom:8px;">স্বাগতম!</h3>
+      <p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p>
+      <div id="welcome-btn-container" style="margin-bottom:10px;"></div>
+      <button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DRAWER OVERLAY -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="sidebar-drawer" class="sidebar-drawer">
+    <div class="sidebar-header">
+      <h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3>
+      <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeSidebar()"></i>
+    </div>
+    <ul class="sidebar-menu">
+      <li onclick="switchTab('tab-home'); closeSidebar()"><i class="fa-solid fa-house"></i> হোম ড্যাশবোর্ড</li>
+      <li onclick="switchTab('tab-wallet'); closeSidebar()"><i class="fa-solid fa-wallet"></i> মাই ওয়ালেট</li>
+      <li onclick="switchTab('tab-tasks'); closeSidebar()"><i class="fa-solid fa-list-check"></i> দৈনিক টাস্ক</li>
+      <li onclick="switchTab('tab-vip'); closeSidebar()"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
+      <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
+      <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
+      <li onclick="switchTab('tab-profile'); closeSidebar()"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
+      <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
+    </ul>
+  </div>
+
+  <!-- NOTIFICATION MODAL -->
+  <div id="notif-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-bell" style="color:var(--primary-color)"></i> নোটিফিকেশনসমূহ</h3>
+        <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeNotifModal()"></i>
+      </div>
+      <div id="notif-modal-body">
+        <div class="notif-item">
+          <i class="fa-solid fa-bullhorn" style="color:var(--primary-color); font-size:20px;"></i>
+          <div>
+            <h5 style="font-size:13px;" id="notif-title">স্বাগতম EarnerApp এ!</h5>
+            <p style="font-size:11px; color:var(--text-muted);" id="notif-desc">আপনার আয়ের যাত্রা শুরু করতে নতুন প্ল্যান অ্যাক্টিভ করুন।</p>
+          </div>
+        </div>
+      </div>
+      <button class="btn-action" style="margin-top:15px;" onclick="closeNotifModal()">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-container" class="app-viewport hidden">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
+        <h3 class="app-logo">EarnerApp</h3>
+      </div>
+      <div class="notif-wrapper" onclick="openNotifModal()">
+        <i class="fa-solid fa-bell notif-icon"></i>
+        <span class="notif-badge-dot"></span>
+      </div>
+    </header>
+
+    <!-- SCROLLING NOTICE -->
+    <div class="notice-board">
+      <i class="fa-solid fa-bullhorn"></i>
+      <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
+    </div>
+
+    <!-- BKASH STYLE USER PROFILE & BALANCE CARD -->
+    <div class="bkash-card">
+      <div class="bkash-user-info">
+        <img id="usr-avatar" src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="bkash-avatar" alt="Avatar">
+        <div class="bkash-details">
+          <h4 id="usr-name">Loading...</h4>
+          <span id="usr-id">ID: ------</span>
+          <span class="active-plan-badge" id="usr-vip">এক্টিভ প্ল্যান: নো প্ল্যান</span>
+        </div>
+      </div>
+      
+      <div class="bkash-balance-btn" onclick="toggleBkashBalance()">
+        <div class="bkash-btn-inner">
+          <i class="fa-solid fa-wallet"></i>
+          <span id="bkash-balance-text">ট্যাপ করে ব্যালেন্স দেখুন</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-home" class="tab-content active">
+
+      <!-- DYNAMIC HOMEPAGE SLIDER CAROUSEL -->
+      <div class="content-card" style="padding:0; overflow:hidden; border:none; margin-bottom:15px;">
+        <div class="slider-wrapper" id="slider-wrapper">
+          <img id="slider-img" src="https://i.ibb.co/6P0zCst/nagad.png" alt="Banner Slider" class="slider-img">
+        </div>
+      </div>
+
+      <!-- QUICK MENU BUTTONS -->
+      <div class="quick-menu-grid">
+        <div class="menu-card" onclick="switchTab('tab-tasks')"><i class="fa-solid fa-list-check"></i><span>টাস্ক</span></div>
+        <div class="menu-card" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i><span>প্ল্যান</span></div>
+        <div class="menu-card" onclick="switchTab('tab-wallet')"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
+        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলন</span></div>
+      </div>
+
+      <!-- ACTIVE VIP PLAN BANNER CARD -->
+      <div id="dashboard-active-plan-card" class="content-card"></div>
+
+      <!-- INCOME METRICS -->
+      <div class="dashboard-grid">
+        <div class="metric-card">
+          <i class="fa-solid fa-calendar-day icon-today"></i>
+          <div>
+            <p>আজকের ইনকাম</p>
+            <h3 id="bal-today">৳০.০০</h3>
+          </div>
+        </div>
+        <div class="metric-card">
+          <i class="fa-solid fa-chart-pie icon-total"></i>
+          <div>
+            <p>মোট ইনকাম</p>
+            <h3 id="bal-total-inc">৳০.০০</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- INCOME ANALYTICS CHART -->
+      <div class="content-card">
+        <div class="card-title">
+          <h4><i class="fa-solid fa-chart-line" style="color:var(--primary-color)"></i> আয় গ্রাফচার্ট</h4>
+          <span style="font-size:11px; color:var(--text-muted)">গত ৭ দিন</span>
+        </div>
+        <canvas id="incomeChart"></canvas>
+      </div>
+
+      <!-- LIVE WITHDRAW FEED -->
+      <div class="content-card">
+        <div class="card-title">
+          <h4><i class="fa-solid fa-circle-dot live-dot"></i> লাইভ পেমেন্ট উইথড্র</h4>
+          <span class="badge-live">LIVE</span>
+        </div>
+        <div id="live-withdraw-feed"></div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: WALLET PAGE (WITH DEPOSIT & WITHDRAW BUTTONS) -->
+    <div id="tab-wallet" class="tab-content">
+      <div class="plan-page-header">
+        <h2>মাই ওয়ালেট</h2>
+        <p>ব্যালেন্স দেখুন, ডিপোজিট করুন এবং উইথড্র রিকোয়েস্ট পাঠান</p>
+      </div>
+
+      <!-- WALLET HERO BALANCE CARD -->
+      <div class="content-card wallet-hero-card">
+        <p style="font-size:12px; opacity:0.9;">আপনার বর্তমান ওয়ালেট ব্যালেন্স</p>
+        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:8px 0; color:#fff;">৳০.০০</h1>
+        
+        <div style="display:flex; gap:12px; margin-top:15px;">
+          <button class="btn-action" style="background:#ffffff; color:var(--primary-color); font-weight:800;" onclick="switchTab('tab-deposit')">
+            <i class="fa-solid fa-wallet"></i> ডিপোজিট
+          </button>
+          <button class="btn-action" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid #fff; font-weight:800;" onclick="switchTab('tab-withdraw')">
+            <i class="fa-solid fa-hand-holding-dollar"></i> উত্তোলন
+          </button>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <h4>সাম্প্রতিক লেনদেন ইতিহাস</h4>
+        <div id="wallet-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো লেনদেন রেকর্ড নেই</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PLANS -->
+    <div id="tab-vip" class="tab-content">
+      <div class="plan-page-header">
+        <h2>প্রিমিয়াম প্ল্যানসমূহ</h2>
+        <p>আপনার পছন্দের প্ল্যানটি বেছে নিন এবং আয় শুরু করুন</p>
+      </div>
+
+      <div id="vip-plans-container" class="plans-wrapper"></div>
+    </div>
+
+    <!-- TAB 4: TASKS -->
+    <div id="tab-tasks" class="tab-content">
+      <div class="plan-page-header">
+        <h2>দৈনিক টাস্কসমূহ</h2>
+        <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
+      </div>
+      <div id="tasks-list-container" class="plans-wrapper"></div>
+    </div>
+
+    <!-- TAB 5: DEPOSIT -->
+    <div id="tab-deposit" class="tab-content">
+      
+      <!-- STEP 1: METHOD SELECTION -->
+      <div id="dep-step-1">
+        <div class="deposit-hero-banner">
+          <p>ব্যালেন্স যোগ করুন ✨</p>
+          <h1>Deposit</h1>
+          <sub>পেমেন্ট মেথড সিলেক্ট করে Send Money করে balance add করুন।</sub>
+          <div class="pill-badge"><i class="fa-solid fa-wallet"></i> Total <span id="dep-total-bal">৳0.00</span></div>
+        </div>
+
+        <div class="instruction-card">
+          <div class="instruction-title">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <h4 style="font-size:15px; color:var(--text-main)">কীভাবে ডিপোজিট করবেন</h4>
+              <span style="font-size:11px; color:var(--text-muted)">নিচের ধাপগুলো follow করুন</span>
+            </div>
+          </div>
+          <div class="instruction-steps">
+            <div class="step-row"><span class="step-num">1</span> নিচ থেকে আপনার পছন্দের payment method সিলেক্ট করুন।</div>
+            <div class="step-row"><span class="step-num">2</span> পরবর্তী পেজ থেকে নম্বর কপি করে Send Money করুন।</div>
+            <div class="step-row"><span class="step-num">3</span> Amount এবং Transaction ID বসিয়ে submit করুন।</div>
+            <div class="step-row"><span class="step-num">4</span> যাচাইয়ের পর balance যোগ হবে। সাধারণত ১-৫ মিনিট লাগে।</div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <h4 style="margin-bottom:12px; font-size:15px; color:var(--text-main)">পেমেন্ট মেথড সিলেক্ট করুন</h4>
+          <div class="payment-grid">
+            <div class="method-box" onclick="selectDepositMethod('bKash')">
+              <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img" alt="bKash">
+              <h5 style="font-size:13px;">বিকাশ</h5>
+              <button class="btn-continue-sm">Continue ></button>
+            </div>
+            <div class="method-box" onclick="selectDepositMethod('Nagad')">
+              <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img" alt="Nagad">
+              <h5 style="font-size:13px;">নগদ</h5>
+              <button class="btn-continue-sm">Continue ></button>
+            </div>
+            <div class="method-box" onclick="selectDepositMethod('Rocket')">
+              <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img" alt="Rocket">
+              <h5 style="font-size:13px;">রকেট</h5>
+              <button class="btn-continue-sm">Continue ></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <h4>ডিপোজিট ইতিহাস</h4>
+          <div id="dep-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো ডিপোজিট রেকর্ড নেই</div>
+        </div>
+      </div>
+
+      <!-- STEP 2: AMOUNT SELECTION -->
+      <div id="dep-step-2" class="hidden">
+        <div class="deposit-hero-banner">
+          <p>ডিপোজিট পরিমাণ ✨</p>
+          <h1>Amount</h1>
+          <sub>আপনার পছন্দের amount সিলেক্ট করুন অথবা নিজে টাইপ করুন।</sub>
+          <div class="pill-badge"><i class="fa-solid fa-money-bill-wave"></i> Minimum ৳500</div>
+        </div>
+
+        <div class="content-card">
+          <h4 id="selected-method-title">বিকাশ</h4>
+          <span style="font-size:11px; color:var(--text-muted)">পরিমাণ সিলেক্ট করুন অথবা টাইপ করুন</span>
+        </div>
+
+        <div class="content-card">
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">পরিমাণ (৳)</label>
+          <input type="number" id="input-dep-amount" class="form-control" placeholder="সর্বনিম্ন 500" value="500">
+
+          <p style="font-size:12px; margin-top:15px; font-weight:700; color:var(--text-main)">দ্রুত সিলেক্ট</p>
+          <div class="quick-amount-grid">
+            <div class="amount-btn active" onclick="setQuickAmount(500, this)">500</div>
+            <div class="amount-btn" onclick="setQuickAmount(1000, this)">1,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(1500, this)">1,500</div>
+            <div class="amount-btn" onclick="setQuickAmount(2000, this)">2,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(5000, this)">5,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(10000, this)">10,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(20000, this)">20,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(25000, this)">25,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(30000, this)">30,000</div>
+            <div class="amount-btn" onclick="setQuickAmount(50000, this)">50,000</div>
+          </div>
+        </div>
+
+        <div style="margin: 0 15px 15px 15px;">
+          <button class="btn-action" onclick="proceedToStep3()">পরবর্তী ></button>
+        </div>
+      </div>
+
+      <!-- STEP 3: TRANSACTION VERIFY -->
+      <div id="dep-step-3" class="hidden">
+        <div class="deposit-hero-banner">
+          <p>ডিপোজিট ভেরিফাই ✨</p>
+          <h1>Verify</h1>
+          <sub>Send Money করার পর Transaction ID দিয়ে request submit করুন।</sub>
+          <div class="pill-badge"><i class="fa-solid fa-shield-halved"></i> Secure Submit</div>
+        </div>
+
+        <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:11px; color:var(--text-muted)">পরিমাণ</span>
+            <h3 id="step3-amount-display" style="color:var(--primary-color)">৳ 500</h3>
+          </div>
+          <button class="btn-continue-sm" style="width:auto; padding:6px 14px;" onclick="goToDepositStep(2)">পরিবর্তন</button>
+        </div>
+
+        <div class="instruction-card">
+          <div class="form-group">
+            <label style="color:var(--text-main); font-weight:700;">Transaction ID দিন</label>
+            <input type="text" id="input-trx-id" class="form-control" placeholder="ট্রানজেকশন আইডি দিন">
+          </div>
+
+          <div class="instruction-steps">
+            <div class="step-row"><span class="step-num">1</span> *247# ডায়াল করুন অথবা মোবাইল অ্যাপে যান।</div>
+            <div class="step-row"><span class="step-num">2</span> Send Money অপশন সিলেক্ট করুন।</div>
+            <div class="step-row"><span class="step-num">3</span> প্রাপক নম্বর হিসেবে নিচের নম্বরটি ব্যবহার করুন।</div>
+            
+            <div style="background:var(--primary-light); border:1px dashed var(--primary-color); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+              <strong id="target-phone-num" style="font-size:16px; color:var(--primary-color)">01719856165</strong>
+              <button class="btn-copy" onclick="copyPhoneNum()"><i class="fa-solid fa-copy"></i> Copy</button>
+            </div>
+
+            <div class="step-row"><span class="step-num">4</span> টাকার পরিমাণ: <b id="step3-confirm-amount" style="color:var(--primary-color)">৳ 500</b></div>
+            <div class="step-row"><span class="step-num">5</span> Payment complete হলে confirmation message থেকে Transaction ID কপি করুন।</div>
+            <div class="step-row"><span class="step-num">6</span> উপরে Transaction ID বসিয়ে নিচের VERIFY বাটনে ক্লিক করুন।</div>
+          </div>
+        </div>
+
+        <div style="margin: 0 15px 15px 15px;">
+          <button class="btn-action" onclick="submitDepositFinal()">VERIFY</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 6: WITHDRAW PAGE -->
+    <div id="tab-withdraw" class="tab-content">
+      <div class="plan-page-header">
+        <h2>টাকা উত্তোলন করুন</h2>
+        <p>আপনার অর্জিত ব্যালেন্স সরাসরি বিকাশ, নগদ বা রকেটে উত্তোলন করুন</p>
+      </div>
+
+      <div class="content-card">
+        <label style="font-size:13px; font-weight:700; color:var(--text-main); display:block; margin-bottom:12px;">উত্তোলনের পেমেন্ট মেথড সিলেক্ট করুন</label>
+        
+        <div class="payment-grid" style="margin-bottom:15px;">
+          <div class="method-box withdraw-method-box active" onclick="selectWithdrawMethod('bKash', this)">
+            <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img" alt="bKash">
+            <h5 style="font-size:13px;">বিকাশ</h5>
+          </div>
+          <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Nagad', this)">
+            <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img" alt="Nagad">
+            <h5 style="font-size:13px;">নগদ</h5>
+          </div>
+          <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Rocket', this)">
+            <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img" alt="Rocket">
+            <h5 style="font-size:13px;">রকেট</h5>
+          </div>
+        </div>
+
+        <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
+          <div class="form-group">
+            <label>অ্যাকাউন্ট / ওয়ালেট নম্বর</label>
+            <input type="text" id="wit-number" class="form-control" required placeholder="01700000000">
+          </div>
+          <div class="form-group">
+            <label>উত্তোলনের পরিমাণ (৳)</label>
+            <input type="number" id="wit-amount" class="form-control" required placeholder="সর্বনিম্ন ৳২০০">
+          </div>
+          <button type="submit" class="btn-action">উত্তোলন সাবমিট করুন</button>
+        </form>
+      </div>
+
+      <div class="content-card">
+        <h4>উত্তোলন ইতিহাস</h4>
+        <div id="wit-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো উইথড্র রেকর্ড নেই</div>
+      </div>
+    </div>
+
+    <!-- TAB 7: PROFILE -->
+    <div id="tab-profile" class="tab-content">
+      <div class="content-card">
+        <h4>প্রোফাইল আপডেট</h4>
+        <form id="profile-update-form" style="margin-top:15px;" onsubmit="handleProfileUpdate(event)">
+          <div class="form-group"><label>নাম</label><input type="text" id="prof-name" class="form-control" required></div>
+          <div class="form-group"><label>ফোন</label><input type="text" id="prof-phone" class="form-control" required></div>
+          <div class="form-group"><label>অবতার ইউআরএল (Avatar URL)</label><input type="url" id="prof-avatar" class="form-control"></div>
+          <button type="submit" class="btn-action">সেভ করুন</button>
+        </form>
+      </div>
+
+      <div class="content-card">
+        <h4>রেফারেল লিংক</h4>
+        <input type="text" id="ref-link-input" class="form-control" readonly style="margin: 10px 0;">
+        <button class="btn-action" style="background:var(--accent-purple)" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i> লিংক কপি করুন</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('tab-home', this)"><i class="fa-solid fa-house"></i><span>হোম</span></div>
+      <div class="nav-item" onclick="switchTab('tab-wallet', this)"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
+      <div class="nav-item plan-center-btn" onclick="switchTab('tab-vip', this)"><div class="center-circle"><i class="fa-solid fa-layer-group"></i></div><span>প্ল্যান</span></div>
+      <div class="nav-item" onclick="switchTab('tab-withdraw', this)"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>উত্তোলন</span></div>
+      <div class="nav-item" onclick="switchTab('tab-profile', this)"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></div>
+    </nav>
+
+  </div>
+
+  <!-- TASK EXECUTION MODAL -->
+  <div id="task-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center;">
+      <h3 id="task-modal-title" style="color:var(--primary-color);">টাস্ক প্রসেসিং হচ্ছে...</h3>
+      <div class="progress-bar-wrap">
+        <div id="task-progress" class="progress-bar-fill"></div>
+      </div>
+      <button id="btn-claim-task" class="btn-action hidden" style="margin-top: 15px;">রিওয়ার্ড দাবি করুন</button>
+    </div>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
