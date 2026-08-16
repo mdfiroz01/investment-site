@@ -1,12 +1,12 @@
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCi7VY8ge8_8VR0NhCkQXWGCTuTEiIrC6I",
-  authDomain: "easy-earning-app-990d9.firebaseapp.com",
-  databaseURL: "https://easy-earning-app-990d9-default-rtdb.firebaseio.com",
-  projectId: "easy-earning-app-990d9",
-  storageBucket: "easy-earning-app-990d9.firebasestorage.app",
-  messagingSenderId: "344566716068",
-  appId: "1:344566716068:web:f2ce033a68a26b9f10f831",
+  apiKey: "AIzaSyDcQRdT-coeFTKp7WCRKed6m3J33jqUGT8",
+  authDomain: "earning-ba86b.firebaseapp.com",
+  databaseURL: "https://earning-ba86b-default-rtdb.firebaseio.com",
+  projectId: "earning-ba86b",
+  storageBucket: "earning-ba86b.firebasestorage.app",
+  messagingSenderId: "852108051778",
+  appId: "1:852108051778:web:4ef5d12fb398305b6cf4db",
 };
 
 // Initialize Firebase
