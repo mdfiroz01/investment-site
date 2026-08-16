@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -18,8 +17,13 @@
   <!-- AUTH MODAL -->
   <div id="auth-container" class="modal-overlay">
     <div class="modal-content">
+      
+      <!-- LOGIN FORM -->
       <form id="login-form">
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">লগইন করুন</h2>
+        <div style="text-align:center; margin-bottom:15px;">
+          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+        </div>
+        <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">লগইন করুন</h2>
         <div class="form-group">
           <label>ইমেইল অ্যাড্রেস</label>
           <input type="email" id="login-email" class="form-control" required placeholder="example@mail.com">
@@ -38,8 +42,12 @@
         </p>
       </form>
 
+      <!-- REGISTER FORM -->
       <form id="register-form" class="hidden">
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">নতুন একাউন্ট</h2>
+        <div style="text-align:center; margin-bottom:15px;">
+          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+        </div>
+        <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         <div class="form-group">
           <label>সম্পূর্ণ নাম</label>
           <input type="text" id="reg-name" class="form-control" required placeholder="আপনার নাম">
@@ -72,7 +80,7 @@
     </div>
   </div>
 
-  <!-- POP-UP WELCOME NOTICE MODAL WITH INLINE BUTTON -->
+  <!-- POP-UP WELCOME NOTICE MODAL -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align:center;">
       <div id="welcome-img-box"></div>
@@ -165,10 +173,10 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-home" class="tab-content active">
 
-      <!-- DYNAMIC HOMEPAGE SLIDER CAROUSEL -->
+      <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
       <div class="content-card" style="padding:0; overflow:hidden; border:none; margin-bottom:15px;">
-        <div class="slider-wrapper" id="slider-wrapper">
-          <img id="slider-img" src="https://i.ibb.co/6P0zCst/nagad.png" alt="Banner Slider" class="slider-img">
+        <div class="slider-wrapper">
+          <img id="slider-img" src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" alt="Banner Slider" class="slider-img">
         </div>
       </div>
 
@@ -201,27 +209,27 @@
         </div>
       </div>
 
-      <!-- INCOME ANALYTICS CHART -->
+      <!-- REALTIME INCOME ANALYTICS CHART -->
       <div class="content-card">
         <div class="card-title">
-          <h4><i class="fa-solid fa-chart-line" style="color:var(--primary-color)"></i> আয় গ্রাফচার্ট</h4>
+          <h4><i class="fa-solid fa-chart-line" style="color:var(--primary-color)"></i> আয় গ্রাফচার্ট (রিয়েল-টাইম)</h4>
           <span style="font-size:11px; color:var(--text-muted)">গত ৭ দিন</span>
         </div>
         <canvas id="incomeChart"></canvas>
       </div>
 
-      <!-- LIVE WITHDRAW FEED -->
+      <!-- INFINITE AUTO LIVE WITHDRAW FEED -->
       <div class="content-card">
         <div class="card-title">
           <h4><i class="fa-solid fa-circle-dot live-dot"></i> লাইভ পেমেন্ট উইথড্র</h4>
           <span class="badge-live">LIVE</span>
         </div>
-        <div id="live-withdraw-feed"></div>
+        <div id="live-withdraw-feed" style="min-height:120px;"></div>
       </div>
 
     </div>
 
-    <!-- TAB 2: WALLET PAGE (WITH DEPOSIT & WITHDRAW BUTTONS) -->
+    <!-- TAB 2: WALLET PAGE (FIXED CARD & BUTTONS) -->
     <div id="tab-wallet" class="tab-content">
       <div class="plan-page-header">
         <h2>মাই ওয়ালেট</h2>
@@ -229,21 +237,21 @@
       </div>
 
       <!-- WALLET HERO BALANCE CARD -->
-      <div class="content-card wallet-hero-card">
+      <div class="wallet-hero-card">
         <p style="font-size:12px; opacity:0.9;">আপনার বর্তমান ওয়ালেট ব্যালেন্স</p>
-        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:8px 0; color:#fff;">৳০.০০</h1>
+        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:8px 0; color:#ffffff;">৳০.০০</h1>
         
-        <div style="display:flex; gap:12px; margin-top:15px;">
-          <button class="btn-action" style="background:#ffffff; color:var(--primary-color); font-weight:800;" onclick="switchTab('tab-deposit')">
+        <div style="display:flex; gap:12px; margin-top:16px;">
+          <button class="btn-wallet-dep" onclick="switchTab('tab-deposit')">
             <i class="fa-solid fa-wallet"></i> ডিপোজিট
           </button>
-          <button class="btn-action" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid #fff; font-weight:800;" onclick="switchTab('tab-withdraw')">
+          <button class="btn-wallet-wit" onclick="switchTab('tab-withdraw')">
             <i class="fa-solid fa-hand-holding-dollar"></i> উত্তোলন
           </button>
         </div>
       </div>
 
-      <div class="content-card">
+      <div class="content-card" style="margin-top:15px;">
         <h4>সাম্প্রতিক লেনদেন ইতিহাস</h4>
         <div id="wallet-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো লেনদেন রেকর্ড নেই</div>
       </div>
@@ -300,17 +308,17 @@
           <h4 style="margin-bottom:12px; font-size:15px; color:var(--text-main)">পেমেন্ট মেথড সিলেক্ট করুন</h4>
           <div class="payment-grid">
             <div class="method-box" onclick="selectDepositMethod('bKash')">
-              <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img" alt="bKash">
+              <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img img-bkash" alt="bKash">
               <h5 style="font-size:13px;">বিকাশ</h5>
               <button class="btn-continue-sm">Continue ></button>
             </div>
             <div class="method-box" onclick="selectDepositMethod('Nagad')">
-              <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img" alt="Nagad">
+              <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img img-nagad" alt="Nagad">
               <h5 style="font-size:13px;">নগদ</h5>
               <button class="btn-continue-sm">Continue ></button>
             </div>
             <div class="method-box" onclick="selectDepositMethod('Rocket')">
-              <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img" alt="Rocket">
+              <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img img-rocket" alt="Rocket">
               <h5 style="font-size:13px;">রকেট</h5>
               <button class="btn-continue-sm">Continue ></button>
             </div>
@@ -419,15 +427,15 @@
         
         <div class="payment-grid" style="margin-bottom:15px;">
           <div class="method-box withdraw-method-box active" onclick="selectWithdrawMethod('bKash', this)">
-            <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img" alt="bKash">
+            <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img img-bkash" alt="bKash">
             <h5 style="font-size:13px;">বিকাশ</h5>
           </div>
           <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Nagad', this)">
-            <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img" alt="Nagad">
+            <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img img-nagad" alt="Nagad">
             <h5 style="font-size:13px;">নগদ</h5>
           </div>
           <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Rocket', this)">
-            <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img" alt="Rocket">
+            <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img img-rocket" alt="Rocket">
             <h5 style="font-size:13px;">রকেট</h5>
           </div>
         </div>
