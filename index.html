@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -224,12 +225,12 @@
           <h4><i class="fa-solid fa-circle-dot live-dot"></i> লাইভ পেমেন্ট উইথড্র</h4>
           <span class="badge-live">LIVE</span>
         </div>
-        <div id="live-withdraw-feed" style="min-height:120px;"></div>
+        <div id="live-withdraw-feed" style="min-height:100px;"></div>
       </div>
 
     </div>
 
-    <!-- TAB 2: WALLET PAGE (FIXED CARD & BUTTONS) -->
+    <!-- TAB 2: WALLET PAGE -->
     <div id="tab-wallet" class="tab-content">
       <div class="plan-page-header">
         <h2>মাই ওয়ালেট</h2>
@@ -271,7 +272,7 @@
     <div id="tab-tasks" class="tab-content">
       <div class="plan-page-header">
         <h2>দৈনিক টাস্কসমূহ</h2>
-        <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
+        <p id="task-limit-status-summary">আপনার এক্টিভ প্ল্যানের জন্য নির্দিষ্ট টাস্ক সম্পন্ন করুন</p>
       </div>
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
@@ -306,23 +307,8 @@
 
         <div class="content-card">
           <h4 style="margin-bottom:12px; font-size:15px; color:var(--text-main)">পেমেন্ট মেথড সিলেক্ট করুন</h4>
-          <div class="payment-grid">
-            <div class="method-box" onclick="selectDepositMethod('bKash')">
-              <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img img-bkash" alt="bKash">
-              <h5 style="font-size:13px;">বিকাশ</h5>
-              <button class="btn-continue-sm">Continue ></button>
-            </div>
-            <div class="method-box" onclick="selectDepositMethod('Nagad')">
-              <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img img-nagad" alt="Nagad">
-              <h5 style="font-size:13px;">নগদ</h5>
-              <button class="btn-continue-sm">Continue ></button>
-            </div>
-            <div class="method-box" onclick="selectDepositMethod('Rocket')">
-              <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img img-rocket" alt="Rocket">
-              <h5 style="font-size:13px;">রকেট</h5>
-              <button class="btn-continue-sm">Continue ></button>
-            </div>
-          </div>
+          <!-- DYNAMIC UNLIMITED DEPOSIT METHODS CONTAINER -->
+          <div id="deposit-methods-grid" class="payment-grid"></div>
         </div>
 
         <div class="content-card">
@@ -341,7 +327,7 @@
         </div>
 
         <div class="content-card">
-          <h4 id="selected-method-title">বিকাশ</h4>
+          <h4 id="selected-method-title">মেথড</h4>
           <span style="font-size:11px; color:var(--text-muted)">পরিমাণ সিলেক্ট করুন অথবা টাইপ করুন</span>
         </div>
 
@@ -393,9 +379,9 @@
           </div>
 
           <div class="instruction-steps">
-            <div class="step-row"><span class="step-num">1</span> *247# ডায়াল করুন অথবা মোবাইল অ্যাপে যান।</div>
-            <div class="step-row"><span class="step-num">2</span> Send Money অপশন সিলেক্ট করুন।</div>
-            <div class="step-row"><span class="step-num">3</span> প্রাপক নম্বর হিসেবে নিচের নম্বরটি ব্যবহার করুন।</div>
+            <div class="step-row"><span class="step-num">1</span> আপনার পেমেন্ট মোবাইল অ্যাপ বা ডায়াল কোডে যান।</div>
+            <div class="step-row"><span class="step-num">2</span> Send Money / Cash In অপশন সিলেক্ট করুন।</div>
+            <div class="step-row"><span class="step-num">3</span> প্রাপক নম্বর/ঠিকানা হিসেবে নিচের নম্বরটি ব্যবহার করুন।</div>
             
             <div style="background:var(--primary-light); border:1px dashed var(--primary-color); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
               <strong id="target-phone-num" style="font-size:16px; color:var(--primary-color)">01719856165</strong>
@@ -425,20 +411,8 @@
       <div class="content-card">
         <label style="font-size:13px; font-weight:700; color:var(--text-main); display:block; margin-bottom:12px;">উত্তোলনের পেমেন্ট মেথড সিলেক্ট করুন</label>
         
-        <div class="payment-grid" style="margin-bottom:15px;">
-          <div class="method-box withdraw-method-box active" onclick="selectWithdrawMethod('bKash', this)">
-            <img src="https://i.ibb.co/3yn9j8p/bkash.png" class="method-logo-img img-bkash" alt="bKash">
-            <h5 style="font-size:13px;">বিকাশ</h5>
-          </div>
-          <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Nagad', this)">
-            <img src="https://i.ibb.co/6P0zCst/nagad.png" class="method-logo-img img-nagad" alt="Nagad">
-            <h5 style="font-size:13px;">নগদ</h5>
-          </div>
-          <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('Rocket', this)">
-            <img src="https://i.ibb.co/hK8C7hC/rocket.png" class="method-logo-img img-rocket" alt="Rocket">
-            <h5 style="font-size:13px;">রকেট</h5>
-          </div>
-        </div>
+        <!-- DYNAMIC UNLIMITED WITHDRAW METHODS CONTAINER -->
+        <div id="withdraw-methods-grid" class="payment-grid" style="margin-bottom:15px;"></div>
 
         <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
           <div class="form-group">
@@ -489,14 +463,27 @@
 
   </div>
 
-  <!-- TASK EXECUTION MODAL -->
+  <!-- BEAUTIFUL CELEBRATION REWARD TASK MODAL -->
   <div id="task-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align: center;">
-      <h3 id="task-modal-title" style="color:var(--primary-color);">টাস্ক প্রসেসিং হচ্ছে...</h3>
+    <div class="modal-content reward-pop-card">
+      <div class="reward-icon-circle">
+        <i class="fa-solid fa-trophy gold-coin-glow"></i>
+      </div>
+      <h3 id="task-modal-title" style="color:var(--primary-color); font-size:18px; margin-bottom:4px;">টাস্ক প্রসেসিং হচ্ছে...</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">দয়া করে অপেক্ষা করুন...</p>
+      
       <div class="progress-bar-wrap">
         <div id="task-progress" class="progress-bar-fill"></div>
       </div>
-      <button id="btn-claim-task" class="btn-action hidden" style="margin-top: 15px;">রিওয়ার্ড দাবি করুন</button>
+      
+      <div id="reward-amount-pop" class="hidden" style="margin:12px 0;">
+        <span style="font-size:12px; color:var(--text-muted);">আপনার অর্জিত রিওয়ার্ড</span>
+        <h1 id="pop-reward-val" style="font-size:32px; font-weight:900; color:var(--primary-color);">+৳০.০০</h1>
+      </div>
+
+      <button id="btn-claim-task" class="btn-action hidden" style="margin-top: 10px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+        <i class="fa-solid fa-gift"></i> রিওয়ার্ড দাবি করুন 🚀
+      </button>
     </div>
   </div>
 
