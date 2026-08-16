@@ -228,7 +228,6 @@ function loadGatewaysAndNotices() {
     const witGrid = document.getElementById('withdraw-methods-grid');
 
     if (!snap.exists()) {
-      // DEFAULT FALLBACK GATEWAYS
       renderDefaultGateways(depGrid, witGrid);
       return;
     }
@@ -399,7 +398,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
+// TASK SYSTEM: FREE TASKS EXCLUSIVELY FOR VIP 0, VIP TASKS FOR VIP 1+ (EXCLUSIONS APPLIED)
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -412,9 +411,13 @@ function checkUserTaskLimitAndLoadTasks() {
 
     if (taskSnap.exists()) {
       taskSnap.forEach(child => {
-        if (child.val().completed) {
-          userTodayCompletedCount++;
+        const tRec = child.val();
+        if (tRec.completed) {
           completedTaskIds[child.key] = true;
+          // FREE TASKS DO NOT COUNT TOWARDS VIP PLAN'S DAILY TASK LIMIT!
+          if (!tRec.isFreeTask) {
+            userTodayCompletedCount++;
+          }
         }
       });
     }
@@ -433,26 +436,33 @@ function loadTasks(completedTaskIds = {}) {
 
   if (summaryEl) {
     summaryEl.innerText = userVip > 0 
-      ? `আজকের সম্পন্ন করা টাস্ক: ${userTodayCompletedCount} / ${userMaxDailyTasks || 0}`
-      : "লেভেল 0 ফ্রি টাস্ক সম্পন্ন করুন অথবা ভিআইপি প্ল্যান কিনুন";
+      ? `আজকের সম্পন্ন করা ভিআইপি টাস্ক: ${userTodayCompletedCount} / ${userMaxDailyTasks || 0}`
+      : "ফ্রি টাস্ক সম্পূর্ণ করুন অথবা ভিআইপি প্ল্যান কিনুন";
   }
 
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
 
     const defaultTasks = [
-      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (Level 0)', reward: 5, minVip: 0 },
+      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (শুধুমাত্র নো-প্ল্যান ইউজারের জন্য)', reward: 5, minVip: 0, isFree: true },
       { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব (VIP 1)', reward: 15, minVip: 1 },
       { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার (VIP 2)', reward: 50, minVip: 2 },
       { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ব্রাউজিং (VIP 3)', reward: 110, minVip: 3 }
     ];
 
     const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
-    
-    // EXACT MATCH FILTERING: TASK LEVEL MUST EQUAL USER'S VIP LEVEL
-    const userVipTasks = allTasks.filter(t => Number(t.minVip || t.vipLevel || 0) === userVip);
+    let availableTasks = [];
 
-    if (userVipTasks.length === 0) {
+    // STRICT RULES:
+    // 1. VIP 0 USERS ONLY GET FREE TASKS (minVip === 0 OR isFree === true)
+    // 2. VIP 1+ USERS ONLY GET VIP TASKS MATCHING THEIR EXACT VIP LEVEL (FREE TASKS HIDDEN COMPLETELY!)
+    if (userVip === 0) {
+      availableTasks = allTasks.filter(t => (Number(t.minVip || 0) === 0 || t.isFree === true));
+    } else {
+      availableTasks = allTasks.filter(t => Number(t.minVip || 0) === userVip && !t.isFree && Number(t.minVip) !== 0);
+    }
+
+    if (availableTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:30px 15px;">
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
@@ -464,10 +474,10 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    userVipTasks.forEach(task => {
+    availableTasks.forEach(task => {
       const taskId = task.id || 't0';
       const isCompletedToday = completedTaskIds[taskId] === true;
-      const isFreeTask = Number(task.minVip || 0) === 0;
+      const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
 
       let btnText = 'টাস্ক শুরু করুন';
@@ -495,7 +505,7 @@ function loadTasks(completedTaskIds = {}) {
               <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">রিওয়ার্ড: <b style="color:var(--primary-color)">৳${task.reward}</b></p>
             </div>
             <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; ${btnStyle}" 
-              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward})"`}>
+              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})"`}>
               ${btnText}
             </button>
           </div>
@@ -505,8 +515,8 @@ function loadTasks(completedTaskIds = {}) {
   });
 }
 
-window.startTask = function(taskId, reward) {
-  activeTaskObj = { taskId, reward };
+window.startTask = function(taskId, reward, isFreeTask = false) {
+  activeTaskObj = { taskId, reward, isFreeTask };
   document.getElementById('task-modal').classList.remove('hidden');
   document.getElementById('btn-claim-task').classList.add('hidden');
   document.getElementById('reward-amount-pop').classList.add('hidden');
@@ -534,23 +544,30 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
 
   const today = new Date().toISOString().split('T')[0];
   const reward = activeTaskObj.reward;
+  const isFree = activeTaskObj.isFreeTask === true;
 
   const updates = {};
   updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) + reward;
   updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
   updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
-  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { completed: true, timestamp: firebase.database.ServerValue.TIMESTAMP };
+  
+  // SAVE TASK COMPLETION RECORD WITH FREE TASK FLAG
+  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
+    completed: true, 
+    isFreeTask: isFree,
+    timestamp: firebase.database.ServerValue.TIMESTAMP 
+  };
 
   db.ref().update(updates).then(() => {
     document.getElementById('task-modal').classList.add('hidden');
     
-    // Record history
+    // RECORD HISTORY
     const histRef = db.ref('history').push();
     histRef.set({
       uid: currentUser.uid,
       type: 'Task Reward',
       amount: reward,
-      title: 'Completed Task',
+      title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
       status: 'approved',
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
@@ -780,7 +797,6 @@ function initIncomeChartRealtime() {
       });
     }
 
-    // STRICT ZERO DEFAULT UNTIL USER ACTUALLY EARNS VIA TASKS
     const chartData = hasEarnings ? [
       dailyIncomeMap['Mon'] || 0,
       dailyIncomeMap['Tue'] || 0,
