@@ -215,7 +215,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS & BROADCASTS LISTENERS
+// GATEWAYS & DYNAMIC METHOD CARDS
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -223,20 +223,68 @@ function loadGatewaysAndNotices() {
     }
   });
 
-  db.ref('payments').on('value', snap => {
-    if (snap.exists()) {
-      const p = snap.val();
-      if (p.bkash && p.bkash.logo) {
-        document.querySelectorAll('img.img-bkash').forEach(img => img.src = p.bkash.logo);
-      }
-      if (p.nagad && p.nagad.logo) {
-        document.querySelectorAll('img.img-nagad').forEach(img => img.src = p.nagad.logo);
-      }
-      if (p.rocket && p.rocket.logo) {
-        document.querySelectorAll('img.img-rocket').forEach(img => img.src = p.rocket.logo);
-      }
+  db.ref('payment_gateways').on('value', snap => {
+    const depGrid = document.getElementById('deposit-methods-grid');
+    const witGrid = document.getElementById('withdraw-methods-grid');
+
+    if (!snap.exists()) {
+      // DEFAULT FALLBACK GATEWAYS
+      renderDefaultGateways(depGrid, witGrid);
+      return;
     }
+
+    if (depGrid) depGrid.innerHTML = '';
+    if (witGrid) witGrid.innerHTML = '';
+
+    snap.forEach((child) => {
+      const g = child.val();
+      const type = g.type || 'both';
+
+      if (type === 'deposit' || type === 'both') {
+        if (depGrid) depGrid.innerHTML += renderGatewayCardHTML(g, 'deposit');
+      }
+      if (type === 'withdraw' || type === 'both') {
+        if (witGrid) witGrid.innerHTML += renderGatewayCardHTML(g, 'withdraw');
+      }
+    });
   });
+}
+
+function renderGatewayCardHTML(g, mode) {
+  const name = g.name || 'Method';
+  const logo = g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png';
+
+  if (mode === 'deposit') {
+    return `
+      <div class="method-box" onclick="selectDepositMethod('${name}')">
+        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+        <h5 style="font-size:13px;">${name}</h5>
+        <button class="btn-continue-sm">Continue ></button>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('${name}', this)">
+        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+        <h5 style="font-size:13px;">${name}</h5>
+      </div>
+    `;
+  }
+}
+
+function renderDefaultGateways(depGrid, witGrid) {
+  const defaults = [
+    { name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' },
+    { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' },
+    { name: 'Rocket', logoUrl: 'https://i.ibb.co/hK8C7hC/rocket.png' }
+  ];
+
+  if (depGrid) {
+    depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'deposit')).join('');
+  }
+  if (witGrid) {
+    witGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'withdraw')).join('');
+  }
 }
 
 function listenLiveBroadcastNotifications() {
@@ -256,9 +304,9 @@ function loadVIPPlans() {
     container.innerHTML = '';
 
     const defaultPlans = [
-      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, isPopular: false, isSoldOut: false },
-      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, isPopular: true, isSoldOut: false },
-      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, isPopular: false, isSoldOut: false }
+      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, badgeText: '', isSoldOut: false },
+      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, badgeText: 'POPULAR', isSoldOut: false },
+      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, badgeText: 'HOT DEAL', isSoldOut: false }
     ];
 
     if (!snap.exists()) {
@@ -277,7 +325,7 @@ function loadVIPPlans() {
 
 function renderPlanCardHTML(plan) {
   const isSoldOut = plan.isSoldOut === true;
-  const isPopular = plan.isPopular === true;
+  const badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
   const planName = plan.name || 'VIP Plan';
   const planPrice = Number(plan.price || 0);
   const dailyTasks = Number(plan.dailyTasks || 1);
@@ -287,7 +335,7 @@ function renderPlanCardHTML(plan) {
 
   return `
     <div class="plan-card-item">
-      ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (isPopular ? '<div class="plan-ribbon">POPULAR</div>' : '')}
+      ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
       <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
         <h3>${planName}</h3>
         <h2>৳${planPrice} <small>/মাস</small></h2>
@@ -351,7 +399,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// TASK SYSTEM WITH FREE TASK SUPPORT
+// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -381,43 +429,45 @@ function loadTasks(completedTaskIds = {}) {
   container.innerHTML = '';
 
   const summaryEl = document.getElementById('task-limit-status-summary');
-  const userVip = userData ? (userData.vipLevel || 0) : 0;
+  const userVip = userData ? Number(userData.vipLevel || 0) : 0;
 
   if (summaryEl) {
     summaryEl.innerText = userVip > 0 
       ? `আজকের সম্পন্ন করা টাস্ক: ${userTodayCompletedCount} / ${userMaxDailyTasks || 0}`
-      : "ফ্রি টাস্ক সম্পূর্ণ করুন অথবা ভিআইপি প্ল্যান কিনুন";
+      : "লেভেল 0 ফ্রি টাস্ক সম্পন্ন করুন অথবা ভিআইপি প্ল্যান কিনুন";
   }
 
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
 
     const defaultTasks = [
-      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (সকলের জন্য)', reward: 5, minVip: 0, isFree: true },
-      { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব', reward: 10, minVip: 1 },
-      { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার', reward: 15, minVip: 1 },
-      { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ১ মিনিট ব্রাউজিং', reward: 25, minVip: 2 }
+      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (Level 0)', reward: 5, minVip: 0 },
+      { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব (VIP 1)', reward: 15, minVip: 1 },
+      { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার (VIP 2)', reward: 50, minVip: 2 },
+      { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ব্রাউজিং (VIP 3)', reward: 110, minVip: 3 }
     ];
 
     const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
-    const availableTasks = allTasks.filter(t => (t.minVip || 0) === 0 || t.isFree === true || (t.minVip <= userVip));
+    
+    // EXACT MATCH FILTERING: TASK LEVEL MUST EQUAL USER'S VIP LEVEL
+    const userVipTasks = allTasks.filter(t => Number(t.minVip || t.vipLevel || 0) === userVip);
 
-    if (availableTasks.length === 0) {
+    if (userVipTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:30px 15px;">
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
-          <h3 style="font-size:16px; margin-bottom:6px;">কোনো টাস্ক উপলব্ধ নেই!</h3>
-          <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">টাস্ক আনলক করতে একটি প্রিমিয়াম প্ল্যান এক্টিভ করুন।</p>
-          <button class="btn-action" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i> প্ল্যান কিনুন</button>
+          <h3 style="font-size:16px; margin-bottom:6px;">VIP Level ${userVip}-এর জন্য কোনো টাস্ক উপলব্ধ নেই!</h3>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">অন্যান্য টাস্ক আনলক করতে আপনার প্ল্যান আপগ্রেড করুন।</p>
+          <button class="btn-action" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i> প্ল্যান দেখুন</button>
         </div>
       `;
       return;
     }
 
-    availableTasks.forEach(task => {
+    userVipTasks.forEach(task => {
       const taskId = task.id || 't0';
       const isCompletedToday = completedTaskIds[taskId] === true;
-      const isFreeTask = (task.minVip || 0) === 0 || task.isFree === true;
+      const isFreeTask = Number(task.minVip || 0) === 0;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
 
       let btnText = 'টাস্ক শুরু করুন';
@@ -459,7 +509,9 @@ window.startTask = function(taskId, reward) {
   activeTaskObj = { taskId, reward };
   document.getElementById('task-modal').classList.remove('hidden');
   document.getElementById('btn-claim-task').classList.add('hidden');
-  
+  document.getElementById('reward-amount-pop').classList.add('hidden');
+  document.getElementById('task-modal-title').innerText = 'টাস্ক প্রসেসিং হচ্ছে...';
+
   let progress = 0;
   const fill = document.getElementById('task-progress');
   fill.style.width = '0%';
@@ -469,6 +521,9 @@ window.startTask = function(taskId, reward) {
     fill.style.width = progress + '%';
     if (progress >= 100) {
       clearInterval(interval);
+      document.getElementById('task-modal-title').innerText = '🎉 টাস্ক সফলভাবে সম্পন্ন!';
+      document.getElementById('pop-reward-val').innerText = '+৳' + reward.toFixed(2);
+      document.getElementById('reward-amount-pop').classList.remove('hidden');
       document.getElementById('btn-claim-task').classList.remove('hidden');
     }
   }, 500);
@@ -488,8 +543,21 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
 
   db.ref().update(updates).then(() => {
     document.getElementById('task-modal').classList.add('hidden');
+    
+    // Record history
+    const histRef = db.ref('history').push();
+    histRef.set({
+      uid: currentUser.uid,
+      type: 'Task Reward',
+      amount: reward,
+      title: 'Completed Task',
+      status: 'approved',
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
     alert('অভিনন্দন! ৳' + reward + ' আপনার ওয়ালেটে যোগ করা হয়েছে।');
     activeTaskObj = null;
+    initIncomeChartRealtime();
   });
 });
 
@@ -526,11 +594,14 @@ window.proceedToStep3 = function() {
   document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
   document.getElementById('step3-confirm-amount').innerText = '৳ ' + selectedDepositAmountVal;
 
-  db.ref('payments/' + selectedDepositMethodName.toLowerCase()).once('value', snap => {
+  db.ref('payment_gateways').once('value', snap => {
     let targetNum = '01719856165';
     if (snap.exists()) {
-      const val = snap.val();
-      targetNum = val.number || val || '01719856165';
+      snap.forEach(c => {
+        if (c.val().name === selectedDepositMethodName) {
+          targetNum = c.val().number || targetNum;
+        }
+      });
     }
     document.getElementById('target-phone-num').innerText = targetNum;
   });
@@ -685,7 +756,7 @@ window.copyRefLink = function() {
   alert('রেফারেল লিংক কপি করা হয়েছে!');
 };
 
-// REALTIME USER INCOME GRAPH CHART
+// REALTIME USER INCOME GRAPH CHART (STRICT ZERO UNTIL TASK EARNINGS)
 function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
   if (!canvas || !currentUser) return;
@@ -694,11 +765,13 @@ function initIncomeChartRealtime() {
   db.ref('history').orderByChild('uid').equalTo(currentUser.uid).once('value', snap => {
     const dailyIncomeMap = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
     const daysArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let hasEarnings = false;
 
     if (snap.exists()) {
       snap.forEach(child => {
         const item = child.val();
-        if (item.amount > 0 && item.timestamp) {
+        if (item.amount > 0 && item.type === 'Task Reward' && item.timestamp) {
+          hasEarnings = true;
           const dayName = daysArr[new Date(item.timestamp).getDay()];
           if (dailyIncomeMap[dayName] !== undefined) {
             dailyIncomeMap[dayName] += item.amount;
@@ -707,15 +780,16 @@ function initIncomeChartRealtime() {
       });
     }
 
-    const chartData = [
-      dailyIncomeMap['Mon'] || 50,
-      dailyIncomeMap['Tue'] || 120,
-      dailyIncomeMap['Wed'] || 200,
-      dailyIncomeMap['Thu'] || 180,
-      dailyIncomeMap['Fri'] || 350,
-      dailyIncomeMap['Sat'] || (userData.todayIncome || 100),
-      dailyIncomeMap['Sun'] || (userData.todayIncome || 150)
-    ];
+    // STRICT ZERO DEFAULT UNTIL USER ACTUALLY EARNS VIA TASKS
+    const chartData = hasEarnings ? [
+      dailyIncomeMap['Mon'] || 0,
+      dailyIncomeMap['Tue'] || 0,
+      dailyIncomeMap['Wed'] || 0,
+      dailyIncomeMap['Thu'] || 0,
+      dailyIncomeMap['Fri'] || 0,
+      dailyIncomeMap['Sat'] || 0,
+      dailyIncomeMap['Sun'] || 0
+    ] : [0, 0, 0, 0, 0, 0, 0];
 
     if (incomeChartInstance) incomeChartInstance.destroy();
 
@@ -733,7 +807,13 @@ function initIncomeChartRealtime() {
           borderWidth: 2.5
         }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } } }
+      options: { 
+        responsive: true, 
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
     });
   });
 }
