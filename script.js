@@ -36,28 +36,7 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-// GLOBAL UI & AUTH FORM SWITCHER FUNCTIONS
-window.showRegisterForm = function(e) {
-  if (e) e.preventDefault();
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.add('hidden');
-  document.getElementById('register-form').classList.remove('hidden');
-};
-
-window.showLoginForm = function(e) {
-  if (e) e.preventDefault();
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.add('hidden');
-  document.getElementById('login-form').classList.remove('hidden');
-};
-
-window.showForgotForm = function(e) {
-  if (e) e.preventDefault();
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.remove('hidden');
-};
-
+// GLOBAL UI FUNCTIONS
 window.openSidebar = function() {
   document.getElementById('sidebar-drawer').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('open');
@@ -249,6 +228,7 @@ function loadGatewaysAndNotices() {
     const witGrid = document.getElementById('withdraw-methods-grid');
 
     if (!snap.exists()) {
+      // DEFAULT FALLBACK GATEWAYS
       renderDefaultGateways(depGrid, witGrid);
       return;
     }
@@ -419,7 +399,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// TASK SYSTEM
+// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -432,12 +412,9 @@ function checkUserTaskLimitAndLoadTasks() {
 
     if (taskSnap.exists()) {
       taskSnap.forEach(child => {
-        const tRec = child.val();
-        if (tRec.completed) {
+        if (child.val().completed) {
+          userTodayCompletedCount++;
           completedTaskIds[child.key] = true;
-          if (!tRec.isFreeTask) {
-            userTodayCompletedCount++;
-          }
         }
       });
     }
@@ -456,30 +433,26 @@ function loadTasks(completedTaskIds = {}) {
 
   if (summaryEl) {
     summaryEl.innerText = userVip > 0 
-      ? `আজকের সম্পন্ন করা ভিআইপি টাস্ক: ${userTodayCompletedCount} / ${userMaxDailyTasks || 0}`
-      : "ফ্রি টাস্ক সম্পূর্ণ করুন অথবা ভিআইপি প্ল্যান কিনুন";
+      ? `আজকের সম্পন্ন করা টাস্ক: ${userTodayCompletedCount} / ${userMaxDailyTasks || 0}`
+      : "লেভেল 0 ফ্রি টাস্ক সম্পন্ন করুন অথবা ভিআইপি প্ল্যান কিনুন";
   }
 
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
 
     const defaultTasks = [
-      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (শুধুমাত্র নো-প্ল্যান ইউজারের জন্য)', reward: 5, minVip: 0, isFree: true },
+      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (Level 0)', reward: 5, minVip: 0 },
       { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব (VIP 1)', reward: 15, minVip: 1 },
       { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার (VIP 2)', reward: 50, minVip: 2 },
       { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ব্রাউজিং (VIP 3)', reward: 110, minVip: 3 }
     ];
 
     const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
-    let availableTasks = [];
+    
+    // EXACT MATCH FILTERING: TASK LEVEL MUST EQUAL USER'S VIP LEVEL
+    const userVipTasks = allTasks.filter(t => Number(t.minVip || t.vipLevel || 0) === userVip);
 
-    if (userVip === 0) {
-      availableTasks = allTasks.filter(t => (Number(t.minVip || 0) === 0 || t.isFree === true));
-    } else {
-      availableTasks = allTasks.filter(t => Number(t.minVip || 0) === userVip && !t.isFree && Number(t.minVip) !== 0);
-    }
-
-    if (availableTasks.length === 0) {
+    if (userVipTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:30px 15px;">
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
@@ -491,10 +464,10 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    availableTasks.forEach(task => {
+    userVipTasks.forEach(task => {
       const taskId = task.id || 't0';
       const isCompletedToday = completedTaskIds[taskId] === true;
-      const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
+      const isFreeTask = Number(task.minVip || 0) === 0;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
 
       let btnText = 'টাস্ক শুরু করুন';
@@ -522,7 +495,7 @@ function loadTasks(completedTaskIds = {}) {
               <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">রিওয়ার্ড: <b style="color:var(--primary-color)">৳${task.reward}</b></p>
             </div>
             <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; ${btnStyle}" 
-              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})"`}>
+              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward})"`}>
               ${btnText}
             </button>
           </div>
@@ -532,8 +505,8 @@ function loadTasks(completedTaskIds = {}) {
   });
 }
 
-window.startTask = function(taskId, reward, isFreeTask = false) {
-  activeTaskObj = { taskId, reward, isFreeTask };
+window.startTask = function(taskId, reward) {
+  activeTaskObj = { taskId, reward };
   document.getElementById('task-modal').classList.remove('hidden');
   document.getElementById('btn-claim-task').classList.add('hidden');
   document.getElementById('reward-amount-pop').classList.add('hidden');
@@ -561,28 +534,23 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
 
   const today = new Date().toISOString().split('T')[0];
   const reward = activeTaskObj.reward;
-  const isFree = activeTaskObj.isFreeTask === true;
 
   const updates = {};
   updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) + reward;
   updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
   updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
-  
-  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
-    completed: true, 
-    isFreeTask: isFree,
-    timestamp: firebase.database.ServerValue.TIMESTAMP 
-  };
+  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { completed: true, timestamp: firebase.database.ServerValue.TIMESTAMP };
 
   db.ref().update(updates).then(() => {
     document.getElementById('task-modal').classList.add('hidden');
     
+    // Record history
     const histRef = db.ref('history').push();
     histRef.set({
       uid: currentUser.uid,
       type: 'Task Reward',
       amount: reward,
-      title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
+      title: 'Completed Task',
       status: 'approved',
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
@@ -788,7 +756,7 @@ window.copyRefLink = function() {
   alert('রেফারেল লিংক কপি করা হয়েছে!');
 };
 
-// REALTIME USER INCOME GRAPH CHART
+// REALTIME USER INCOME GRAPH CHART (STRICT ZERO UNTIL TASK EARNINGS)
 function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
   if (!canvas || !currentUser) return;
@@ -812,6 +780,7 @@ function initIncomeChartRealtime() {
       });
     }
 
+    // STRICT ZERO DEFAULT UNTIL USER ACTUALLY EARNS VIA TASKS
     const chartData = hasEarnings ? [
       dailyIncomeMap['Mon'] || 0,
       dailyIncomeMap['Tue'] || 0,
@@ -872,7 +841,6 @@ function renderLiveWithdrawsInfinite() {
     { num: '018****0262', method: 'rocket, amount: '৳১৮০০' },
     { num: '016****9174', method: 'nagad', amount: '৳২৬০০' },
   ];
-
   let feedIndex = 0;
 
   function rotateFeed() {
@@ -924,21 +892,16 @@ document.getElementById('register-form').addEventListener('submit', (e) => {
   }).catch(err => alert(err.message));
 });
 
-// FORGOT PASSWORD FORM HANDLER
-document.getElementById('forgot-password-form').addEventListener('submit', (e) => {
+document.getElementById('btn-show-register').addEventListener('click', (e) => {
   e.preventDefault();
-  const email = document.getElementById('reset-email').value;
-  
-  if (!email) {
-    alert('অনুগ্রহ করে ইমেইল অ্যাড্রেস দিন!');
-    return;
-  }
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
+});
 
-  auth.sendPasswordResetEmail(email).then(() => {
-    alert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে! ইমেইলের Inbox বা Spam ফোল্ডার চেক করুন।');
-    document.getElementById('forgot-password-form').reset();
-    window.showLoginForm();
-  }).catch(err => alert('ত্রুটি: ' + err.message));
+document.getElementById('btn-show-login').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
 });
 
 window.logout = function() { auth.signOut(); };
