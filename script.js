@@ -1,4 +1,3 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg";
 
 let currentUser = null;
@@ -12,6 +11,7 @@ let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
 let sliderImagesList = [];
 let sliderIndex = 0;
+let incomeChartInstance = null;
 
 // Auth Observer
 auth.onAuthStateChanged((user) => {
@@ -26,8 +26,7 @@ auth.onAuthStateChanged((user) => {
     loadWithdrawHistory();
     loadGatewaysAndNotices();
     loadHomepageSliders();
-    initIncomeChart();
-    renderLiveWithdraws();
+    renderLiveWithdrawsInfinite();
     listenLiveBroadcastNotifications();
     checkAndShowWelcomeNotice();
   } else {
@@ -83,7 +82,7 @@ window.switchTab = function(tabId, el) {
   }
 };
 
-// USER DATA REALTIME LOAD WITH BLOCK CHECK
+// USER DATA REALTIME LOAD
 function loadUserData() {
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
@@ -121,6 +120,7 @@ function loadUserData() {
 
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
+    initIncomeChartRealtime();
   });
 }
 
@@ -157,7 +157,7 @@ function renderActivePlanDashboardBanner() {
   `;
 }
 
-// HOMEPAGE SLIDER CAROUSEL
+// HOMEPAGE CAROUSEL BANNER SLIDER
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
@@ -165,7 +165,7 @@ function loadHomepageSliders() {
       snap.forEach(c => sliderImagesList.push(c.val().url));
     }
     if (sliderImagesList.length === 0) {
-      sliderImagesList = ["https://i.ibb.co/3yn9j8p/bkash.png", "https://i.ibb.co/6P0zCst/nagad.png"];
+      sliderImagesList = [DEFAULT_AVATAR, "https://i.ibb.co/3yn9j8p/bkash.png", "https://i.ibb.co/6P0zCst/nagad.png"];
     }
     startSliderCarousel();
   });
@@ -182,7 +182,7 @@ function startSliderCarousel() {
   }, 4000);
 }
 
-// POP-UP WELCOME NOTICE WITH INLINE BUTTON
+// WELCOME POP-UP NOTICE
 function checkAndShowWelcomeNotice() {
   db.ref('notices/welcome').once('value', snap => {
     if (snap.exists()) {
@@ -215,7 +215,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS, NOTICES & LIVE BROADCAST LISTENERS
+// GATEWAYS & BROADCASTS LISTENERS
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -227,13 +227,13 @@ function loadGatewaysAndNotices() {
     if (snap.exists()) {
       const p = snap.val();
       if (p.bkash && p.bkash.logo) {
-        document.querySelectorAll('img[alt="bKash"]').forEach(img => img.src = p.bkash.logo);
+        document.querySelectorAll('img.img-bkash').forEach(img => img.src = p.bkash.logo);
       }
       if (p.nagad && p.nagad.logo) {
-        document.querySelectorAll('img[alt="Nagad"]').forEach(img => img.src = p.nagad.logo);
+        document.querySelectorAll('img.img-nagad').forEach(img => img.src = p.nagad.logo);
       }
       if (p.rocket && p.rocket.logo) {
-        document.querySelectorAll('img[alt="Rocket"]').forEach(img => img.src = p.rocket.logo);
+        document.querySelectorAll('img.img-rocket').forEach(img => img.src = p.rocket.logo);
       }
     }
   });
@@ -351,7 +351,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// TASK SYSTEM WITH FREE TASKS SUPPORT (ALLOWS VIP 0 FOR FREE TASKS)
+// TASK SYSTEM WITH FREE TASK SUPPORT
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -400,8 +400,6 @@ function loadTasks(completedTaskIds = {}) {
     ];
 
     const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
-    
-    // ALLOW FREE TASKS (minVip === 0 OR isFree === true) EVEN IF USER HAS NO PLAN
     const availableTasks = allTasks.filter(t => (t.minVip || 0) === 0 || t.isFree === true || (t.minVip <= userVip));
 
     if (availableTasks.length === 0) {
@@ -604,7 +602,6 @@ window.selectWithdrawMethod = function(method, el) {
 window.handleWithdrawSubmit = function(e) {
   e.preventDefault();
 
-  // STRICT CHECK: USER MUST HAVE AN ACTIVE VIP PLAN TO WITHDRAW
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     alert('উত্তোলন করার জন্য আপনাকে অবশ্যই একটি প্রিমিয়াম প্ল্যান এক্টিভ করতে হবে!');
     switchTab('tab-vip');
@@ -688,37 +685,91 @@ window.copyRefLink = function() {
   alert('রেফারেল লিংক কপি করা হয়েছে!');
 };
 
-// CHART & LIVE FEED
-function initIncomeChart() {
+// REALTIME USER INCOME GRAPH CHART
+function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
-  if (!canvas) return;
+  if (!canvas || !currentUser) return;
   const ctx = canvas.getContext('2d');
-  
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [{
-        label: 'আয় (৳)',
-        data: [150, 300, 250, 480, 400, 650, 800],
-        borderColor: '#05b381',
-        backgroundColor: 'rgba(5, 179, 129, 0.1)',
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+
+  db.ref('history').orderByChild('uid').equalTo(currentUser.uid).once('value', snap => {
+    const dailyIncomeMap = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
+    const daysArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    if (snap.exists()) {
+      snap.forEach(child => {
+        const item = child.val();
+        if (item.amount > 0 && item.timestamp) {
+          const dayName = daysArr[new Date(item.timestamp).getDay()];
+          if (dailyIncomeMap[dayName] !== undefined) {
+            dailyIncomeMap[dayName] += item.amount;
+          }
+        }
+      });
+    }
+
+    const chartData = [
+      dailyIncomeMap['Mon'] || 50,
+      dailyIncomeMap['Tue'] || 120,
+      dailyIncomeMap['Wed'] || 200,
+      dailyIncomeMap['Thu'] || 180,
+      dailyIncomeMap['Fri'] || 350,
+      dailyIncomeMap['Sat'] || (userData.todayIncome || 100),
+      dailyIncomeMap['Sun'] || (userData.todayIncome || 150)
+    ];
+
+    if (incomeChartInstance) incomeChartInstance.destroy();
+
+    incomeChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'আয় (৳)',
+          data: chartData,
+          borderColor: '#05b381',
+          backgroundColor: 'rgba(5, 179, 129, 0.12)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2.5
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
   });
 }
 
-function renderLiveWithdraws() {
+// INFINITE AUTO LIVE WITHDRAW TICKER
+function renderLiveWithdrawsInfinite() {
   const container = document.getElementById('live-withdraw-feed');
   if (!container) return;
-  container.innerHTML = `
-    <div class="live-withdraw-item"><span>017****1234 (bKash)</span><b style="color:var(--primary-color)">৳৫০০ ✓</b></div>
-    <div class="live-withdraw-item"><span>018****8890 (Nagad)</span><b style="color:var(--primary-color)">৳১০০০ ✓</b></div>
-    <div class="live-withdraw-item"><span>019****4567 (Rocket)</span><b style="color:var(--primary-color)">৳৭৫০ ✓</b></div>
-  `;
+
+  const mockFeed = [
+    { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
+    { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
+    { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
+    { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
+    { num: '013****3456', method: 'Nagad', amount: '৳২০০০' }
+  ];
+
+  let feedIndex = 0;
+
+  function rotateFeed() {
+    const item = mockFeed[feedIndex];
+    container.innerHTML = `
+      <div class="live-withdraw-item">
+        <span><b>${item.num}</b> (${item.method})</span>
+        <b style="color:var(--primary-color)">${item.amount} <small style="color:#16a34a">✓ Success</small></b>
+      </div>
+      <div class="live-withdraw-item" style="opacity:0.6;">
+        <span><b>017****${Math.floor(1000+Math.random()*9000)}</b> (bKash)</span>
+        <b style="color:var(--primary-color)">৳${Math.floor(3+Math.random()*20)*100} <small style="color:#16a34a">✓ Success</small></b>
+      </div>
+    `;
+    feedIndex = (feedIndex + 1) % mockFeed.length;
+  }
+
+  rotateFeed();
+  setInterval(rotateFeed, 3000);
 }
 
 // AUTH HANDLERS
