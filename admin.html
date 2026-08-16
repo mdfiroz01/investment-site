@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -39,16 +38,16 @@
       <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeAdminSidebar()"></i>
     </div>
     <ul class="sidebar-menu">
-      <li onclick="scrollToSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ স্ট্যাটস</li>
-      <li onclick="scrollToSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ব্যান</li>
-      <li onclick="scrollToSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ইডিটর</li>
-      <li onclick="scrollToSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ও ফ্রি টাস্ক ইডিটর</li>
-      <li onclick="scrollToSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার ম্যানেজ</li>
-      <li onclick="scrollToSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
-      <li onclick="scrollToSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
-      <li onclick="scrollToSection('sec-methods')"><i class="fa-solid fa-credit-card"></i> গেটওয়ে নম্বর ও লোগো</li>
-      <li onclick="scrollToSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
-      <li onclick="scrollToSection('sec-notices')"><i class="fa-solid fa-bullhorn"></i> নোটিশ ও ব্রডকাস্ট</li>
+      <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
+      <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ব্যান</li>
+      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ইডিটর</li>
+      <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ও ফ্রি টাস্ক ইডিটর</li>
+      <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার ইমেজর</li>
+      <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
+      <li onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
+      <li onclick="showAdminSection('sec-methods')"><i class="fa-solid fa-credit-card"></i> গেটওয়ে নম্বর ও লোগো</li>
+      <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
+      <li onclick="showAdminSection('sec-notices')"><i class="fa-solid fa-bullhorn"></i> নোটিশ ও ব্রডকাস্ট</li>
       <li onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
     </ul>
   </div>
@@ -65,15 +64,17 @@
       <button class="btn-action" style="width:auto; padding:6px 12px; font-size:11px; background:#64748b;" onclick="adminLogout()">Logout</button>
     </header>
 
-    <!-- SECTION 1: STATS -->
-    <div id="sec-stats" class="dashboard-grid" style="margin-top:15px;">
-      <div class="metric-card"><div><p>মোট ইউজার</p><h3 id="stat-users">0</h3></div></div>
-      <div class="metric-card"><div><p>পেন্ডিং ডিপোজিট</p><h3 id="stat-pending-dep">0</h3></div></div>
-      <div class="metric-card"><div><p>পেন্ডিং উইথড্র</p><h3 id="stat-pending-wit">0</h3></div></div>
+    <!-- SECTION 1: STATS & OVERVIEW -->
+    <div id="sec-stats" class="admin-section" style="margin-top:15px;">
+      <div class="dashboard-grid">
+        <div class="metric-card"><div><p>মোট ইউজার</p><h3 id="stat-users">0</h3></div></div>
+        <div class="metric-card"><div><p>পেন্ডিং ডিপোজিট</p><h3 id="stat-pending-dep">0</h3></div></div>
+        <div class="metric-card"><div><p>পেন্ডিং উইথড্র</p><h3 id="stat-pending-wit">0</h3></div></div>
+      </div>
     </div>
 
     <!-- SECTION 2: HOMEPAGE SLIDER MANAGEMENT -->
-    <div id="sec-slider" class="content-card">
+    <div id="sec-slider" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-images" style="color:var(--primary-color)"></i> ড্যাশবোর্ড স্লাইডার ইমেজর যোগ করুন</h3>
       <div class="form-group" style="margin-top:10px;">
         <input type="url" id="admin-slider-url-input" class="form-control" placeholder="স্লাইডার ব্যানার ইমেজ URL (Image URL)">
@@ -83,12 +84,10 @@
       <div id="admin-sliders-list" style="margin-top:8px;"></div>
     </div>
 
-    <!-- SECTION 3: POP-UP WELCOME NOTICE WITH INLINE BUTTON -->
-    <div id="sec-welcome-notice" class="content-card">
+    <!-- SECTION 3: POP-UP WELCOME NOTICE -->
+    <div id="sec-welcome-notice" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-window-restore" style="color:var(--primary-color)"></i> পপ-আপ ওয়েলকাম নোটিশ সেটিংস</h3>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">ইউজার অ্যাপে ঢুকলেই এই পপ-আপ মেসেজটি দেখতে পাবে</p>
-
-      <div class="form-group"><label>পপ-আপ টাইটেল</label><input type="text" id="welcome-title-input" class="form-control" placeholder="e.g. স্বাগতম!"></div>
+      <div class="form-group" style="margin-top:10px;"><label>পপ-আপ টাইটেল</label><input type="text" id="welcome-title-input" class="form-control" placeholder="e.g. স্বাগতম!"></div>
       <div class="form-group"><label>পপ-আপ বিবরণ / মেসেজ</label><textarea id="welcome-text-input" class="form-control" rows="3" placeholder="পপ-আপ নোটিশ বিবরণ..."></textarea></div>
       <div class="form-group"><label>পপ-আপ ছবি URL (ঐচ্ছিক)</label><input type="url" id="welcome-image-input" class="form-control" placeholder="https://example.com/banner.jpg"></div>
       
@@ -105,8 +104,8 @@
       <button class="btn-action" onclick="saveWelcomePopUpNotice()">পপ-আপ নোটিশ সেভ করুন</button>
     </div>
 
-    <!-- SECTION 4: USER MANAGEMENT & BLOCK/BAN -->
-    <div id="sec-users" class="content-card">
+    <!-- SECTION 4: USER MANAGEMENT -->
+    <div id="sec-users" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-users" style="color:var(--primary-color)"></i> ইউজার ম্যানেজমেন্ট ও ব্লক/ব্যান</h3>
       <div class="table-responsive">
         <table>
@@ -119,7 +118,7 @@
     </div>
 
     <!-- SECTION 5: VIP PLAN MANAGEMENT -->
-    <div id="sec-plans" class="content-card">
+    <div id="sec-plans" class="admin-section hidden content-card">
       <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:var(--primary-color)"></i> VIP প্ল্যান তৈরি / ইডিট</h3>
       
       <form id="admin-add-plan-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
@@ -144,8 +143,8 @@
       <div id="admin-plans-list" style="margin-top:10px;"></div>
     </div>
 
-    <!-- SECTION 6: TASK CREATION (INCLUDES FREE TASK TOGGLE) -->
-    <div id="sec-tasks" class="content-card">
+    <!-- SECTION 6: TASK CREATION -->
+    <div id="sec-tasks" class="admin-section hidden content-card">
       <h3 id="task-form-title"><i class="fa-solid fa-list-check" style="color:var(--primary-color)"></i> টাস্ক তৈরি / ইডিট</h3>
       
       <form id="admin-add-task-form" style="display: grid; gap: 10px; margin-top: 15px;">
@@ -155,7 +154,7 @@
         <input type="number" id="task-min-vip" placeholder="ন্যূনতম VIP লেভেল (ফ্রি টাস্কের জন্য 0 দিন)" class="form-control" required value="0">
         
         <div style="font-size:13px;">
-          <label><input type="checkbox" id="task-is-free"> ফ্রি টাস্ক হিসেবে মার্ক করুন (সকল ইউজার করতে পারবে)</label>
+          <label><input type="checkbox" id="task-is-free"> ফ্রি টাস্ক হিসেবে মার্ক করুন</label>
         </div>
 
         <button type="submit" id="btn-save-task" class="btn-action">টাস্ক সেভ করুন</button>
@@ -167,8 +166,8 @@
     </div>
 
     <!-- SECTION 7: DEPOSITS MANAGEMENT -->
-    <div id="sec-deposits" class="content-card">
-      <h3><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> ডিপোজিট রিকোয়েস্টসমূহ</h3>
+    <div id="sec-deposits" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> পেন্ডিং ডিপোজিট রিকোয়েস্ট</h3>
       <div class="table-responsive">
         <table>
           <thead>
@@ -180,8 +179,8 @@
     </div>
 
     <!-- SECTION 8: WITHDRAWALS MANAGEMENT -->
-    <div id="sec-withdraws" class="content-card">
-      <h3><i class="fa-solid fa-money-bill-transfer" style="color:var(--primary-color)"></i> উত্তোলন রিকোয়েস্টসমূহ</h3>
+    <div id="sec-withdraws" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-money-bill-transfer" style="color:var(--primary-color)"></i> পেন্ডিং উত্তোলন রিকোয়েস্ট</h3>
       <div class="table-responsive">
         <table>
           <thead>
@@ -192,8 +191,8 @@
       </div>
     </div>
 
-    <!-- SECTION 9: PAYMENT METHOD GATEWAYS & LOGOS EDIT -->
-    <div id="sec-methods" class="content-card">
+    <!-- SECTION 9: PAYMENT METHOD GATEWAYS -->
+    <div id="sec-methods" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-credit-card" style="color:var(--primary-color)"></i> গেটওয়ে নম্বর ও লোগো ইমেজ সেটিং</h3>
 
       <div class="form-group">
@@ -218,7 +217,7 @@
     </div>
 
     <!-- SECTION 10: MARQUEE NOTICE & PUSH NOTIFICATIONS -->
-    <div id="sec-notices" class="content-card">
+    <div id="sec-notices" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-bullhorn" style="color:var(--primary-color)"></i> নোটিশ ও পুশ নোটিফিকেশন ব্রডকাস্ট</h3>
       
       <div class="form-group" style="margin-top:10px;">
