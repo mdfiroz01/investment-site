@@ -60,7 +60,7 @@
         </p>
       </form>
 
-      <!-- 2. REGISTER FORM (WITH AUTO REF CODE FILL) -->
+      <!-- 2. REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
@@ -87,7 +87,7 @@
           <input type="password" id="reg-password" class="form-control" required placeholder="সর্বনিম্ন ৬ অক্ষর">
         </div>
         <div class="form-group">
-          <label>রেফারেল কোড (অটোমেটিক সেট হবে)</label>
+          <label>রেফারেল কোড (ঐচ্ছিক)</label>
           <input type="text" id="reg-ref" class="form-control" placeholder="রেফার কোড">
         </div>
         <button type="submit" class="btn-action">রেজিস্টার করুন</button>
@@ -556,6 +556,16 @@
       <div class="nav-item" onclick="switchTab('tab-profile', this)"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></div>
     </nav>
 
+  </div>
+
+  <!-- FLOATING 90-DEGREE SUPPORT FAB WHEEL BUTTON -->
+  <div class="fab-support-container" id="fab-support-container">
+    <div class="fab-support-menu" id="fab-support-menu">
+      <!-- Dynamic Social Media Icons loaded from Admin Panel -->
+    </div>
+    <button class="fab-main-btn" onclick="toggleSupportFab()" title="সাপোর্ট ও সোশ্যাল মিডিয়া">
+      <i class="fa-solid fa-headset fab-icon"></i>
+    </button>
   </div>
 
   <!-- REWARD CELEBRATION MODAL -->
