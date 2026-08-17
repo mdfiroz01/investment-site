@@ -1,4 +1,3 @@
-
 :root {
   --primary-color: #05b381;
   --primary-dark: #038d65;
@@ -122,7 +121,7 @@ body {
 
 .notice-text {
   white-space: nowrap;
-  animation: marquee 28s linear infinite; /* SLOWED DOWN TO 28s */
+  animation: marquee 28s linear infinite;
   line-height: 20px;
   font-weight: 800;
 }
@@ -130,6 +129,32 @@ body {
 @keyframes marquee {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
+}
+
+/* HOMEPAGE BANNER SLIDER CAROUSEL FIX */
+.slider-container-card {
+  margin: 0 15px 15px 15px;
+  width: calc(100% - 30px);
+}
+
+.slider-wrapper {
+  width: 100%;
+  height: 155px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
+}
+
+.slider-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 16px;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* WALLET HERO CARD & BREAKDOWN */
@@ -330,6 +355,43 @@ body {
 .menu-card i { font-size: 22px; color: var(--primary-color); margin-bottom: 6px; }
 .menu-card span { display: block; font-size: 11px; color: var(--text-main); font-weight: 600; }
 
+/* ACTIVE PLAN HERO CARD ON DASHBOARD */
+.active-plan-banner {
+  background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 8px 20px rgba(5, 179, 129, 0.2);
+}
+
+.active-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.active-plan-header h4 { font-size: 16px; font-weight: 800; color: #fff; }
+
+.plan-live-tag {
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.active-plan-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.active-plan-metrics p { font-size: 11px; opacity: 0.85; }
+.active-plan-metrics strong { font-size: 14px; font-weight: 800; display: block; margin-top: 2px; }
+
 /* PLAN CARDS */
 .plan-page-header { text-align: center; margin: 15px 0 20px 0; }
 .plan-page-header h2 { font-size: 22px; color: var(--text-main); font-weight: 800; }
@@ -525,6 +587,36 @@ body {
   cursor: pointer;
 }
 
+/* REWARD POP-UP CELEBRATION MODAL */
+.reward-pop-card {
+  text-align: center;
+  padding: 25px 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.reward-icon-circle {
+  width: 65px;
+  height: 65px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+}
+
+.gold-coin-glow {
+  font-size: 32px;
+  color: #f59e0b;
+  animation: bounceGlow 1.5s infinite alternate;
+}
+
+@keyframes bounceGlow {
+  from { transform: scale(1); filter: drop-shadow(0 0 2px #f59e0b); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 10px #f59e0b); }
+}
+
 /* BOTTOM NAVIGATION */
 .bottom-nav {
   position: fixed;
@@ -583,4 +675,3 @@ body {
 .modal-content { background: white; padding: 22px; border-radius: 18px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .progress-bar-wrap { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 15px 0; }
 .progress-bar-fill { height: 100%; width: 0%; background: var(--primary-color); transition: width 0.3s; }
-
