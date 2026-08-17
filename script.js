@@ -1,6 +1,5 @@
 const DEFAULT_AVATAR = "https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg";
 
-// THEME TOGGLE LOGIC
 function initAppTheme() {
   const savedTheme = localStorage.getItem('app-theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -19,49 +18,31 @@ window.toggleAppTheme = function() {
 function updateThemeToggleIcon(theme) {
   const icon = document.getElementById('theme-icon');
   if (icon) {
-    if (theme === 'dark') {
-      icon.className = 'fa-solid fa-sun';
-    } else {
-      icon.className = 'fa-solid fa-moon';
-    }
+    icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
   }
 }
 
-// INITIALIZE THEME IMMEDIATELY
 initAppTheme();
 
-// DEFINE FORM SWITCHERS
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (regForm) regForm.classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
 };
 
 window.showLoginForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (loginForm) loginForm.classList.remove('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
 };
 
 window.showForgotForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.remove('hidden');
 };
 
 let currentUser = null;
@@ -91,6 +72,7 @@ auth.onAuthStateChanged((user) => {
     loadVIPPlans();
     loadDepositHistory();
     loadWithdrawHistory();
+    loadReferralCommissionHistory();
     loadGatewaysAndNotices();
     loadHomepageSliders();
     renderLiveWithdrawsInfinite();
@@ -149,7 +131,6 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
 
-  // IF USER SWITCHES TO DEPOSIT FROM GENERAL BUTTONS -> RESET DEPOSIT FORM TO STEP 1 & GENERAL WALLET DEPOSIT
   if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
     resetDepositToGeneralWallet();
   }
@@ -316,7 +297,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS & NOTICES
+// GATEWAYS, APP SETTINGS & NOTICES
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -416,7 +397,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & AUTO PLAN DEPOSIT REDIRECT
+// VIP PLANS LOAD & PURCHASE
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -484,7 +465,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
-  // IF INSUFFICIENT DEPOSIT BALANCE -> REDIRECT TO DEPOSIT PAGE STEP 1 WITH PLAN & AMOUNT PRE-SELECTED
   if (depBal < price) {
     directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit);
     return;
@@ -524,7 +504,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   }
 };
 
-// AUTO DEPOSIT PRE-SELECT FUNCTION FOR DIRECT PLAN DEPOSIT (KEEPS STEP 1 OPEN FOR METHOD SELECTION)
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
   
@@ -541,12 +520,11 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
     }
   }
 
-  // Switch to Deposit tab and keep Step 1 open so user can pick payment method!
   switchTab('tab-deposit', null, true);
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
+// TASK SYSTEM
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -965,6 +943,40 @@ function loadWithdrawHistory() {
 
     if (list) list.innerHTML = html;
     if (walletList) walletList.innerHTML = html;
+  });
+}
+
+function loadReferralCommissionHistory() {
+  if (!currentUser) return;
+  db.ref('referral_commissions/' + currentUser.uid).on('value', snap => {
+    const container = document.getElementById('referral-history-list');
+    if (!container) return;
+
+    if (!snap.exists()) {
+      container.innerHTML = '<div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>';
+      return;
+    }
+
+    let html = '';
+    snap.forEach(child => {
+      const r = child.val();
+      const dateStr = new Date(r.timestamp).toLocaleDateString();
+      html = `
+        <div style="background:var(--primary-light); border:1px solid var(--border-color); border-radius:12px; padding:12px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:13px; color:var(--text-main);">${r.buyerName || 'User'} (ID: ${r.buyerRefCode || 'N/A'})</strong>
+            <span style="font-size:14px; font-weight:800; color:var(--primary-color);">+৳${Number(r.commissionAmount || 0).toFixed(2)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:11px; color:var(--text-muted);">
+            <span>এক্টিভ প্ল্যান: <b>${r.planName} (৳${r.planPrice})</b></span>
+            <span>কমিশন হার: <b>${r.commissionPercent}%</b></span>
+          </div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">তারিখ: ${dateStr}</div>
+        </div>
+      ` + html;
+    });
+
+    container.innerHTML = html;
   });
 }
 
