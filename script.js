@@ -80,15 +80,32 @@ window.toggleBkashBalance = function() {
   }
 };
 
+// RESET DEPOSIT SELECTION WHEN SWITCHING TO DEPOSIT FROM GENERAL BUTTONS
 window.switchTab = function(tabId, el) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
+
+  // IF USER CLICKS GENERAL DEPOSIT TAB/BUTTON, RESET DEPOSIT SELECTION TO GENERAL WALLET DEPOSIT
+  if (tabId === 'tab-deposit' && (!el || !el.classList.contains('direct-plan-trigger'))) {
+    resetDepositToGeneralWallet();
+  }
 
   if (el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
   }
 };
+
+function resetDepositToGeneralWallet() {
+  const selectEl = document.getElementById('dep-target-plan-select');
+  if (selectEl) selectEl.value = 'wallet';
+
+  const amtInput = document.getElementById('input-dep-amount');
+  if (amtInput) amtInput.value = 500;
+
+  selectedDepositAmountVal = 500;
+  goToDepositStep(1);
+}
 
 // USER DATA REALTIME LOAD
 function loadUserData() {
@@ -252,7 +269,8 @@ function loadGatewaysAndNotices() {
 
       const rulesSummary = document.getElementById('withdraw-rules-summary');
       if (rulesSummary) {
-        rulesSummary.innerText = `সর্বনিম্ন উত্তোলন ৳${systemMinWithdraw} এবং প্রসেসিং চার্জ ${systemWithdrawChargePercent}%`;
+        const userCharge = (userData && userData.withdrawChargePercent !== undefined) ? userData.withdrawChargePercent : systemWithdrawChargePercent;
+        rulesSummary.innerText = `সর্বনিম্ন উত্তোলন ৳${systemMinWithdraw} এবং প্রসেসিং চার্জ ${userCharge}%`;
       }
     }
   });
@@ -290,7 +308,7 @@ function renderGatewayCardHTML(g, mode) {
   if (mode === 'deposit') {
     return `
       <div class="method-box" onclick="selectDepositMethod('${name}')">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
         <h5 style="font-size:13px;">${name}</h5>
         <button class="btn-continue-sm">Continue ></button>
       </div>
@@ -298,7 +316,7 @@ function renderGatewayCardHTML(g, mode) {
   } else {
     return `
       <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('${name}', this)">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
         <h5 style="font-size:13px;">${name}</h5>
       </div>
     `;
@@ -342,9 +360,9 @@ function loadVIPPlans() {
     }
 
     const defaultPlans = [
-      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, badgeText: '', isSoldOut: false },
-      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, badgeText: 'POPULAR', isSoldOut: false },
-      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, refCommissionPercent: 15, badgeText: 'HOT DEAL', isSoldOut: false }
+      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, withdrawChargePercent: 10, badgeText: '', isSoldOut: false },
+      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, withdrawChargePercent: 5, badgeText: 'POPULAR', isSoldOut: false },
+      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, refCommissionPercent: 15, withdrawChargePercent: 0, badgeText: 'HOT DEAL', isSoldOut: false }
     ];
 
     const planList = snap.exists() ? Object.values(snap.val()) : defaultPlans;
@@ -367,6 +385,7 @@ function renderPlanCardHTML(plan) {
   const dailyProfit = Number(plan.dailyProfit || 0);
   const duration = Number(plan.durationDays || 30);
   const vipLevel = Number(plan.vipLevel || 1);
+  const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
 
   return `
     <div class="plan-card-item">
@@ -379,12 +398,13 @@ function renderPlanCardHTML(plan) {
         <ul class="plan-features-list">
           <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
           <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
+          <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
           <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
           <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
           <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
         </ul>
         <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit})"`}>
+          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge})"`}>
           ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
         </button>
       </div>
@@ -392,8 +412,8 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-// AUTO SELECT PLAN & AMOUNT IF BALANCE IS INSUFFICIENT
-window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit) {
+// STRICT RULE: PLANS CAN ONLY BE PURCHASED FROM DEPOSIT BALANCE!
+window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
@@ -410,6 +430,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
     updates['users/' + currentUser.uid + '/vipPlanName'] = planName;
     updates['users/' + currentUser.uid + '/maxDailyTasks'] = dailyTasks;
     updates['users/' + currentUser.uid + '/vipDailyProfit'] = dailyProfit;
+    updates['users/' + currentUser.uid + '/withdrawChargePercent'] = withdrawChargePercent;
 
     db.ref().update(updates).then(() => {
       userData.depositBalance = depBal - price;
@@ -417,6 +438,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
       userData.vipPlanName = planName;
       userData.maxDailyTasks = dailyTasks;
       userData.vipDailyProfit = dailyProfit;
+      userData.withdrawChargePercent = withdrawChargePercent;
 
       const histRef = db.ref('history').push();
       histRef.set({
@@ -435,15 +457,13 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
   }
 };
 
-// AUTO DEPOSIT PRE-SELECT FUNCTION
+// AUTO DEPOSIT PRE-SELECT FUNCTION FOR DIRECT PLAN DEPOSIT
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
   
-  // Set Deposit Input Amount
   const amtInput = document.getElementById('input-dep-amount');
   if (amtInput) amtInput.value = price;
 
-  // Set Target Plan Select Dropdown
   const selectEl = document.getElementById('dep-target-plan-select');
   if (selectEl) {
     for (let i = 0; i < selectEl.options.length; i++) {
@@ -454,6 +474,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
     }
   }
 
+  // Switch to Deposit tab directly to Step 2
   switchTab('tab-deposit');
   goToDepositStep(2);
 }
@@ -574,7 +595,6 @@ function loadTasks(completedTaskIds = {}) {
 window.startTask = function(taskId, reward, isFreeTask = false) {
   activeTaskObj = { taskId, reward, isFreeTask };
   
-  // RESET MODAL VIEWS FOR CLEAN REWARD CELEBRATION
   document.getElementById('task-modal').classList.remove('hidden');
   document.getElementById('task-processing-view').classList.remove('hidden');
   document.getElementById('task-success-view').classList.add('hidden');
@@ -599,7 +619,7 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
-// FIX 3: REWARD CLAIM WITHOUT NATIVE BROWSER ALERT (IN-MODAL CELEBRATION)
+// REWARD CLAIM WITHOUT NATIVE BROWSER ALERT
 document.getElementById('btn-claim-task').addEventListener('click', () => {
   if (!activeTaskObj || !userData) return;
 
@@ -619,7 +639,6 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   };
 
   db.ref().update(updates).then(() => {
-    // RECORD HISTORY
     const histRef = db.ref('history').push();
     histRef.set({
       uid: currentUser.uid,
@@ -630,7 +649,6 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
-    // SHOW IN-MODAL SUCCESS VIEW (NO BROWSER ALERT!)
     document.getElementById('task-processing-view').classList.add('hidden');
     document.getElementById('task-success-view').classList.remove('hidden');
     document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
@@ -769,16 +787,24 @@ function loadDepositHistory() {
   });
 }
 
-// WITHDRAW METHOD SELECTOR & SUBMIT (STRICT VIP CHECK & FEE CALC)
+// WITHDRAW METHOD SELECTOR & SUBMIT (PER-VIP PLAN WITHDRAW CHARGE %)
 window.selectWithdrawMethod = function(method, el) {
   selectedWithdrawMethodName = method;
   document.querySelectorAll('.withdraw-method-box').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
 };
 
+function getActiveWithdrawChargePercent() {
+  if (userData && userData.withdrawChargePercent !== undefined) {
+    return Number(userData.withdrawChargePercent);
+  }
+  return systemWithdrawChargePercent;
+}
+
 window.calculateWithdrawFeePreview = function() {
   const amt = parseFloat(document.getElementById('wit-amount').value) || 0;
-  const chargeFee = amt * (systemWithdrawChargePercent / 100);
+  const activeCharge = getActiveWithdrawChargePercent();
+  const chargeFee = amt * (activeCharge / 100);
   const netAmount = Math.max(0, amt - chargeFee);
 
   document.getElementById('wit-fee-amount').innerText = '৳' + chargeFee.toFixed(2);
@@ -820,6 +846,8 @@ window.handleWithdrawSubmit = function(e) {
     newDepBal = Math.max(0, newDepBal - remAmt);
   }
 
+  const activeCharge = getActiveWithdrawChargePercent();
+
   const updates = {};
   updates['users/' + currentUser.uid + '/incomeBalance'] = newIncBal;
   updates['users/' + currentUser.uid + '/depositBalance'] = newDepBal;
@@ -833,8 +861,8 @@ window.handleWithdrawSubmit = function(e) {
       method: selectedWithdrawMethodName,
       walletNumber: num,
       amount: amt,
-      chargePercent: systemWithdrawChargePercent,
-      netAmount: Math.max(0, amt - (amt * systemWithdrawChargePercent / 100)),
+      chargePercent: activeCharge,
+      netAmount: Math.max(0, amt - (amt * activeCharge / 100)),
       status: 'pending',
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
