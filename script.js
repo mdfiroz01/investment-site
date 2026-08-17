@@ -1,5 +1,69 @@
 const DEFAULT_AVATAR = "https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg";
 
+// THEME TOGGLE LOGIC
+function initAppTheme() {
+  const savedTheme = localStorage.getItem('app-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeToggleIcon(savedTheme);
+}
+
+window.toggleAppTheme = function() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('app-theme', newTheme);
+  updateThemeToggleIcon(newTheme);
+};
+
+function updateThemeToggleIcon(theme) {
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    if (theme === 'dark') {
+      icon.className = 'fa-solid fa-sun';
+    } else {
+      icon.className = 'fa-solid fa-moon';
+    }
+  }
+}
+
+// INITIALIZE THEME IMMEDIATELY
+initAppTheme();
+
+// DEFINE FORM SWITCHERS
+window.showRegisterForm = function(e) {
+  if (e) e.preventDefault();
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (loginForm) loginForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.add('hidden');
+  if (regForm) regForm.classList.remove('hidden');
+};
+
+window.showLoginForm = function(e) {
+  if (e) e.preventDefault();
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (regForm) regForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.add('hidden');
+  if (loginForm) loginForm.classList.remove('hidden');
+};
+
+window.showForgotForm = function(e) {
+  if (e) e.preventDefault();
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (loginForm) loginForm.classList.add('hidden');
+  if (regForm) regForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.remove('hidden');
+};
+
 let currentUser = null;
 let userData = null;
 let isBalanceShown = false;
@@ -11,6 +75,7 @@ let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
 let sliderImagesList = [];
 let sliderIndex = 0;
+let sliderIntervalTimer = null;
 let incomeChartInstance = null;
 let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
@@ -80,13 +145,12 @@ window.toggleBkashBalance = function() {
   }
 };
 
-// RESET DEPOSIT SELECTION WHEN SWITCHING TO DEPOSIT FROM GENERAL BUTTONS
-window.switchTab = function(tabId, el) {
+window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
 
-  // IF USER CLICKS GENERAL DEPOSIT TAB/BUTTON, RESET DEPOSIT SELECTION TO GENERAL WALLET DEPOSIT
-  if (tabId === 'tab-deposit' && (!el || !el.classList.contains('direct-plan-trigger'))) {
+  // IF USER SWITCHES TO DEPOSIT FROM GENERAL BUTTONS -> RESET DEPOSIT FORM TO STEP 1 & GENERAL WALLET DEPOSIT
+  if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
     resetDepositToGeneralWallet();
   }
 
@@ -208,8 +272,12 @@ function startSliderCarousel() {
   const sliderImg = document.getElementById('slider-img');
   if (!sliderImg || sliderImagesList.length === 0) return;
 
+  if (sliderIntervalTimer) clearInterval(sliderIntervalTimer);
+
   sliderImg.src = sliderImagesList[0];
-  setInterval(() => {
+  sliderIndex = 0;
+
+  sliderIntervalTimer = setInterval(() => {
     sliderIndex = (sliderIndex + 1) % sliderImagesList.length;
     sliderImg.src = sliderImagesList[sliderIndex];
   }, 4000);
@@ -248,7 +316,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS, APP SETTINGS & NOTICES
+// GATEWAYS & NOTICES
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -412,12 +480,11 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-// STRICT RULE: PLANS CAN ONLY BE PURCHASED FROM DEPOSIT BALANCE!
 window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
-  // IF INSUFFICIENT DEPOSIT BALANCE -> AUTO-REDIRECT TO DEPOSIT WITH PRE-SELECTED PLAN & AMOUNT
+  // IF INSUFFICIENT DEPOSIT BALANCE -> REDIRECT TO DEPOSIT PAGE STEP 1 WITH PLAN & AMOUNT PRE-SELECTED
   if (depBal < price) {
     directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit);
     return;
@@ -457,7 +524,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   }
 };
 
-// AUTO DEPOSIT PRE-SELECT FUNCTION FOR DIRECT PLAN DEPOSIT
+// AUTO DEPOSIT PRE-SELECT FUNCTION FOR DIRECT PLAN DEPOSIT (KEEPS STEP 1 OPEN FOR METHOD SELECTION)
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
   
@@ -474,9 +541,9 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
     }
   }
 
-  // Switch to Deposit tab directly to Step 2
-  switchTab('tab-deposit');
-  goToDepositStep(2);
+  // Switch to Deposit tab and keep Step 1 open so user can pick payment method!
+  switchTab('tab-deposit', null, true);
+  goToDepositStep(1);
 }
 
 // TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
