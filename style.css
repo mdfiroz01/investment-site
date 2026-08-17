@@ -10,7 +10,7 @@
   --text-muted: #64748b;
   --border-color: #e2e8f0;
   --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.04);
-  --danger: #ff4757;
+  --danger: #ef4444;
 }
 
 [data-theme="dark"] {
@@ -52,7 +52,7 @@ body {
 }
 
 /* ===================================================
-   ADMIN PANEL HIGH-CONTRAST DEDICATED STYLES (FIXED)
+   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS (FIXED)
 =================================================== */
 body.admin-body {
   background: #e2e8f0 !important;
@@ -104,6 +104,64 @@ body.admin-body {
 .admin-form-control:focus {
   border-color: #05b381 !important;
   box-shadow: 0 0 0 3px rgba(5, 179, 129, 0.15) !important;
+}
+
+/* SOLID VISIBLE BUTTONS FOR ADMIN PANEL */
+.btn-action {
+  width: 100% !important;
+  padding: 13px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: #05b381 !important; /* SOLID EMERALD GREEN */
+  color: #ffffff !important;       /* SOLID WHITE BOLD TEXT */
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(5, 179, 129, 0.3) !important;
+  text-align: center !important;
+  display: block !important;
+}
+
+.btn-action:hover, .btn-action:active {
+  background: #038d65 !important;
+  color: #ffffff !important;
+}
+
+.btn-secondary {
+  background: #2563eb !important; /* SOLID BLUE */
+  color: #ffffff !important;
+}
+
+.btn-success {
+  background: #10b981 !important; /* SOLID GREEN */
+  color: #ffffff !important;
+}
+
+.btn-danger {
+  background: #ef4444 !important; /* SOLID RED */
+  color: #ffffff !important;
+}
+
+.btn-info {
+  background: #0284c7 !important; /* SOLID SKY BLUE */
+  color: #ffffff !important;
+}
+
+.btn-cancel {
+  background: #64748b !important; /* SOLID SLATE GRAY */
+  color: #ffffff !important;
+}
+
+.btn-action-sm {
+  border: none !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-decoration: none !important;
 }
 
 .admin-table {
@@ -257,7 +315,7 @@ body.admin-body {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* WALLET HERO CARD & BREAKDOWN */
+/* WALLET HERO CARD */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -687,29 +745,6 @@ body.admin-body {
 [data-theme="dark"] .amount-btn { background: #1e293b; }
 
 .amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-.btn-action {
-  width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary-color);
-  color: white;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.3);
-}
-
-.btn-copy {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
 
 /* REWARD POP-UP CELEBRATION MODAL */
 .reward-pop-card {
