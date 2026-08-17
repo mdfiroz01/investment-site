@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarnerApp - Premium Platform</title>
+  
+  <!-- FAVICON ICON -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
+  
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,7 +25,7 @@
       <!-- LOGIN FORM -->
       <form id="login-form">
         <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">লগইন করুন</h2>
         <div class="form-group">
@@ -45,7 +49,7 @@
       <!-- REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         <div class="form-group">
@@ -81,7 +85,7 @@
       <!-- FORGOT PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary-color);">পাসওয়ার্ড রিসেট</h2>
         <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:18px; line-height:1.4;">
@@ -100,7 +104,7 @@
     </div>
   </div>
 
-  <!-- UNIVERSAL CUSTOM ALERT MODAL (REPLACES NATIVE BROWSER ALERTS) -->
+  <!-- UNIVERSAL CUSTOM ALERT MODAL -->
   <div id="app-alert-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div id="app-alert-icon" style="margin-bottom: 12px;"></div>
@@ -110,7 +114,7 @@
     </div>
   </div>
 
-  <!-- UNIVERSAL CUSTOM CONFIRM MODAL (REPLACES NATIVE BROWSER CONFIRMS) -->
+  <!-- UNIVERSAL CUSTOM CONFIRM MODAL -->
   <div id="app-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div style="margin-bottom: 12px;">
@@ -141,7 +145,7 @@
   <div id="sidebar-drawer" class="sidebar-drawer">
     <div class="sidebar-header">
       <div style="display:flex; align-items:center; gap:8px;">
-        <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="header-logo-img" alt="Logo">
+        <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
         <h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3>
       </div>
       <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeSidebar()"></i>
@@ -187,7 +191,7 @@
       <div class="header-left">
         <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
         <div style="display:flex; align-items:center; gap:8px;">
-          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="header-logo-img" alt="Logo">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
           <h3 class="app-logo">EarnerApp</h3>
         </div>
       </div>
@@ -213,7 +217,7 @@
     <!-- BKASH STYLE USER PROFILE & BALANCE CARD -->
     <div class="bkash-card">
       <div class="bkash-user-info">
-        <img id="usr-avatar" src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="bkash-avatar" alt="Avatar">
+        <img id="usr-avatar" src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="bkash-avatar" alt="Avatar">
         <div class="bkash-details">
           <h4 id="usr-name">Loading...</h4>
           <span id="usr-id">ID: ------</span>
@@ -235,7 +239,7 @@
       <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
       <div class="slider-container-card">
         <div class="slider-wrapper">
-          <img id="slider-img" src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" alt="Banner Slider" class="slider-img">
+          <img id="slider-img" src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" alt="Banner Slider" class="slider-img">
         </div>
       </div>
 
@@ -491,7 +495,7 @@
             <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
           </div>
 
-          <button type="submit" class="btn-action">উত্তোলন সাবমিট করুন</button>
+          <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন</button>
         </form>
       </div>
 
