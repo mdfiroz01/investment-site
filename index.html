@@ -157,7 +157,7 @@
   <!-- MAIN APP CONTAINER -->
   <div id="app-container" class="app-viewport hidden">
 
-    <!-- TOP HEADER WITH THEME TOGGLE SWITCH -->
+    <!-- TOP HEADER -->
     <header class="top-header">
       <div class="header-left">
         <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
@@ -168,7 +168,6 @@
       </div>
       
       <div style="display:flex; align-items:center; gap:12px;">
-        <!-- DARK / LIGHT MODE TOGGLE BUTTON -->
         <div class="theme-toggle-btn" onclick="toggleAppTheme()" title="থিম পরিবর্তন করুন">
           <i id="theme-icon" class="fa-solid fa-moon"></i>
         </div>
@@ -316,7 +315,7 @@
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
-    <!-- TAB 5: DEPOSIT (STEP 1 HAS METHOD SELECTOR ALWAYS) -->
+    <!-- TAB 5: DEPOSIT -->
     <div id="tab-deposit" class="tab-content">
       
       <!-- STEP 1: METHOD SELECTION -->
@@ -477,7 +476,7 @@
       </div>
     </div>
 
-    <!-- TAB 7: PROFILE -->
+    <!-- TAB 7: PROFILE & REFERRAL HISTORY -->
     <div id="tab-profile" class="tab-content">
       <div class="content-card">
         <h4>প্রোফাইল আপডেট</h4>
@@ -493,6 +492,15 @@
         <h4>রেফারেল লিংক</h4>
         <input type="text" id="ref-link-input" class="form-control" readonly style="margin: 10px 0;">
         <button class="btn-action" style="background:var(--accent-purple)" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i> লিংক কপি করুন</button>
+      </div>
+
+      <!-- DETAILED REFERRAL COMMISSION HISTORY -->
+      <div class="content-card">
+        <h4><i class="fa-solid fa-users-viewfinder" style="color:var(--primary-color)"></i> রেফারেল কমিশন ইতিহাস</h4>
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">কোন ইউজার কোন প্ল্যান এক্টিভ করায় কত টাকা কমিশন পেয়েছেন</p>
+        <div id="referral-history-list">
+          <div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>
+        </div>
       </div>
     </div>
 
