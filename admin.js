@@ -200,7 +200,7 @@ window.toggleBlockUser = function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN EDIT & REFERRAL/WITHDRAW CHARGE %
+// 3. VIP PLAN EDIT & MANAGEMENT
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -285,7 +285,96 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. DEPOSITS APPROVAL & DIRECT PLAN ACTIVATION
+// 4. TASK CREATION WITH BATCH QUANTITY SUPPORT
+// ----------------------------------------------------
+document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const editKey = document.getElementById('edit-task-key').value;
+  const baseTitle = document.getElementById('task-title').value;
+  const reward = parseFloat(document.getElementById('task-reward').value);
+  const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
+  const qty = parseInt(document.getElementById('task-quantity').value) || 1;
+
+  if (editKey) {
+    // EDIT SINGLE EXISTING TASK
+    db.ref('tasks/' + editKey).update({
+      title: baseTitle,
+      reward: reward,
+      minVip: minVipVal,
+      isFree: minVipVal === 0
+    }).then(() => {
+      alert('টাস্ক সফলভাবে ইডিট করা হয়েছে!');
+      resetTaskForm();
+    });
+  } else {
+    // BATCH CREATE TASKS BASED ON QUANTITY
+    const promises = [];
+    for (let i = 1; i <= qty; i++) {
+      const newRef = db.ref('tasks').push();
+      const taskTitle = qty > 1 ? `${baseTitle} #${i}` : baseTitle;
+      const taskData = {
+        id: newRef.key,
+        title: taskTitle,
+        reward: reward,
+        minVip: minVipVal,
+        isFree: minVipVal === 0
+      };
+      promises.push(newRef.set(taskData));
+    }
+
+    Promise.all(promises).then(() => {
+      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি করা হয়েছে!`);
+      resetTaskForm();
+    });
+  }
+});
+
+function loadTasksAdmin() {
+  db.ref('tasks').on('value', snap => {
+    const list = document.getElementById('admin-tasks-list');
+    list.innerHTML = '';
+    if (!snap.exists()) return;
+
+    snap.forEach(child => {
+      const t = child.val();
+      const key = child.key;
+      list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
+          <div>
+            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('tasks/${key}').remove()">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+}
+
+window.editTask = function(key, title, reward, minVip) {
+  document.getElementById('edit-task-key').value = key;
+  document.getElementById('task-title').value = title;
+  document.getElementById('task-reward').value = reward;
+  document.getElementById('task-min-vip').value = minVip;
+  document.getElementById('task-quantity').value = 1; // Default to 1 on edit
+
+  document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
+  document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন';
+  document.getElementById('btn-cancel-task-edit').classList.remove('hidden');
+  showAdminSection('sec-tasks');
+};
+
+window.resetTaskForm = function() {
+  document.getElementById('edit-task-key').value = '';
+  document.getElementById('admin-add-task-form').reset();
+  document.getElementById('task-quantity').value = 1;
+  document.getElementById('task-form-title').innerText = 'টাস্ক তৈরি / ইডিট';
+  document.getElementById('btn-save-task').innerText = 'টাস্ক সেভ করুন';
+  document.getElementById('btn-cancel-task-edit').classList.add('hidden');
+};
+
+// ----------------------------------------------------
+// 5. DEPOSITS & WITHDRAWALS
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -420,7 +509,7 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
 }
 
 // ----------------------------------------------------
-// 5. WITHDRAWALS
+// 6. WITHDRAWALS
 // ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
@@ -534,69 +623,6 @@ window.editGateway = function(key, name, type, number, logo) {
 window.resetGatewayForm = function() {
   document.getElementById('edit-gateway-key').value = '';
   document.getElementById('admin-gateway-form').reset();
-};
-
-// TASKS MANAGEMENT
-document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const editKey = document.getElementById('edit-task-key').value;
-  const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
-
-  const taskData = {
-    title: document.getElementById('task-title').value,
-    reward: parseFloat(document.getElementById('task-reward').value),
-    minVip: minVipVal,
-    isFree: minVipVal === 0
-  };
-
-  if (editKey) {
-    db.ref('tasks/' + editKey).update(taskData).then(() => {
-      alert('টাস্ক সফলভাবে ইডিট করা হয়েছে!');
-      resetTaskForm();
-    });
-  } else {
-    const newRef = db.ref('tasks').push();
-    taskData.id = newRef.key;
-    newRef.set(taskData).then(() => {
-      alert('নতুন টাস্ক সফলভাবে যোগ করা হয়েছে!');
-      resetTaskForm();
-    });
-  }
-});
-
-function loadTasksAdmin() {
-  db.ref('tasks').on('value', snap => {
-    const list = document.getElementById('admin-tasks-list');
-    list.innerHTML = '';
-    if (!snap.exists()) return;
-
-    snap.forEach(child => {
-      const t = child.val();
-      const key = child.key;
-      list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
-          <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
-          <div>
-            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
-            <button class="btn-action-sm btn-danger" onclick="db.ref('tasks/${key}').remove()">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-  });
-}
-
-window.editTask = function(key, title, reward, minVip) {
-  document.getElementById('edit-task-key').value = key;
-  document.getElementById('task-title').value = title;
-  document.getElementById('task-reward').value = reward;
-  document.getElementById('task-min-vip').value = minVip;
-  showAdminSection('sec-tasks');
-};
-
-window.resetTaskForm = function() {
-  document.getElementById('edit-task-key').value = '';
-  document.getElementById('admin-add-task-form').reset();
 };
 
 // SLIDER, WELCOME NOTICE & BROADCAST
