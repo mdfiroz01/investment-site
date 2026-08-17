@@ -10,7 +10,7 @@
   --text-muted: #64748b;
   --border-color: #e2e8f0;
   --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.04);
-  --danger: #ef4444;
+  --danger: #ff4757;
 }
 
 [data-theme="dark"] {
@@ -52,7 +52,7 @@ body {
 }
 
 /* ===================================================
-   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS (FIXED)
+   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS
 =================================================== */
 body.admin-body {
   background: #e2e8f0 !important;
@@ -112,8 +112,8 @@ body.admin-body {
   padding: 13px !important;
   border: none !important;
   border-radius: 12px !important;
-  background: #05b381 !important; /* SOLID EMERALD GREEN */
-  color: #ffffff !important;       /* SOLID WHITE BOLD TEXT */
+  background: #05b381 !important;
+  color: #ffffff !important;
   font-size: 15px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
@@ -128,27 +128,27 @@ body.admin-body {
 }
 
 .btn-secondary {
-  background: #2563eb !important; /* SOLID BLUE */
+  background: #2563eb !important;
   color: #ffffff !important;
 }
 
 .btn-success {
-  background: #10b981 !important; /* SOLID GREEN */
+  background: #10b981 !important;
   color: #ffffff !important;
 }
 
 .btn-danger {
-  background: #ef4444 !important; /* SOLID RED */
+  background: #ef4444 !important;
   color: #ffffff !important;
 }
 
 .btn-info {
-  background: #0284c7 !important; /* SOLID SKY BLUE */
+  background: #0284c7 !important;
   color: #ffffff !important;
 }
 
 .btn-cancel {
-  background: #64748b !important; /* SOLID SLATE GRAY */
+  background: #64748b !important;
   color: #ffffff !important;
 }
 
@@ -208,7 +208,7 @@ body.admin-body {
   border: 1.5px solid var(--primary-color);
 }
 
-/* TOP HEADER */
+/* TOP HEADER & THEME TOGGLE */
 .top-header {
   background: var(--card-bg);
   padding: 14px 20px;
@@ -224,6 +224,24 @@ body.admin-body {
 .header-left { display: flex; align-items: center; gap: 12px; }
 .menu-icon { font-size: 20px; color: var(--text-main); cursor: pointer; }
 .app-logo { font-size: 20px; font-weight: 800; color: var(--primary-color); }
+
+.theme-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+  background: #1e293b;
+  color: #fbbf24;
+}
 
 .notif-wrapper {
   position: relative;
@@ -289,7 +307,7 @@ body.admin-body {
   100% { transform: translateX(-100%); }
 }
 
-/* HOMEPAGE BANNER SLIDER CAROUSEL */
+/* HOMEPAGE BANNER SLIDER CAROUSEL FIX */
 .slider-container-card {
   margin: 0 15px 15px 15px;
   width: calc(100% - 30px);
@@ -315,7 +333,7 @@ body.admin-body {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* WALLET HERO CARD */
+/* WALLET HERO CARD & BREAKDOWN */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -364,6 +382,85 @@ body.admin-body {
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* FLOATING 90-DEGREE SUPPORT FAB WHEEL */
+.fab-support-container {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.fab-main-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(5, 179, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+}
+
+.fab-support-container.open .fab-main-btn {
+  transform: rotate(90deg);
+  background: var(--danger);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+}
+
+.fab-support-menu {
+  position: absolute;
+  bottom: 65px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(15px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-support-container.open .fab-support-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  background: var(--card-bg);
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+  border: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.2s;
+}
+
+.fab-menu-item:hover {
+  transform: scale(1.05);
+}
+
+.fab-menu-item i {
+  font-size: 18px;
+  color: var(--primary-color);
 }
 
 /* CARDS & METRICS */
