@@ -36,7 +36,6 @@ body {
   min-height: 100vh;
 }
 
-/* LOGIN / REGISTER RING AVATAR LOGO */
 .auth-ring-avatar {
   width: 75px;
   height: 75px;
@@ -46,7 +45,15 @@ body {
   object-fit: cover;
 }
 
-/* TOP HEADER & NOTIFICATION BELL */
+.header-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--primary-color);
+}
+
+/* TOP HEADER */
 .top-header {
   background: var(--card-bg);
   padding: 14px 20px;
@@ -59,23 +66,9 @@ body {
   z-index: 100;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.menu-icon {
-  font-size: 20px;
-  color: var(--text-main);
-  cursor: pointer;
-}
-
-.app-logo {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--primary-color);
-}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.menu-icon { font-size: 20px; color: var(--text-main); cursor: pointer; }
+.app-logo { font-size: 20px; font-weight: 800; color: var(--primary-color); }
 
 .notif-wrapper {
   position: relative;
@@ -90,11 +83,7 @@ body {
   z-index: 105;
 }
 
-.notif-icon {
-  font-size: 18px;
-  color: var(--text-main);
-}
-
+.notif-icon { font-size: 18px; color: var(--text-main); }
 .notif-badge-dot {
   position: absolute;
   top: 8px;
@@ -113,24 +102,37 @@ body {
   align-items: flex-start;
 }
 
-/* HOMEPAGE BANNER SLIDER */
-.slider-wrapper {
-  width: 100%;
-  height: 150px;
-  border-radius: 18px;
-  overflow: hidden;
-  position: relative;
+/* SLOW & BOLD SCROLLING NOTICE */
+.notice-board {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  margin: 12px 15px;
+  padding: 10px 15px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--primary-color);
   box-shadow: var(--shadow-light);
+  overflow: hidden;
+  height: 42px;
 }
 
-.slider-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.5s ease-in-out;
+.notice-text {
+  white-space: nowrap;
+  animation: marquee 28s linear infinite; /* SLOWED DOWN TO 28s */
+  line-height: 20px;
+  font-weight: 800;
 }
 
-/* WALLET HERO CARD & VISIBLE CONTRAST BUTTONS */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* WALLET HERO CARD & BREAKDOWN */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -142,6 +144,19 @@ body {
   margin: 0 15px 15px 15px;
   width: calc(100% - 30px);
 }
+
+.wallet-breakdown-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.wallet-breakdown-row p { font-size: 11px; opacity: 0.9; }
+.wallet-breakdown-row strong { font-size: 15px; font-weight: 800; display: block; margin-top: 2px; }
 
 .btn-wallet-dep {
   flex: 1;
@@ -168,35 +183,44 @@ body {
   cursor: pointer;
 }
 
-/* REWARD POP-UP CELEBRATION MODAL */
-.reward-pop-card {
-  text-align: center;
-  padding: 25px 20px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+/* CARDS & METRICS */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 15px;
+  margin-bottom: 15px;
 }
 
-.reward-icon-circle {
-  width: 65px;
-  height: 65px;
-  background: var(--primary-light);
-  border-radius: 50%;
+.metric-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 12px auto;
+  gap: 12px;
+  box-shadow: var(--shadow-light);
 }
 
-.gold-coin-glow {
-  font-size: 32px;
-  color: #f59e0b;
-  animation: bounceGlow 1.5s infinite alternate;
+.metric-card i { font-size: 24px; padding: 10px; border-radius: 12px; }
+.icon-today { background: #e0f2fe; color: #0284c7; }
+.icon-total { background: #f0fdf4; color: #16a34a; }
+.metric-card p { font-size: 11px; color: var(--text-muted); }
+.metric-card h3 { font-size: 18px; font-weight: 800; color: var(--text-main); }
+
+.content-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  margin: 0 15px 15px 15px;
+  padding: 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-light);
+  width: calc(100% - 30px);
 }
 
-@keyframes bounceGlow {
-  from { transform: scale(1); filter: drop-shadow(0 0 2px #f59e0b); }
-  to { transform: scale(1.15); filter: drop-shadow(0 0 10px #f59e0b); }
-}
+.card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.card-title h4 { font-size: 15px; color: var(--text-main); }
 
 /* SIDEBAR DRAWER */
 .sidebar-overlay {
@@ -243,35 +267,7 @@ body {
 }
 .sidebar-menu li i { color: var(--primary-color); font-size: 18px; }
 
-/* NOTICE BOARD */
-.notice-board {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  margin: 12px 15px;
-  padding: 10px 15px;
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  color: var(--primary-color);
-  box-shadow: var(--shadow-light);
-  overflow: hidden;
-  height: 42px;
-}
-
-.notice-text {
-  white-space: nowrap;
-  animation: marquee 5s linear infinite;
-  line-height: 20px;
-}
-
-@keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-
-/* BKASH STYLE PROFILE & BALANCE CARD */
+/* BKASH STYLE PROFILE CARD */
 .bkash-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   margin: 0 15px 15px 15px;
@@ -333,101 +329,6 @@ body {
 .menu-card:active { transform: scale(0.95); }
 .menu-card i { font-size: 22px; color: var(--primary-color); margin-bottom: 6px; }
 .menu-card span { display: block; font-size: 11px; color: var(--text-main); font-weight: 600; }
-
-/* ACTIVE PLAN HERO CARD ON DASHBOARD */
-.active-plan-banner {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-}
-
-.active-plan-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.active-plan-header h4 { font-size: 16px; font-weight: 800; color: #fff; }
-
-.plan-live-tag {
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 10px;
-  font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 12px;
-}
-
-.active-plan-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 12px;
-  border-radius: 12px;
-}
-
-.active-plan-metrics p { font-size: 11px; opacity: 0.85; }
-.active-plan-metrics strong { font-size: 14px; font-weight: 800; display: block; margin-top: 2px; }
-
-/* METRICS & CONTENT CARDS */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 0 15px;
-  margin-bottom: 15px;
-}
-
-.metric-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-light);
-}
-
-.metric-card i { font-size: 24px; padding: 10px; border-radius: 12px; }
-.icon-today { background: #e0f2fe; color: #0284c7; }
-.icon-total { background: #f0fdf4; color: #16a34a; }
-.metric-card p { font-size: 11px; color: var(--text-muted); }
-.metric-card h3 { font-size: 18px; font-weight: 800; color: var(--text-main); }
-
-.content-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  margin: 0 15px 15px 15px;
-  padding: 18px;
-  border-radius: 18px;
-  box-shadow: var(--shadow-light);
-  width: calc(100% - 30px);
-}
-
-.card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.card-title h4 { font-size: 15px; color: var(--text-main); }
-
-.live-dot { color: var(--danger); animation: pulse 1.2s infinite; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
-.badge-live { background: #fee2e2; color: var(--danger); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 10px; }
-
-.live-withdraw-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 12px;
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 /* PLAN CARDS */
 .plan-page-header { text-align: center; margin: 15px 0 20px 0; }
