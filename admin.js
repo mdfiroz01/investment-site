@@ -96,7 +96,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT
+// 2. USER MANAGEMENT & FULL INFO MODAL
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -118,9 +118,9 @@ function loadUsersAdmin() {
           <td>৳${totalBal.toFixed(2)}</td>
           <td>VIP ${u.vipLevel || 0}</td>
           <td>
-            <button onclick="viewFullUserInfo('${uid}')" style="background:#0284c7; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Full Info</button>
-            <button onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})" style="background:#3b82f6; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Edit</button>
-            <button onclick="toggleBlockUser('${uid}', ${!isBlocked})" style="background:${isBlocked ? '#10b981' : '#ef4444'}; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">
+            <button onclick="viewFullUserInfo('${uid}')" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Full Info</button>
+            <button onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Edit</button>
+            <button onclick="toggleBlockUser('${uid}', ${!isBlocked})" style="background:${isBlocked ? '#10b981' : '#ef4444'}; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">
               ${isBlocked ? 'Unblock' : 'Block'}
             </button>
           </td>
@@ -148,7 +148,7 @@ window.viewFullUserInfo = function(uid) {
       <div><b>উইথড্র ফি (%):</b> ${u.withdrawChargePercent || 5}%</div>
       <div><b>নিজের রেফার কোড:</b> ${u.refCode || 'N/A'}</div>
       <div><b>যার রেফারে জয়েন করেছে:</b> ${u.referredBy || 'কারো রেফারে নয়'}</div>
-      <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
+      <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}; font-weight:bold;">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
     `;
 
     document.getElementById('user-info-modal').classList.remove('hidden');
@@ -200,7 +200,7 @@ window.toggleBlockUser = function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN EDIT & WITHDRAW CHARGE % PER PLAN
+// 3. VIP PLAN EDIT & REFERRAL/WITHDRAW CHARGE %
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -244,7 +244,7 @@ function loadPlansAdmin() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div>
             <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
-            <small style="color:var(--primary-color)">[Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
+            <small style="color:#05b381">[Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
             ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
           </div>
           <div>
@@ -303,7 +303,7 @@ function loadDepositsAdmin() {
       const d = child.val();
       if (d.status === 'pending') {
         pendingCount++;
-        const targetText = d.targetPlan && d.targetPlan !== 'wallet' ? `<br><small style="color:var(--primary-color)">Target: ${d.targetPlan.planName}</small>` : '';
+        const targetText = d.targetPlan && d.targetPlan !== 'wallet' ? `<br><small style="color:#05b381">Target: ${d.targetPlan.planName}</small>` : '';
         
         tbody.innerHTML += `
           <tr>
@@ -327,7 +327,6 @@ function loadDepositsAdmin() {
   });
 }
 
-// APPROVE DEPOSIT WITH DIRECT PLAN ACTIVATION AND REFERRAL COMMISSION
 window.approveDeposit = function(depId, uid, amount) {
   db.ref('deposits/' + depId).once('value', depSnap => {
     if (!depSnap.exists()) return;
@@ -349,7 +348,6 @@ window.approveDeposit = function(depId, uid, amount) {
         updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
         activatedPlanName = target.planName;
 
-        // Save active plan's withdraw charge percent onto user
         db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value', pSnap => {
           if (pSnap.exists()) {
             pSnap.forEach(p => {
@@ -434,7 +432,7 @@ function loadWithdrawsAdmin() {
             <td>${w.email || 'User'}</td>
             <td>${w.method}</td>
             <td>${w.walletNumber}</td>
-            <td>৳${w.amount} <small style="color:var(--text-muted)">(Net: ৳${w.netAmount || w.amount})</small></td>
+            <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
             <td>
               <button onclick="db.ref('withdraws/${child.key}/status').set('approved')" style="background:#10b981; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Approve</button>
               <button onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})" style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Reject</button>
