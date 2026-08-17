@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -14,14 +15,14 @@
 </head>
 <body>
 
-  <!-- AUTH MODAL CONTAINER -->
+  <!-- AUTH MODAL -->
   <div id="auth-container" class="modal-overlay">
     <div class="modal-content">
       
-      <!-- 1. LOGIN FORM -->
+      <!-- LOGIN FORM -->
       <form id="login-form">
         <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
+          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">লগইন করুন</h2>
         <div class="form-group">
@@ -42,7 +43,7 @@
         </p>
       </form>
 
-      <!-- 2. REGISTER FORM -->
+      <!-- REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
@@ -78,7 +79,7 @@
         </p>
       </form>
 
-      <!-- 3. FORGOT / RESET PASSWORD FORM -->
+      <!-- FORGOT PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="auth-ring-avatar" alt="Logo">
@@ -100,7 +101,7 @@
     </div>
   </div>
 
-  <!-- POP-UP WELCOME NOTICE MODAL -->
+  <!-- WELCOME NOTICE MODAL -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align:center;">
       <div id="welcome-img-box"></div>
@@ -115,7 +116,10 @@
   <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
   <div id="sidebar-drawer" class="sidebar-drawer">
     <div class="sidebar-header">
-      <h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="header-logo-img" alt="Logo">
+        <h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3>
+      </div>
       <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeSidebar()"></i>
     </div>
     <ul class="sidebar-menu">
@@ -157,7 +161,10 @@
     <header class="top-header">
       <div class="header-left">
         <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
-        <h3 class="app-logo">EarnerApp</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg" class="header-logo-img" alt="Logo">
+          <h3 class="app-logo">EarnerApp</h3>
+        </div>
       </div>
       <div class="notif-wrapper" onclick="openNotifModal()">
         <i class="fa-solid fa-bell notif-icon"></i>
@@ -165,7 +172,7 @@
       </div>
     </header>
 
-    <!-- SCROLLING NOTICE -->
+    <!-- SCROLLING NOTICE (SLOW & BOLD) -->
     <div class="notice-board">
       <i class="fa-solid fa-bullhorn"></i>
       <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
@@ -211,7 +218,7 @@
       <!-- ACTIVE VIP PLAN BANNER CARD -->
       <div id="dashboard-active-plan-card" class="content-card"></div>
 
-      <!-- INCOME METRICS -->
+      <!-- INCOME & DEPOSIT METRICS -->
       <div class="dashboard-grid">
         <div class="metric-card">
           <i class="fa-solid fa-calendar-day icon-today"></i>
@@ -249,18 +256,23 @@
 
     </div>
 
-    <!-- TAB 2: WALLET PAGE -->
+    <!-- TAB 2: WALLET PAGE (SEPARATE DEPOSIT & INCOME BALANCES) -->
     <div id="tab-wallet" class="tab-content">
       <div class="plan-page-header">
         <h2>মাই ওয়ালেট</h2>
-        <p>ব্যালেন্স দেখুন, ডিপোজিট করুন এবং উইথড্র রিকোয়েস্ট পাঠান</p>
+        <p>ডিপোজিট ও ইনকাম ব্যালেন্স দেখুন এবং লেনদেন করুন</p>
       </div>
 
       <!-- WALLET HERO BALANCE CARD -->
       <div class="wallet-hero-card">
-        <p style="font-size:12px; opacity:0.9;">আপনার বর্তমান ওয়ালেট ব্যালেন্স</p>
-        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:8px 0; color:#ffffff;">৳০.০০</h1>
+        <p style="font-size:12px; opacity:0.9;">মোট ওয়ালেট ব্যালেন্স</p>
+        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:6px 0; color:#ffffff;">৳০.০০</h1>
         
+        <div class="wallet-breakdown-row">
+          <div><p>ডিপোজিট ব্যালেন্স</p><strong id="wallet-dep-bal">৳০.০০</strong></div>
+          <div style="border-left:1px solid rgba(255,255,255,0.3); padding-left:10px;"><p>ইনকাম ব্যালেন্স</p><strong id="wallet-inc-bal">৳০.০০</strong></div>
+        </div>
+
         <div style="display:flex; gap:12px; margin-top:16px;">
           <button class="btn-wallet-dep" onclick="switchTab('tab-deposit')">
             <i class="fa-solid fa-wallet"></i> ডিপোজিট
@@ -281,7 +293,7 @@
     <div id="tab-vip" class="tab-content">
       <div class="plan-page-header">
         <h2>প্রিমিয়াম প্ল্যানসমূহ</h2>
-        <p>আপনার পছন্দের প্ল্যানটি বেছে নিন এবং আয় শুরু করুন</p>
+        <p>প্ল্যান এক্টিভ করতে ডিপোজিট ব্যালেন্স ব্যবহার করতে হবে</p>
       </div>
 
       <div id="vip-plans-container" class="plans-wrapper"></div>
@@ -296,7 +308,7 @@
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
-    <!-- TAB 5: DEPOSIT -->
+    <!-- TAB 5: DEPOSIT (WITH DIRECT PLAN ACTIVATION OPTION) -->
     <div id="tab-deposit" class="tab-content">
       
       <!-- STEP 1: METHOD SELECTION -->
@@ -305,7 +317,7 @@
           <p>ব্যালেন্স যোগ করুন ✨</p>
           <h1>Deposit</h1>
           <sub>পেমেন্ট মেথড সিলেক্ট করে Send Money করে balance add করুন।</sub>
-          <div class="pill-badge"><i class="fa-solid fa-wallet"></i> Total <span id="dep-total-bal">৳0.00</span></div>
+          <div class="pill-badge"><i class="fa-solid fa-wallet"></i> Dep Balance: <span id="dep-total-bal">৳0.00</span></div>
         </div>
 
         <div class="instruction-card">
@@ -320,7 +332,7 @@
             <div class="step-row"><span class="step-num">1</span> নিচ থেকে আপনার পছন্দের payment method সিলেক্ট করুন।</div>
             <div class="step-row"><span class="step-num">2</span> পরবর্তী পেজ থেকে নম্বর কপি করে Send Money করুন।</div>
             <div class="step-row"><span class="step-num">3</span> Amount এবং Transaction ID বসিয়ে submit করুন।</div>
-            <div class="step-row"><span class="step-num">4</span> যাচাইয়ের পর balance যোগ হবে। সাধারণত ১-৫ মিনিট লাগে।</div>
+            <div class="step-row"><span class="step-num">4</span> যাচাইয়ের পর এডমিন এপ্রুভ করলে ব্যালেন্স যোগ হবে।</div>
           </div>
         </div>
 
@@ -335,21 +347,27 @@
         </div>
       </div>
 
-      <!-- STEP 2: AMOUNT SELECTION -->
+      <!-- STEP 2: AMOUNT & TARGET PLAN SELECTION -->
       <div id="dep-step-2" class="hidden">
         <div class="deposit-hero-banner">
-          <p>ডিপোজিট পরিমাণ ✨</p>
-          <h1>Amount</h1>
-          <sub>আপনার পছন্দের amount সিলেক্ট করুন অথবা নিজে টাইপ করুন।</sub>
-          <div class="pill-badge"><i class="fa-solid fa-money-bill-wave"></i> Minimum ৳500</div>
+          <p>ডিপোজিট পরিমাণ ও প্ল্যান ✨</p>
+          <h1>Amount & Plan</h1>
+          <sub>ডাইরেক্ট প্ল্যান এক্টিভ করার জন্য প্ল্যান সিলেক্ট করতে পারেন</sub>
         </div>
 
         <div class="content-card">
           <h4 id="selected-method-title">মেথড</h4>
-          <span style="font-size:11px; color:var(--text-muted)">পরিমাণ সিলেক্ট করুন অথবা টাইপ করুন</span>
+          <span style="font-size:11px; color:var(--text-muted)">ডিপোজিট টাইপ সিলেক্ট করুন</span>
         </div>
 
         <div class="content-card">
+          <div class="form-group">
+            <label>ডিপোজিটের উদ্দেশ্য (Target Plan)</label>
+            <select id="dep-target-plan-select" class="form-control" onchange="onDepositPlanTargetChange(this)">
+              <option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>
+            </select>
+          </div>
+
           <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">পরিমাণ (৳)</label>
           <input type="number" id="input-dep-amount" class="form-control" placeholder="সর্বনিম্ন 500" value="500">
 
@@ -361,10 +379,6 @@
             <div class="amount-btn" onclick="setQuickAmount(2000, this)">2,000</div>
             <div class="amount-btn" onclick="setQuickAmount(5000, this)">5,000</div>
             <div class="amount-btn" onclick="setQuickAmount(10000, this)">10,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(20000, this)">20,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(25000, this)">25,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(30000, this)">30,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(50000, this)">50,000</div>
           </div>
         </div>
 
@@ -379,7 +393,6 @@
           <p>ডিপোজিট ভেরিফাই ✨</p>
           <h1>Verify</h1>
           <sub>Send Money করার পর Transaction ID দিয়ে request submit করুন।</sub>
-          <div class="pill-badge"><i class="fa-solid fa-shield-halved"></i> Secure Submit</div>
         </div>
 
         <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
@@ -419,11 +432,11 @@
 
     </div>
 
-    <!-- TAB 6: WITHDRAW PAGE -->
+    <!-- TAB 6: WITHDRAW PAGE (DYNAMIC CHARGE & LIMIT) -->
     <div id="tab-withdraw" class="tab-content">
       <div class="plan-page-header">
         <h2>টাকা উত্তোলন করুন</h2>
-        <p>আপনার অর্জিত ব্যালেন্স সরাসরি বিকাশ, নগদ বা রকেটে উত্তোলন করুন</p>
+        <p id="withdraw-rules-summary">সর্বনিম্ন উত্তোলন ও প্রসেসিং চার্জ প্রযোজ্য</p>
       </div>
 
       <div class="content-card">
@@ -438,8 +451,14 @@
           </div>
           <div class="form-group">
             <label>উত্তোলনের পরিমাণ (৳)</label>
-            <input type="number" id="wit-amount" class="form-control" required placeholder="সর্বনিম্ন ৳২০০">
+            <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()">
           </div>
+
+          <div id="wit-fee-preview-box" style="background:#f1f5f9; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
+            <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
+            <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
+          </div>
+
           <button type="submit" class="btn-action">উত্তোলন সাবমিট করুন</button>
         </form>
       </div>
