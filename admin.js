@@ -96,7 +96,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT & FULL INFO MODAL
+// 2. USER MANAGEMENT
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -118,9 +118,9 @@ function loadUsersAdmin() {
           <td>৳${totalBal.toFixed(2)}</td>
           <td>VIP ${u.vipLevel || 0}</td>
           <td>
-            <button onclick="viewFullUserInfo('${uid}')" style="background:#0284c7; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Full Info</button>
-            <button onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Edit</button>
-            <button onclick="toggleBlockUser('${uid}', ${!isBlocked})" style="background:${isBlocked ? '#10b981' : '#ef4444'}; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">
+            <button class="btn-action-sm btn-info" onclick="viewFullUserInfo('${uid}')">Full Info</button>
+            <button class="btn-action-sm btn-secondary" onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})">Edit</button>
+            <button class="btn-action-sm ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlockUser('${uid}', ${!isBlocked})">
               ${isBlocked ? 'Unblock' : 'Block'}
             </button>
           </td>
@@ -248,8 +248,8 @@ function loadPlansAdmin() {
             ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
           </div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
-            <button style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('plans/${key}').remove()">Delete</button>
+            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
@@ -312,8 +312,8 @@ function loadDepositsAdmin() {
             <td>৳${d.amount}</td>
             <td>${d.trxId}</td>
             <td>
-              <button onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})" style="background:#10b981; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Approve</button>
-              <button onclick="db.ref('deposits/${child.key}/status').set('rejected')" style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Reject</button>
+              <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})">Approve</button>
+              <button class="btn-action-sm btn-danger" onclick="db.ref('deposits/${child.key}/status').set('rejected')">Reject</button>
             </td>
           </tr>
         `;
@@ -363,7 +363,7 @@ window.approveDeposit = function(depId, uid, amount) {
 
       db.ref().update(updates).then(() => {
         if (activatedPlanName && user.referredBy) {
-          processReferralCommission(user.referredBy, activatedPlanPrice, activatedPlanName);
+          processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', activatedPlanPrice, activatedPlanName);
         }
 
         alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে!');
@@ -372,7 +372,7 @@ window.approveDeposit = function(depId, uid, amount) {
   });
 };
 
-function processReferralCommission(referrerRefCode, planPrice, planName) {
+function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, planPrice, planName) {
   db.ref('users').orderByChild('refCode').equalTo(referrerRefCode).once('value', snap => {
     if (!snap.exists()) return;
 
@@ -399,6 +399,17 @@ function processReferralCommission(referrerRefCode, planPrice, planName) {
               amount: commBonus,
               title: `Referral Bonus (${commPercent}%) for ${planName}`,
               status: 'approved',
+              timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            const refCommRef = db.ref('referral_commissions/' + referrerUid).push();
+            refCommRef.set({
+              buyerName: buyerName || 'User',
+              buyerRefCode: buyerRefCode || 'N/A',
+              planName: planName,
+              planPrice: planPrice,
+              commissionPercent: commPercent,
+              commissionAmount: commBonus,
               timestamp: firebase.database.ServerValue.TIMESTAMP
             });
           });
@@ -434,8 +445,8 @@ function loadWithdrawsAdmin() {
             <td>${w.walletNumber}</td>
             <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
             <td>
-              <button onclick="db.ref('withdraws/${child.key}/status').set('approved')" style="background:#10b981; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Approve</button>
-              <button onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})" style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">Reject</button>
+              <button class="btn-action-sm btn-success" onclick="db.ref('withdraws/${child.key}/status').set('approved')">Approve</button>
+              <button class="btn-action-sm btn-danger" onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})">Reject</button>
             </td>
           </tr>
         `;
@@ -502,8 +513,8 @@ function loadGatewaysAdmin() {
             <div><b>${g.name}</b> (${g.type})<br><small>${g.number}</small></div>
           </div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editGateway('${key}', '${g.name}', '${g.type}', '${g.number}', '${g.logoUrl}')">Edit</button>
-            <button style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('payment_gateways/${key}').remove()">Delete</button>
+            <button class="btn-action-sm btn-secondary" onclick="editGateway('${key}', '${g.name}', '${g.type}', '${g.number}', '${g.logoUrl}')">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('payment_gateways/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
@@ -566,8 +577,8 @@ function loadTasksAdmin() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
-            <button style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('tasks/${key}').remove()">Delete</button>
+            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('tasks/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
@@ -607,7 +618,7 @@ function loadSlidersAdmin() {
       list.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0;">
           <img src="${child.val().url}" style="width:60px; height:35px; border-radius:6px; object-fit:cover;">
-          <button style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:10px; cursor:pointer;" onclick="db.ref('slider/${child.key}').remove()">Delete</button>
+          <button class="btn-action-sm btn-danger" onclick="db.ref('slider/${child.key}').remove()">Delete</button>
         </div>
       `;
     });
