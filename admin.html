@@ -40,14 +40,15 @@
     </div>
     <ul class="sidebar-menu">
       <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
+      <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ফুল ইনফো</li>
+      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ও রেফার কমিশন %</li>
+      <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ইডিটর</li>
       <li onclick="showAdminSection('sec-gateways')"><i class="fa-solid fa-credit-card"></i> আনলিমিটেড পেমেন্ট মেথড</li>
-      <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ব্যান</li>
-      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ও কাস্টম ব্যাজ</li>
-      <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ইডিটর (লেভেল ফিল্টার)</li>
-      <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার ইমেজর</li>
       <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
       <li onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
-      <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
+      <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট লোগো ও উইথড্র ফি</li>
+      <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার</li>
+      <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
       <li onclick="showAdminSection('sec-notices')"><i class="fa-solid fa-bullhorn"></i> নোটিশ ও ব্রডকাস্ট</li>
       <li onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
     </ul>
@@ -74,79 +75,22 @@
       </div>
     </div>
 
-    <!-- SECTION 2: UNLIMITED PAYMENT GATEWAYS CREATION -->
-    <div id="sec-gateways" class="admin-section hidden content-card">
-      <h3 id="gateway-form-title"><i class="fa-solid fa-credit-card" style="color:var(--primary-color)"></i> আনলিমিটেড পেমেন্ট মেথড তৈরি ও এড</h3>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">বিকাশ, নগদ, রকেট, উপায়, ইউএসডিটি ইত্যাদি মেথড যোগ করুন</p>
-
-      <form id="admin-gateway-form" style="display:grid; gap:10px;">
-        <input type="hidden" id="edit-gateway-key" value="">
-        <input type="text" id="gateway-name" class="form-control" placeholder="মেথডের নাম (e.g. bKash / Nagad / USDT)" required>
-        
-        <select id="gateway-type" class="form-control" required>
-          <option value="both">ডিপোজিট ও উইথড্র উভয়ই</option>
-          <option value="deposit">শুধু ডিপোজিট</option>
-          <option value="withdraw">শুধু উইথড্র</option>
-        </select>
-
-        <input type="text" id="gateway-number" class="form-control" placeholder="একাউন্ট নম্বর / ওয়ালেট অ্যাড্রেস" required>
-        <input type="url" id="gateway-logo" class="form-control" placeholder="মেথডের লোগো ছবি URL (Logo Image URL)" required>
-
-        <button type="submit" id="btn-save-gateway" class="btn-action">মেথড সেভ করুন</button>
-        <button type="button" id="btn-cancel-gateway" class="btn-action hidden" style="background:#64748b;" onclick="resetGatewayForm()">বাতিল করুন</button>
-      </form>
-
-      <h4 style="margin-top:15px;">বিদ্যমান পেমেন্ট মেথডসমূহ:</h4>
-      <div id="admin-gateways-list" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- SECTION 3: HOMEPAGE SLIDER MANAGEMENT -->
-    <div id="sec-slider" class="admin-section hidden content-card">
-      <h3><i class="fa-solid fa-images" style="color:var(--primary-color)"></i> ড্যাশবোর্ড স্লাইডার ব্যানার</h3>
-      <div class="form-group" style="margin-top:10px;">
-        <input type="url" id="admin-slider-url-input" class="form-control" placeholder="স্লাইডার ব্যানার ইমেজ URL (Image URL)">
-        <button class="btn-action" style="margin-top:8px;" onclick="addSliderBannerImage()">স্লাইডার ইমেজ এড করুন</button>
-      </div>
-      <h4 style="margin-top:12px;">বিদ্যমান স্লাইডার ব্যানার:</h4>
-      <div id="admin-sliders-list" style="margin-top:8px;"></div>
-    </div>
-
-    <!-- SECTION 4: POP-UP WELCOME NOTICE -->
-    <div id="sec-welcome-notice" class="admin-section hidden content-card">
-      <h3><i class="fa-solid fa-window-restore" style="color:var(--primary-color)"></i> পপ-আপ ওয়েলকাম নোটিশ</h3>
-      <div class="form-group" style="margin-top:10px;"><label>পপ-আপ টাইটেল</label><input type="text" id="welcome-title-input" class="form-control" placeholder="e.g. স্বাগতম!"></div>
-      <div class="form-group"><label>পপ-আপ বিবরণ / মেসেজ</label><textarea id="welcome-text-input" class="form-control" rows="3" placeholder="পপ-আপ নোটিশ বিবরণ..."></textarea></div>
-      <div class="form-group"><label>পপ-আপ ছবি URL (ঐচ্ছিক)</label><input type="url" id="welcome-image-input" class="form-control" placeholder="https://example.com/banner.jpg"></div>
-      
-      <div class="form-group" style="background:#f1f5f9; padding:10px; border-radius:10px;">
-        <label><b>ইনলাইন বাটন সেটিংস (Inline Button)</b></label>
-        <input type="text" id="welcome-btn-text-input" class="form-control" placeholder="বাটনের নাম (e.g. Telegram এ যুক্ত হন)" style="margin-bottom:6px;">
-        <input type="url" id="welcome-btn-url-input" class="form-control" placeholder="বাটনের লিংক/URL (e.g. https://t.me/yourgroup)">
-      </div>
-
-      <div style="margin-bottom:15px; font-size:13px;">
-        <label><input type="checkbox" id="welcome-enable-toggle" checked> পপ-আপ নোটিশ অন (Enable) রাখুন</label>
-      </div>
-
-      <button class="btn-action" onclick="saveWelcomePopUpNotice()">পপ-আপ নোটিশ সেভ করুন</button>
-    </div>
-
-    <!-- SECTION 5: USER MANAGEMENT -->
+    <!-- SECTION 2: USER MANAGEMENT WITH FULL INFO -->
     <div id="sec-users" class="admin-section hidden content-card">
-      <h3><i class="fa-solid fa-users" style="color:var(--primary-color)"></i> ইউজার ম্যানেজমেন্ট ও ব্লক/ব্যান</h3>
+      <h3><i class="fa-solid fa-users" style="color:var(--primary-color)"></i> ইউজার ম্যানেজমেন্ট ও তথ্য</h3>
       <div class="table-responsive">
         <table>
           <thead>
-            <tr><th>নাম</th><th>ব্যালেন্স</th><th>VIP</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr>
+            <tr><th>ইউজার</th><th>ব্যালেন্স</th><th>VIP</th><th>অ্যাকশন</th></tr>
           </thead>
           <tbody id="admin-users-table"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- SECTION 6: VIP PLAN MANAGEMENT WITH CUSTOM RIBBON BADGE -->
+    <!-- SECTION 3: VIP PLAN MANAGEMENT WITH REFERRAL COMMISSION % -->
     <div id="sec-plans" class="admin-section hidden content-card">
-      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:var(--primary-color)"></i> VIP প্ল্যান তৈরি / ইডিট</h3>
+      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:var(--primary-color)"></i> VIP প্ল্যান ও রেফার কমিশন % সেটিংস</h3>
       
       <form id="admin-add-plan-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
         <input type="hidden" id="edit-plan-key" value="">
@@ -157,7 +101,8 @@
         <input type="number" id="plan-duration" placeholder="মেয়াদ (দিন)" class="form-control" required>
         <input type="number" id="plan-vip-level" placeholder="VIP লেভেল (1, 2...)" class="form-control" required>
         
-        <input type="text" id="plan-badge-text" placeholder="কাস্টম রিবন ব্যাজ (e.g. POPULAR, HOT DEAL)" class="form-control" style="grid-column: span 2;">
+        <input type="number" step="0.1" id="plan-ref-commission" placeholder="রেফার কমিশন % (e.g. 10)" class="form-control" style="grid-column: span 2;" required value="10">
+        <input type="text" id="plan-badge-text" placeholder="কাস্টম রিবন ব্যাজ (e.g. POPULAR, HOT)" class="form-control" style="grid-column: span 2;">
 
         <div style="grid-column: span 2; display:flex; gap:20px; font-size:13px;">
           <label><input type="checkbox" id="plan-is-soldout"> Sold Out মার্ক করুন</label>
@@ -171,29 +116,57 @@
       <div id="admin-plans-list" style="margin-top:10px;"></div>
     </div>
 
-    <!-- SECTION 7: TASK CREATION WITH EXACT LEVEL SELECTION -->
+    <!-- SECTION 4: UNLIMITED PAYMENT GATEWAYS -->
+    <div id="sec-gateways" class="admin-section hidden content-card">
+      <h3 id="gateway-form-title"><i class="fa-solid fa-credit-card" style="color:var(--primary-color)"></i> পেমেন্ট মেথড তৈরি ও এড</h3>
+      <form id="admin-gateway-form" style="display:grid; gap:10px; margin-top:10px;">
+        <input type="hidden" id="edit-gateway-key" value="">
+        <input type="text" id="gateway-name" class="form-control" placeholder="মেথডের নাম (e.g. bKash / USDT)" required>
+        <select id="gateway-type" class="form-control" required>
+          <option value="both">ডিপোজিট ও উইথড্র উভয়ই</option>
+          <option value="deposit">শুধু ডিপোজিট</option>
+          <option value="withdraw">শুধু উইথড্র</option>
+        </select>
+        <input type="text" id="gateway-number" class="form-control" placeholder="একাউন্ট নম্বর / ওয়ালেট অ্যাড্রেস" required>
+        <input type="url" id="gateway-logo" class="form-control" placeholder="লোগো ছবি URL" required>
+
+        <button type="submit" id="btn-save-gateway" class="btn-action">মেথড সেভ করুন</button>
+      </form>
+      <div id="admin-gateways-list" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- SECTION 5: APP LOGO, MIN WITHDRAW & CHARGE SETTINGS -->
+    <div id="sec-settings" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-gears" style="color:var(--primary-color)"></i> লোগো, উইথড্র ফি ও লিমিট সেটিং</h3>
+      <div class="form-group" style="margin-top:10px;">
+        <label>সাইটের লোগো ছবি URL (Site Logo URL)</label>
+        <input type="url" id="cfg-site-logo" class="form-control" placeholder="https://example.com/logo.png">
+      </div>
+      <div class="form-group">
+        <label>সর্বনিম্ন উত্তোলন লিমিট (৳)</label>
+        <input type="number" id="cfg-min-withdraw" class="form-control" placeholder="200" value="200">
+      </div>
+      <div class="form-group">
+        <label>উত্তোলন প্রসেসিং চার্জ (%)</label>
+        <input type="number" step="0.1" id="cfg-withdraw-charge" class="form-control" placeholder="5" value="5">
+      </div>
+      <button class="btn-action" onclick="saveSystemSettings()">সেটিংস সেভ করুন</button>
+    </div>
+
+    <!-- SECTION 6: TASK CREATION -->
     <div id="sec-tasks" class="admin-section hidden content-card">
       <h3 id="task-form-title"><i class="fa-solid fa-list-check" style="color:var(--primary-color)"></i> টাস্ক তৈরি / ইডিট</h3>
-      
       <form id="admin-add-task-form" style="display: grid; gap: 10px; margin-top: 15px;">
         <input type="hidden" id="edit-task-key" value="">
         <input type="text" id="task-title" placeholder="টাস্ক শিরোনাম" class="form-control" required>
         <input type="number" id="task-reward" placeholder="রিওয়ার্ড (৳)" class="form-control" required>
-        
-        <div>
-          <label style="font-size:12px; color:var(--text-muted);">নির্দিষ্ট VIP লেভেল (যে লেভেলে টাস্কটি শো হবে)</label>
-          <input type="number" id="task-min-vip" placeholder="লেভেল (0 = ফ্রি, 1 = VIP 1, 2 = VIP 2...)" class="form-control" required value="0">
-        </div>
-
+        <input type="number" id="task-min-vip" placeholder="লেভেল (0 = ফ্রি, 1 = VIP 1...)" class="form-control" required value="0">
         <button type="submit" id="btn-save-task" class="btn-action">টাস্ক সেভ করুন</button>
-        <button type="button" id="btn-cancel-task-edit" class="btn-action hidden" style="background:#64748b;" onclick="resetTaskForm()">বাতিল করুন</button>
       </form>
-
-      <h4 style="margin-top:15px;">বিদ্যমান টাস্কসমূহ:</h4>
       <div id="admin-tasks-list" style="margin-top:10px;"></div>
     </div>
 
-    <!-- SECTION 8: DEPOSITS MANAGEMENT -->
+    <!-- SECTION 7: DEPOSITS MANAGEMENT -->
     <div id="sec-deposits" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> পেন্ডিং ডিপোজিট রিকোয়েস্ট</h3>
       <div class="table-responsive">
@@ -206,7 +179,7 @@
       </div>
     </div>
 
-    <!-- SECTION 9: WITHDRAWALS MANAGEMENT -->
+    <!-- SECTION 8: WITHDRAWALS MANAGEMENT -->
     <div id="sec-withdraws" class="admin-section hidden content-card">
       <h3><i class="fa-solid fa-money-bill-transfer" style="color:var(--primary-color)"></i> পেন্ডিং উত্তোলন রিকোয়েস্ট</h3>
       <div class="table-responsive">
@@ -219,24 +192,60 @@
       </div>
     </div>
 
-    <!-- SECTION 10: MARQUEE NOTICE & PUSH NOTIFICATIONS -->
-    <div id="sec-notices" class="admin-section hidden content-card">
-      <h3><i class="fa-solid fa-bullhorn" style="color:var(--primary-color)"></i> নোটিশ ও পুশ নোটিফিকেশন ব্রডকাস্ট</h3>
-      
+    <!-- SECTION 9: SLIDER MANAGEMENT -->
+    <div id="sec-slider" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-images" style="color:var(--primary-color)"></i> ড্যাশবোর্ড স্লাইডার ইমেজর</h3>
       <div class="form-group" style="margin-top:10px;">
-        <label><b>স্ক্রোলিং মার্কিউ নোটিশ টেক্সট</b></label>
-        <input type="text" id="admin-notice-input" class="form-control" placeholder="এখানে ড্যাশবোর্ড নোটিশ লিখুন">
-        <button class="btn-action" style="margin-top:8px;" onclick="saveMarqueeNotice()">মার্কিউ নোটিশ আপডেট করুন</button>
+        <input type="url" id="admin-slider-url-input" class="form-control" placeholder="স্লাইডার ব্যানার ইমেজ URL">
+        <button class="btn-action" style="margin-top:8px;" onclick="addSliderBannerImage()">স্লাইডার ইমেজ এড করুন</button>
+      </div>
+      <div id="admin-sliders-list" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- SECTION 10: WELCOME NOTICE & BROADCAST -->
+    <div id="sec-welcome-notice" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-window-restore" style="color:var(--primary-color)"></i> পপ-আপ ওয়েলকাম নোটিশ</h3>
+      <div class="form-group" style="margin-top:10px;"><label>টাইটেল</label><input type="text" id="welcome-title-input" class="form-control"></div>
+      <div class="form-group"><label>বিবরণ</label><textarea id="welcome-text-input" class="form-control" rows="3"></textarea></div>
+      <div class="form-group"><label>ছবি URL</label><input type="url" id="welcome-image-input" class="form-control"></div>
+      <div class="form-group" style="background:#f1f5f9; padding:10px; border-radius:10px;">
+        <label><b>ইনলাইন বাটন সেটিংস</b></label>
+        <input type="text" id="welcome-btn-text-input" class="form-control" placeholder="বাটনের নাম" style="margin-bottom:6px;">
+        <input type="url" id="welcome-btn-url-input" class="form-control" placeholder="বাটনের লিংক/URL">
+      </div>
+      <div style="margin-bottom:15px; font-size:13px;"><label><input type="checkbox" id="welcome-enable-toggle" checked> অন রাখুন</label></div>
+      <button class="btn-action" onclick="saveWelcomePopUpNotice()">সেভ করুন</button>
+    </div>
+
+    <!-- SECTION 11: MARQUEE & BROADCAST -->
+    <div id="sec-notices" class="admin-section hidden content-card">
+      <h3><i class="fa-solid fa-bullhorn" style="color:var(--primary-color)"></i> নোটিশ ও পুশ নোটিফিকেশন</h3>
+      <div class="form-group" style="margin-top:10px;">
+        <label><b>স্ক্রোলিং নোটিশ টেক্সট</b></label>
+        <input type="text" id="admin-notice-input" class="form-control">
+        <button class="btn-action" style="margin-top:8px;" onclick="saveMarqueeNotice()">আপডেট করুন</button>
       </div>
 
       <div class="form-group" style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:15px;">
-        <label><b>ইউজারদের পুশ নোটিফিকেশন পাঠেশন (Broadcast Notification)</b></label>
-        <input type="text" id="notif-broadcast-title" class="form-control" placeholder="নোটিফিকেশন টাইটেল" style="margin-bottom:8px;">
-        <textarea id="notif-broadcast-desc" class="form-control" placeholder="নোটিফিকেশন মেসেজ বা বিবরণ..." rows="3"></textarea>
-        <button class="btn-action" style="margin-top:10px; background:var(--accent-purple);" onclick="sendBroadcastNotification()">নোটিফিকেশন ব্রডকাস্ট পাঠান 🚀</button>
+        <label><b>পুশ নোটিফিকেশন ব্রডকাস্ট</b></label>
+        <input type="text" id="notif-broadcast-title" class="form-control" placeholder="টাইটেল" style="margin-bottom:8px;">
+        <textarea id="notif-broadcast-desc" class="form-control" placeholder="মেসেজ..." rows="3"></textarea>
+        <button class="btn-action" style="margin-top:10px; background:var(--accent-purple);" onclick="sendBroadcastNotification()">ব্রডকাস্ট পাঠান 🚀</button>
       </div>
     </div>
 
+  </div>
+
+  <!-- FULL USER INFO MODAL -->
+  <div id="user-info-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <h3>ইউজারের সম্পূর্ণ তথ্য</h3>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeUserInfoModal()"></i>
+      </div>
+      <div id="user-full-details-body" style="font-size:13px; line-height:1.8;"></div>
+      <button class="btn-action" style="margin-top:15px;" onclick="closeUserInfoModal()">বন্ধ করুন</button>
+    </div>
   </div>
 
   <!-- EDIT USER MODAL -->
@@ -249,7 +258,8 @@
       <input type="hidden" id="edit-user-uid">
       <div class="form-group"><label>নাম</label><input type="text" id="edit-user-name" class="form-control"></div>
       <div class="form-group"><label>ফোন</label><input type="text" id="edit-user-phone" class="form-control"></div>
-      <div class="form-group"><label>ব্যালেন্স (৳)</label><input type="number" id="edit-user-balance" class="form-control"></div>
+      <div class="form-group"><label>ডিপোজিট ব্যালেন্স (৳)</label><input type="number" id="edit-user-dep-balance" class="form-control"></div>
+      <div class="form-group"><label>ইনকাম ব্যালেন্স (৳)</label><input type="number" id="edit-user-inc-balance" class="form-control"></div>
       <div class="form-group"><label>VIP লেভেল</label><input type="number" id="edit-user-vip" class="form-control"></div>
       <button class="btn-action" onclick="saveUserEdit()">পরিবর্তন সেভ করুন</button>
     </div>
