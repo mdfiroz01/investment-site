@@ -1,5 +1,71 @@
 const DEFAULT_AVATAR = "https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg";
 
+// UNIVERSAL CUSTOM ALERT SYSTEM (REPLACES BROWSER ALERTS)
+window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি", iconType = "success") {
+  const modal = document.getElementById('app-alert-modal');
+  const titleEl = document.getElementById('app-alert-title');
+  const msgEl = document.getElementById('app-alert-msg');
+  const iconEl = document.getElementById('app-alert-icon');
+
+  if (!modal || !titleEl || !msgEl) {
+    console.log(message);
+    return;
+  }
+
+  titleEl.innerText = title;
+  msgEl.innerText = message;
+
+  if (iconType === 'success') {
+    iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981;"></i>';
+  } else if (iconType === 'error' || iconType === 'warning') {
+    iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:42px; color:#ef4444;"></i>';
+  } else if (iconType === 'lock') {
+    iconEl.innerHTML = '<i class="fa-solid fa-lock" style="font-size:42px; color:#f59e0b;"></i>';
+  } else {
+    iconEl.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:42px; color:#05b381;"></i>';
+  }
+
+  modal.classList.remove('hidden');
+};
+
+window.closeCustomAlert = function() {
+  const modal = document.getElementById('app-alert-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+// UNIVERSAL CUSTOM CONFIRM SYSTEM
+let onConfirmCallback = null;
+
+window.showCustomConfirm = function(title, message, onConfirm) {
+  const modal = document.getElementById('app-confirm-modal');
+  const titleEl = document.getElementById('app-confirm-title');
+  const msgEl = document.getElementById('app-confirm-msg');
+
+  if (!modal || !titleEl || !msgEl) return;
+
+  titleEl.innerText = title;
+  msgEl.innerText = message;
+  onConfirmCallback = onConfirm;
+
+  modal.classList.remove('hidden');
+};
+
+window.executeCustomConfirm = function() {
+  const modal = document.getElementById('app-confirm-modal');
+  if (modal) modal.classList.add('hidden');
+  if (onConfirmCallback) {
+    onConfirmCallback();
+    onConfirmCallback = null;
+  }
+};
+
+window.closeCustomConfirm = function() {
+  const modal = document.getElementById('app-confirm-modal');
+  if (modal) modal.classList.add('hidden');
+  onConfirmCallback = null;
+};
+
+// THEME TOGGLE LOGIC
 function initAppTheme() {
   const savedTheme = localStorage.getItem('app-theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -24,25 +90,38 @@ function updateThemeToggleIcon(theme) {
 
 initAppTheme();
 
+// AUTH FORM SWITCHERS
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.add('hidden');
-  document.getElementById('register-form').classList.remove('hidden');
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (loginForm) loginForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.add('hidden');
+  if (regForm) regForm.classList.remove('hidden');
 };
 
 window.showLoginForm = function(e) {
   if (e) e.preventDefault();
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.add('hidden');
-  document.getElementById('login-form').classList.remove('hidden');
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (regForm) regForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.add('hidden');
+  if (loginForm) loginForm.classList.remove('hidden');
 };
 
 window.showForgotForm = function(e) {
   if (e) e.preventDefault();
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('register-form').classList.add('hidden');
-  document.getElementById('forgot-password-form').classList.remove('hidden');
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const forgotForm = document.getElementById('forgot-password-form');
+
+  if (loginForm) loginForm.classList.add('hidden');
+  if (regForm) regForm.classList.add('hidden');
+  if (forgotForm) forgotForm.classList.remove('hidden');
 };
 
 let currentUser = null;
@@ -158,7 +237,7 @@ function loadUserData() {
     userData = snapshot.val() || {};
 
     if (userData.isBlocked === true) {
-      alert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Suspended) করা হয়েছে!");
+      showCustomAlert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Suspended) করা হয়েছে!", "অ্যাকাউন্ট স্থগিত", "lock");
       auth.signOut();
       return;
     }
@@ -470,7 +549,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     return;
   }
 
-  if (confirm(`আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (ডিপোজিট ব্যালেন্স থেকে কাটা হবে)`)) {
+  showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (ডিপোজিট ব্যালেন্স থেকে কাটা হবে)`, function() {
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
     updates['users/' + currentUser.uid + '/vipLevel'] = vipLevel;
@@ -497,11 +576,11 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
 
-      alert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে।`);
+      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে।`, "প্ল্যান আনলকড! 🎉", "success");
       renderActivePlanDashboardBanner();
       switchTab('tab-tasks');
-    }).catch(err => alert('Error: ' + err.message));
-  }
+    }).catch(err => showCustomAlert('Error: ' + err.message, "ত্রুটি", "error"));
+  });
 };
 
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
@@ -524,7 +603,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM
+// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -739,7 +818,7 @@ window.setQuickAmount = function(amt, el) {
 window.proceedToStep3 = function() {
   const inputAmt = parseFloat(document.getElementById('input-dep-amount').value);
   if (!inputAmt || inputAmt < 500) {
-    alert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।');
+    showCustomAlert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।', 'ডিপোজিট লিমিট', 'warning');
     return;
   }
 
@@ -765,13 +844,13 @@ window.proceedToStep3 = function() {
 window.copyPhoneNum = function() {
   const num = document.getElementById('target-phone-num').innerText;
   navigator.clipboard.writeText(num);
-  alert('নম্বর কপি করা হয়েছে: ' + num);
+  showCustomAlert('নম্বর কপি করা হয়েছে: ' + num, 'কপি সফল', 'info');
 };
 
 window.submitDepositFinal = function() {
   const trxId = document.getElementById('input-trx-id').value;
   if (!trxId) {
-    alert('অনুগ্রহ করে Transaction ID প্রদান করুন।');
+    showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
     return;
   }
 
@@ -802,7 +881,7 @@ window.submitDepositFinal = function() {
   };
 
   depRef.set(depObj).then(() => {
-    alert('ডিপোজিট রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!');
+    showCustomAlert('ডিপোজিট রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'ডিপোজিট রিকোয়েস্ট জমা', 'success');
     document.getElementById('input-trx-id').value = '';
     goToDepositStep(1);
     loadDepositHistory();
@@ -832,7 +911,7 @@ function loadDepositHistory() {
   });
 }
 
-// WITHDRAW METHOD SELECTOR & SUBMIT (PER-VIP PLAN WITHDRAW CHARGE %)
+// WITHDRAW METHOD SELECTOR & SUBMIT
 window.selectWithdrawMethod = function(method, el) {
   selectedWithdrawMethodName = method;
   document.querySelectorAll('.withdraw-method-box').forEach(b => b.classList.remove('active'));
@@ -860,7 +939,7 @@ window.handleWithdrawSubmit = function(e) {
   e.preventDefault();
 
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
-    alert('উত্তোলন করার জন্য আপনাকে অবশ্যই একটি প্রিমিয়াম প্ল্যান এক্টিভ করতে হবে!');
+    showCustomAlert('উত্তোলন করার জন্য আপনাকে অবশ্যই একটি প্রিমিয়াম প্ল্যান এক্টিভ করতে হবে!', 'প্ল্যান প্রয়োজন', 'lock');
     switchTab('tab-vip');
     return;
   }
@@ -869,13 +948,13 @@ window.handleWithdrawSubmit = function(e) {
   const amt = parseFloat(document.getElementById('wit-amount').value);
 
   if (!amt || amt < systemMinWithdraw) {
-    alert(`সর্বনিম্ন ৳${systemMinWithdraw} টাকা উত্তোলন করতে পারবেন।`);
+    showCustomAlert(`সর্বনিম্ন ৳${systemMinWithdraw} টাকা উত্তোলন করতে পারবেন।`, 'উত্তোলন লিমিট', 'warning');
     return;
   }
 
   const totalBal = (userData.depositBalance || 0) + (userData.incomeBalance || 0);
   if (totalBal < amt) {
-    alert('পর্যাপ্ত ওয়ালেট ব্যালেন্স নেই!');
+    showCustomAlert('পর্যাপ্ত ওয়ালেট ব্যালেন্স নেই!', 'ব্যালেন্স অপ্রতুল', 'warning');
     return;
   }
 
@@ -912,7 +991,7 @@ window.handleWithdrawSubmit = function(e) {
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
   }).then(() => {
-    alert('উত্তোলন রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!');
+    showCustomAlert('উত্তোলন রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'উত্তোলন সফল', 'success');
     document.getElementById('withdraw-form').reset();
     calculateWithdrawFeePreview();
     loadWithdrawHistory();
@@ -988,14 +1067,14 @@ window.handleProfileUpdate = function(e) {
   const avatar = document.getElementById('prof-avatar').value || DEFAULT_AVATAR;
 
   db.ref('users/' + currentUser.uid).update({ name, phone, avatar }).then(() => {
-    alert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
+    showCustomAlert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!', 'আপডেট সফল', 'success');
   });
 };
 
 window.copyRefLink = function() {
   const input = document.getElementById('ref-link-input');
   navigator.clipboard.writeText(input.value);
-  alert('রেফারেল লিংক কপি করা হয়েছে!');
+  showCustomAlert('রেফারেল লিংক কপি করা হয়েছে!', 'কপি সফল', 'info');
 };
 
 // REALTIME USER INCOME GRAPH CHART
@@ -1107,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           msg = 'ভুল ইমেইল অথবা পাসওয়ার্ড প্রদান করেছেন!';
         }
-        alert(msg);
+        showCustomAlert(msg, "লগইন ব্যর্থ", "error");
       });
     });
   }
@@ -1141,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let msg = 'ত্রুটি: ' + err.message;
         if (err.code === 'auth/email-already-in-use') msg = 'এই ইমেইল দিয়ে ইতিপূর্বে অ্যাকাউন্ট খোলা হয়েছে!';
         if (err.code === 'auth/weak-password') msg = 'কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন!';
-        alert(msg);
+        showCustomAlert(msg, "নিবন্ধন ব্যর্থ", "error");
       });
     });
   }
@@ -1152,18 +1231,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('reset-email').value;
       
       if (!email) {
-        alert('অনুগ্রহ করে আপনার অ্যাকাউন্টের ইমেইল অ্যাড্রেস লিখুন!');
+        showCustomAlert('অনুগ্রহ করে আপনার অ্যাকাউন্টের ইমেইল অ্যাড্রেস লিখুন!', "ইমেইল প্রয়োজন", "warning");
         return;
       }
 
       auth.sendPasswordResetEmail(email).then(() => {
-        alert('সফল হয়েছে! পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।');
+        showCustomAlert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইমেইলের Inbox বা Spam ফোল্ডার চেক করুন।', "ইমেইল পাঠানো হয়েছে", "success");
         forgotForm.reset();
         window.showLoginForm();
       }).catch(err => {
         let msg = 'ত্রুটি: ' + err.message;
         if (err.code === 'auth/user-not-found') msg = 'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি!';
-        alert(msg);
+        showCustomAlert(msg, "রিসেট ব্যর্থ", "error");
       });
     });
   }
