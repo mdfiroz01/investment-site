@@ -6,7 +6,6 @@ let isBalanceShown = false;
 let selectedDepositMethodName = 'bKash';
 let selectedDepositAmountVal = 500;
 let selectedWithdrawMethodName = 'bKash';
-let selectedTargetPlanForDeposit = 'wallet'; // 'wallet' or planId
 let activeTaskObj = null;
 let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
@@ -62,6 +61,12 @@ window.closeWelcomeModal = function() {
   document.getElementById('welcome-modal').classList.add('hidden');
 };
 
+window.closeTaskModal = function() {
+  document.getElementById('task-modal').classList.add('hidden');
+  document.getElementById('task-processing-view').classList.remove('hidden');
+  document.getElementById('task-success-view').classList.add('hidden');
+};
+
 window.toggleBkashBalance = function() {
   if (!userData) return;
   const btnText = document.getElementById('bkash-balance-text');
@@ -113,7 +118,7 @@ function loadUserData() {
     const depBal = (userData.depositBalance || 0);
     const incBal = (userData.incomeBalance || 0);
     const totalBal = depBal + incBal;
-    userData.balance = totalBal; // sync combined
+    userData.balance = totalBal;
 
     const balVal = '৳' + totalBal.toFixed(2);
     document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
@@ -234,7 +239,6 @@ function loadGatewaysAndNotices() {
     }
   });
 
-  // Load App Settings
   db.ref('settings/config').on('value', snap => {
     if (snap.exists()) {
       const cfg = snap.val();
@@ -326,7 +330,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (STRICTLY FROM DEPOSIT BALANCE)
+// VIP PLANS LOAD & AUTO PLAN DEPOSIT REDIRECT
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -388,14 +392,14 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-// STRICT RULE: PLANS CAN ONLY BE PURCHASED FROM DEPOSIT BALANCE!
+// AUTO SELECT PLAN & AMOUNT IF BALANCE IS INSUFFICIENT
 window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
+  // IF INSUFFICIENT DEPOSIT BALANCE -> AUTO-REDIRECT TO DEPOSIT WITH PRE-SELECTED PLAN & AMOUNT
   if (depBal < price) {
-    alert(`ইনকাম ব্যালেন্স দিয়ে প্ল্যান এক্টিভ করা যাবে না! প্ল্যান এক্টিভ করতে আপনাকে ডিপোজিট করতে হবে। আপনার ডিপোজিট ব্যালেন্স ৳${depBal.toFixed(2)} এবং প্ল্যানের দাম ৳${price}।`);
-    switchTab('tab-deposit');
+    directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit);
     return;
   }
 
@@ -430,6 +434,29 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit)
     }).catch(err => alert('Error: ' + err.message));
   }
 };
+
+// AUTO DEPOSIT PRE-SELECT FUNCTION
+function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
+  selectedDepositAmountVal = price;
+  
+  // Set Deposit Input Amount
+  const amtInput = document.getElementById('input-dep-amount');
+  if (amtInput) amtInput.value = price;
+
+  // Set Target Plan Select Dropdown
+  const selectEl = document.getElementById('dep-target-plan-select');
+  if (selectEl) {
+    for (let i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].getAttribute('data-name') === planName) {
+        selectEl.selectedIndex = i;
+        break;
+      }
+    }
+  }
+
+  switchTab('tab-deposit');
+  goToDepositStep(2);
+}
 
 // TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
 function checkUserTaskLimitAndLoadTasks() {
@@ -546,7 +573,11 @@ function loadTasks(completedTaskIds = {}) {
 
 window.startTask = function(taskId, reward, isFreeTask = false) {
   activeTaskObj = { taskId, reward, isFreeTask };
+  
+  // RESET MODAL VIEWS FOR CLEAN REWARD CELEBRATION
   document.getElementById('task-modal').classList.remove('hidden');
+  document.getElementById('task-processing-view').classList.remove('hidden');
+  document.getElementById('task-success-view').classList.add('hidden');
   document.getElementById('btn-claim-task').classList.add('hidden');
   document.getElementById('reward-amount-pop').classList.add('hidden');
   document.getElementById('task-modal-title').innerText = 'টাস্ক প্রসেসিং হচ্ছে...';
@@ -568,6 +599,7 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
+// FIX 3: REWARD CLAIM WITHOUT NATIVE BROWSER ALERT (IN-MODAL CELEBRATION)
 document.getElementById('btn-claim-task').addEventListener('click', () => {
   if (!activeTaskObj || !userData) return;
 
@@ -587,8 +619,7 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   };
 
   db.ref().update(updates).then(() => {
-    document.getElementById('task-modal').classList.add('hidden');
-    
+    // RECORD HISTORY
     const histRef = db.ref('history').push();
     histRef.set({
       uid: currentUser.uid,
@@ -599,13 +630,17 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
-    alert('অভিনন্দন! ৳' + reward + ' আপনার ইনকাম ওয়ালেটে যোগ করা হয়েছে।');
+    // SHOW IN-MODAL SUCCESS VIEW (NO BROWSER ALERT!)
+    document.getElementById('task-processing-view').classList.add('hidden');
+    document.getElementById('task-success-view').classList.remove('hidden');
+    document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
+
     activeTaskObj = null;
     initIncomeChartRealtime();
   });
 });
 
-// MULTI-STEP DEPOSIT WITH TARGET PLAN OPTION
+// MULTI-STEP DEPOSIT
 window.goToDepositStep = function(step) {
   document.getElementById('dep-step-1').classList.add('hidden');
   document.getElementById('dep-step-2').classList.add('hidden');
@@ -773,7 +808,6 @@ window.handleWithdrawSubmit = function(e) {
     return;
   }
 
-  // Deduct from incomeBalance first, then depositBalance
   let remAmt = amt;
   let newIncBal = userData.incomeBalance || 0;
   let newDepBal = userData.depositBalance || 0;
@@ -1029,4 +1063,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.logout = function() { auth.signOut(); };
-
