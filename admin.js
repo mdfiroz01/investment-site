@@ -1,4 +1,3 @@
-
 const ADMIN_PASS = "admin3";
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -65,7 +64,7 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS (LOGO, MIN WITHDRAW & CHARGE %)
+// 1. SYSTEM SETTINGS
 // ----------------------------------------------------
 window.saveSystemSettings = function() {
   const logoUrl = document.getElementById('cfg-site-logo').value;
@@ -97,7 +96,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT & FULL INFO MODAL
+// 2. USER MANAGEMENT
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -121,7 +120,7 @@ function loadUsersAdmin() {
           <td>
             <button onclick="viewFullUserInfo('${uid}')" style="background:#0284c7; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Full Info</button>
             <button onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})" style="background:#3b82f6; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Edit</button>
-            <button onclick="toggleBlockUser('${uid}', ${!isBlocked})" style="background:${isBlocked ? '#10b981' : '#ef4444'}; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">
+            <button onclick="toggleBlockUser('${uid}', ${!isBlocked})" style="background:${isBlocked ? '#10b981' : '#ef4444'}; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;">
               ${isBlocked ? 'Unblock' : 'Block'}
             </button>
           </td>
@@ -146,6 +145,7 @@ window.viewFullUserInfo = function(uid) {
       <div><b>ইনকাম ব্যালেন্স:</b> ৳${(u.incomeBalance || 0).toFixed(2)}</div>
       <div><b>মোট ব্যালেন্স:</b> ৳${((u.depositBalance || 0) + (u.incomeBalance || 0)).toFixed(2)}</div>
       <div><b>এক্টিভ VIP লেভেল:</b> VIP ${u.vipLevel || 0} (${u.vipPlanName || 'নো প্ল্যান'})</div>
+      <div><b>উইথড্র ফি (%):</b> ${u.withdrawChargePercent || 5}%</div>
       <div><b>নিজের রেফার কোড:</b> ${u.refCode || 'N/A'}</div>
       <div><b>যার রেফারে জয়েন করেছে:</b> ${u.referredBy || 'কারো রেফারে নয়'}</div>
       <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
@@ -200,7 +200,7 @@ window.toggleBlockUser = function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN EDIT & REFERRAL COMMISSION %
+// 3. VIP PLAN EDIT & WITHDRAW CHARGE % PER PLAN
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -213,6 +213,7 @@ document.getElementById('admin-add-plan-form').addEventListener('submit', (e) =>
     durationDays: parseInt(document.getElementById('plan-duration').value),
     vipLevel: parseInt(document.getElementById('plan-vip-level').value),
     refCommissionPercent: parseFloat(document.getElementById('plan-ref-commission').value) || 10,
+    withdrawChargePercent: parseFloat(document.getElementById('plan-withdraw-charge').value) || 5,
     badgeText: document.getElementById('plan-badge-text').value,
     isSoldOut: document.getElementById('plan-is-soldout').checked
   };
@@ -243,11 +244,11 @@ function loadPlansAdmin() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div>
             <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
-            <small style="color:var(--primary-color)">[Ref: ${p.refCommissionPercent || 10}%]</small>
+            <small style="color:var(--primary-color)">[Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
             ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
           </div>
           <div>
-            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
+            <button style="background:#3b82f6; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
             <button style="background:#ef4444; color:white; border:none; padding:3px 7px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -256,7 +257,7 @@ function loadPlansAdmin() {
   });
 }
 
-window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, badgeText, isSoldOut) {
+window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, badgeText, isSoldOut) {
   document.getElementById('edit-plan-key').value = key;
   document.getElementById('plan-name').value = name;
   document.getElementById('plan-price').value = price;
@@ -265,6 +266,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-duration').value = duration;
   document.getElementById('plan-vip-level').value = vip;
   document.getElementById('plan-ref-commission').value = refComm;
+  document.getElementById('plan-withdraw-charge').value = witCharge;
   document.getElementById('plan-badge-text').value = badgeText;
   document.getElementById('plan-is-soldout').checked = isSoldOut;
 
@@ -339,7 +341,6 @@ window.approveDeposit = function(depId, uid, amount) {
       let activatedPlanName = null;
       let activatedPlanPrice = amount;
 
-      // Check if this deposit was aimed for a DIRECT PLAN
       if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
         const target = depData.targetPlan;
         updates[`users/${uid}/vipLevel`] = target.vipLevel;
@@ -347,15 +348,22 @@ window.approveDeposit = function(depId, uid, amount) {
         updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
         updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
         activatedPlanName = target.planName;
+
+        // Save active plan's withdraw charge percent onto user
+        db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value', pSnap => {
+          if (pSnap.exists()) {
+            pSnap.forEach(p => {
+              updates[`users/${uid}/withdrawChargePercent`] = p.val().withdrawChargePercent || 5;
+            });
+          }
+        });
       } else {
-        // General Deposit to depositBalance
         updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
       }
 
       updates[`deposits/${depId}/status`] = 'approved';
 
       db.ref().update(updates).then(() => {
-        // If a plan was directly activated, calculate referral commission for referrer
         if (activatedPlanName && user.referredBy) {
           processReferralCommission(user.referredBy, activatedPlanPrice, activatedPlanName);
         }
@@ -366,7 +374,6 @@ window.approveDeposit = function(depId, uid, amount) {
   });
 };
 
-// REFERRAL COMMISSION LOGIC: REFERRER RECEIVES COMMISSION ONLY IF REFERRER HAS AN ACTIVE PLAN!
 function processReferralCommission(referrerRefCode, planPrice, planName) {
   db.ref('users').orderByChild('refCode').equalTo(referrerRefCode).once('value', snap => {
     if (!snap.exists()) return;
@@ -375,9 +382,7 @@ function processReferralCommission(referrerRefCode, planPrice, planName) {
       const referrerUid = child.key;
       const referrerData = child.val();
 
-      // RULE: REFERRER RECEIVES COMMISSION ONLY IF REFERRER'S VIP LEVEL > 0
       if (referrerData.vipLevel && referrerData.vipLevel > 0) {
-        // Get commission % for this plan
         db.ref('plans').orderByChild('name').equalTo(planName).once('value', planSnap => {
           let commPercent = 10;
           if (planSnap.exists()) {
