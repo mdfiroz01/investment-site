@@ -1,4 +1,3 @@
-
 const ADMIN_PASS = "admin3";
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -287,17 +286,18 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH BATCH QUANTITY SUPPORT
+// 4. TASK CREATION WITH ATOMIC BATCH UPDATE (FIXED BUG)
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const editKey = document.getElementById('edit-task-key').value;
   const baseTitle = document.getElementById('task-title').value;
-  const reward = parseFloat(document.getElementById('task-reward').value);
+  const reward = parseFloat(document.getElementById('task-reward').value) || 0;
   const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
   const qty = parseInt(document.getElementById('task-quantity').value) || 1;
 
   if (editKey) {
+    // EDIT SINGLE TASK
     db.ref('tasks/' + editKey).update({
       title: baseTitle,
       reward: reward,
@@ -306,26 +306,27 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
     }).then(() => {
       alert('টাস্ক সফলভাবে ইডিট করা হয়েছে!');
       resetTaskForm();
-    });
+    }).catch(err => alert('Error: ' + err.message));
   } else {
-    const promises = [];
+    // ATOMIC BATCH TASK CREATION IN FIREBASE REALTIME DB (100% RELIABLE)
+    const updates = {};
     for (let i = 1; i <= qty; i++) {
-      const newRef = db.ref('tasks').push();
+      const newKey = db.ref('tasks').push().key;
       const taskTitle = qty > 1 ? `${baseTitle} #${i}` : baseTitle;
-      const taskData = {
-        id: newRef.key,
+      updates['tasks/' + newKey] = {
+        id: newKey,
         title: taskTitle,
         reward: reward,
         minVip: minVipVal,
-        isFree: minVipVal === 0
+        isFree: minVipVal === 0,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
       };
-      promises.push(newRef.set(taskData));
     }
 
-    Promise.all(promises).then(() => {
-      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি করা হয়েছে!`);
+    db.ref().update(updates).then(() => {
+      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি ও সেভ করা হয়েছে!`);
       resetTaskForm();
-    });
+    }).catch(err => alert('Error: ' + err.message));
   }
 });
 
