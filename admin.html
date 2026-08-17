@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Control Panel</title>
+  
+  <!-- FAVICON ICON -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,6 +20,9 @@
   <div id="admin-auth" class="modal-overlay">
     <div class="modal-content admin-card">
       <form id="admin-login-form">
+        <div style="text-align:center; margin-bottom:15px;">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
+        </div>
         <h2 style="text-align: center; margin-bottom: 20px; color: #0f172a;">এডমিন লগইন</h2>
         <div class="form-group">
           <label>এডমিন ইমেইল</label>
@@ -34,7 +41,10 @@
   <div id="admin-sidebar-overlay" class="sidebar-overlay" onclick="closeAdminSidebar()"></div>
   <div id="admin-sidebar-drawer" class="sidebar-drawer">
     <div class="sidebar-header">
-      <h3 style="color:#05b381; font-size: 20px; font-weight: 800;">Admin Menu</h3>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
+        <h3 style="color:#05b381; font-size: 20px; font-weight: 800;">Admin Menu</h3>
+      </div>
       <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeAdminSidebar()"></i>
     </div>
     <ul class="sidebar-menu">
@@ -60,7 +70,10 @@
     <header class="top-header" style="background:#ffffff; border-bottom:1px solid #cbd5e1; margin-bottom:15px; border-radius:12px;">
       <div class="header-left">
         <i class="fa-solid fa-bars menu-icon" style="color:#0f172a;" onclick="openAdminSidebar()"></i>
-        <h3 class="app-logo" style="color:#05b381;">AdminPanel</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
+          <h3 class="app-logo" style="color:#05b381;">AdminPanel</h3>
+        </div>
       </div>
       <button class="btn-action-sm btn-cancel" style="padding:6px 12px;" onclick="adminLogout()">Logout</button>
     </header>
@@ -142,7 +155,7 @@
       <h3><i class="fa-solid fa-gears" style="color:#05b381"></i> লোগো, ডিফোল্ট উইথড্র ফি ও লিমিট</h3>
       <div class="form-group" style="margin-top:10px;">
         <label>সাইটের লোগো ছবি URL (Site Logo URL)</label>
-        <input type="url" id="cfg-site-logo" class="admin-form-control" placeholder="https://example.com/logo.png">
+        <input type="url" id="cfg-site-logo" class="admin-form-control" placeholder="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" value="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
       </div>
       <div class="form-group">
         <label>সর্বনিম্ন উত্তোলন লিমিট (৳)</label>
