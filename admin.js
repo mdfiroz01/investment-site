@@ -1,3 +1,4 @@
+
 const ADMIN_PASS = "admin3";
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +60,7 @@ function loadAdminDashboard() {
   loadTasksAdmin();
   loadSlidersAdmin();
   loadGatewaysAdmin();
+  loadSocialSupportAdmin();
   loadWelcomeNoticeAdmin();
   loadSettingsAdmin();
 }
@@ -296,7 +298,6 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
   const qty = parseInt(document.getElementById('task-quantity').value) || 1;
 
   if (editKey) {
-    // EDIT SINGLE EXISTING TASK
     db.ref('tasks/' + editKey).update({
       title: baseTitle,
       reward: reward,
@@ -307,7 +308,6 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
       resetTaskForm();
     });
   } else {
-    // BATCH CREATE TASKS BASED ON QUANTITY
     const promises = [];
     for (let i = 1; i <= qty; i++) {
       const newRef = db.ref('tasks').push();
@@ -356,7 +356,7 @@ window.editTask = function(key, title, reward, minVip) {
   document.getElementById('task-title').value = title;
   document.getElementById('task-reward').value = reward;
   document.getElementById('task-min-vip').value = minVip;
-  document.getElementById('task-quantity').value = 1; // Default to 1 on edit
+  document.getElementById('task-quantity').value = 1;
 
   document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
   document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন';
@@ -374,7 +374,61 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS & WITHDRAWALS
+// 5. SOCIAL MEDIA SUPPORT FAB MANAGEMENT
+// ----------------------------------------------------
+document.getElementById('admin-social-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const editKey = document.getElementById('edit-social-key').value;
+  const socialData = {
+    name: document.getElementById('social-name').value,
+    icon: document.getElementById('social-icon').value,
+    url: document.getElementById('social-url').value
+  };
+
+  if (editKey) {
+    db.ref('social_support/' + editKey).update(socialData).then(() => {
+      alert('সোশ্যাল সাপোর্ট লিংক আপডেট হয়েছে!');
+      resetSocialForm();
+    });
+  } else {
+    const newRef = db.ref('social_support').push();
+    socialData.id = newRef.key;
+    newRef.set(socialData).then(() => {
+      alert('নতুন সোশ্যাল সাপোর্ট লিংক যোগ করা হয়েছে!');
+      resetSocialForm();
+    });
+  }
+});
+
+function loadSocialSupportAdmin() {
+  db.ref('social_support').on('value', snap => {
+    const list = document.getElementById('admin-social-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!snap.exists()) return;
+
+    snap.forEach(child => {
+      const s = child.val();
+      const key = child.key;
+      list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
+          <div>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+}
+
+function resetSocialForm() {
+  document.getElementById('edit-social-key').value = '';
+  document.getElementById('admin-social-form').reset();
+}
+
+// ----------------------------------------------------
+// 6. DEPOSITS & WITHDRAWALS
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -508,9 +562,6 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
   });
 }
 
-// ----------------------------------------------------
-// 6. WITHDRAWALS
-// ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
     const tbody = document.getElementById('admin-wit-table');
@@ -554,7 +605,7 @@ window.rejectWithdraw = function(witId, uid, amount) {
     const u = snap.val() || {};
     const updates = {};
     updates[`users/${uid}/incomeBalance`] = (u.incomeBalance || 0) + amount;
-    updates[`withdraws/${witId}/status`] = 'rejected';
+    updates[`withdraws/${witId}/status`].set('rejected');
 
     db.ref().update(updates).then(() => alert('উত্তোলন বাতিল ও ব্যালেন্স রিফান্ড করা হয়েছে।'));
   });
