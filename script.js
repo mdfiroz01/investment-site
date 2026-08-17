@@ -311,17 +311,27 @@ function renderActivePlanDashboardBanner() {
   `;
 }
 
-// HOMEPAGE CAROUSEL BANNER SLIDER
+// HOMEPAGE SLIDER (STRICTLY HIDDEN IF ADMIN HAS NOT ADDED SLIDER)
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
     if (snap.exists()) {
-      snap.forEach(c => sliderImagesList.push(c.val().url));
+      snap.forEach(c => {
+        if (c.val() && c.val().url) {
+          sliderImagesList.push(c.val().url);
+        }
+      });
     }
+
+    const sliderCard = document.getElementById('homepage-slider-card');
+
     if (sliderImagesList.length === 0) {
-      sliderImagesList = [DEFAULT_AVATAR, "https://i.ibb.co/3yn9j8p/bkash.png", "https://i.ibb.co/6P0zCst/nagad.png"];
+      if (sliderIntervalTimer) clearInterval(sliderIntervalTimer);
+      if (sliderCard) sliderCard.classList.add('hidden');
+    } else {
+      if (sliderCard) sliderCard.classList.remove('hidden');
+      startSliderCarousel();
     }
-    startSliderCarousel();
   });
 }
 
@@ -331,13 +341,15 @@ function startSliderCarousel() {
 
   if (sliderIntervalTimer) clearInterval(sliderIntervalTimer);
 
-  sliderImg.src = sliderImagesList[0];
   sliderIndex = 0;
+  sliderImg.src = sliderImagesList[0];
 
-  sliderIntervalTimer = setInterval(() => {
-    sliderIndex = (sliderIndex + 1) % sliderImagesList.length;
-    sliderImg.src = sliderImagesList[sliderIndex];
-  }, 4000);
+  if (sliderImagesList.length > 1) {
+    sliderIntervalTimer = setInterval(() => {
+      sliderIndex = (sliderIndex + 1) % sliderImagesList.length;
+      sliderImg.src = sliderImagesList[sliderIndex];
+    }, 4000);
+  }
 }
 
 // WELCOME POP-UP NOTICE
