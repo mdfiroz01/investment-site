@@ -100,6 +100,31 @@
     </div>
   </div>
 
+  <!-- UNIVERSAL CUSTOM ALERT MODAL (REPLACES NATIVE BROWSER ALERTS) -->
+  <div id="app-alert-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center; padding: 25px 20px;">
+      <div id="app-alert-icon" style="margin-bottom: 12px;"></div>
+      <h3 id="app-alert-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">বিজ্ঞপ্তি</h3>
+      <p id="app-alert-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p>
+      <button class="btn-action" onclick="closeCustomAlert()">ঠিক আছে 👍</button>
+    </div>
+  </div>
+
+  <!-- UNIVERSAL CUSTOM CONFIRM MODAL (REPLACES NATIVE BROWSER CONFIRMS) -->
+  <div id="app-confirm-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center; padding: 25px 20px;">
+      <div style="margin-bottom: 12px;">
+        <i class="fa-solid fa-circle-question" style="font-size:42px; color:var(--primary-color);"></i>
+      </div>
+      <h3 id="app-confirm-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">নিশ্চিতকরণ</h3>
+      <p id="app-confirm-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-action" style="background:#64748b;" onclick="closeCustomConfirm()">বাতিল</button>
+        <button class="btn-action" onclick="executeCustomConfirm()">হ্যাঁ, নিশ্চিত 👍</button>
+      </div>
+    </div>
+  </div>
+
   <!-- POP-UP WELCOME NOTICE MODAL -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align:center;">
