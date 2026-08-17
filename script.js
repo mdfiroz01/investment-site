@@ -1278,21 +1278,6 @@ function renderLiveWithdrawsInfinite() {
 
   const mockFeed = [
     const withdrawalData = [
-  { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
-  { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
-  { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
-  { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
-  { num: '013****3456', method: 'Nagad', amount: '৳২০০০' },
-  { num: '017****7821', method: 'Rocket', amount: '৳৯৫০' },
-  { num: '018****2345', method: 'bKash', amount: '৳৮০০' },
-  { num: '019****6789', method: 'Nagad', amount: '৳১৭৫০' },
-  { num: '016****4321', method: 'Rocket', amount: '৳১১০০' },
-  { num: '013****9876', method: 'bKash', amount: '৳৬৫০' },
-  { num: '017****5566', method: 'Nagad', amount: '৳২২০০' },
-  { num: '018****1122', method: 'Rocket', amount: '৳৮৫০' },
-  { num: '019****3344', method: 'bKash', amount: '৳১৩০০' },
-  { num: '016****7788', method: 'Nagad', amount: '৳৯০০' },
-  { num: '013****6655', method: 'Rocket', amount: '৳১৪৫০' },
   { num: '017****9087', method: 'bKash', amount: '৳৭০০' },
   { num: '018****3456', method: 'Nagad', amount: '৳১৮০০' },
   { num: '019****7890', method: 'Rocket', amount: '৳১২৫০' },
@@ -1334,7 +1319,6 @@ function renderLiveWithdrawsInfinite() {
   { num: '016****2479', method: 'Rocket', amount: '৳২১০০' },
   { num: '013****5816', method: 'bKash', amount: '৳৬০০' }
 ];
-
   let feedIndex = 0;
 
   function rotateFeed() {
