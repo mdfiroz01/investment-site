@@ -1,16 +1,13 @@
-const DEFAULT_AVATAR = "https://i.postimg.cc/fbvd5sS5/c4761eb9005cabfb3897f830cf07e436.jpg";
+const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
-// UNIVERSAL CUSTOM ALERT SYSTEM (REPLACES BROWSER ALERTS)
+// UNIVERSAL CUSTOM ALERT SYSTEM
 window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি", iconType = "success") {
   const modal = document.getElementById('app-alert-modal');
   const titleEl = document.getElementById('app-alert-title');
   const msgEl = document.getElementById('app-alert-msg');
   const iconEl = document.getElementById('app-alert-icon');
 
-  if (!modal || !titleEl || !msgEl) {
-    console.log(message);
-    return;
-  }
+  if (!modal || !titleEl || !msgEl) return;
 
   titleEl.innerText = title;
   msgEl.innerText = message;
@@ -237,7 +234,7 @@ function loadUserData() {
     userData = snapshot.val() || {};
 
     if (userData.isBlocked === true) {
-      showCustomAlert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Suspended) করা হয়েছে!", "অ্যাকাউন্ট স্থগিত", "lock");
+      showCustomAlert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত করা হয়েছে!", "অ্যাকাউন্ট স্থগিত", "lock");
       auth.signOut();
       return;
     }
