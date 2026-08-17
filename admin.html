@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -58,6 +59,7 @@
       <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট লোগো ও ডিফোল্ট ফি</li>
       <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার</li>
       <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
+      <li onclick="showAdminSection('sec-social')"><i class="fa-solid fa-headset"></i> ফ্লোটিং সাপোর্ট লিংক</li>
       <li onclick="showAdminSection('sec-notices')"><i class="fa-solid fa-bullhorn"></i> নোটিশ ও ব্রডকাস্ট</li>
       <li onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
     </ul>
@@ -247,7 +249,25 @@
       <button class="btn-action" onclick="saveWelcomePopUpNotice()">সেভ করুন</button>
     </div>
 
-    <!-- SECTION 11: MARQUEE & BROADCAST -->
+    <!-- SECTION 11: SOCIAL MEDIA SUPPORT FAB MANAGEMENT -->
+    <div id="sec-social" class="admin-section hidden admin-card">
+      <h3><i class="fa-solid fa-headset" style="color:#05b381"></i> ফ্লোটিং সাপোর্ট ও সোশ্যাল মিডিয়া লিংক</h3>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">ইউজার প্যানেলের ৯০-ডিগ্রি ফ্লোটিং বাটন থেকে যেসব সাপোর্ট লিংক অন হবে</p>
+
+      <form id="admin-social-form" style="display:grid; gap:10px;">
+        <input type="hidden" id="edit-social-key" value="">
+        <input type="text" id="social-name" class="admin-form-control" placeholder="সোশ্যাল প্ল্যাটফর্ম নাম (e.g. Telegram / WhatsApp / Helpline)" required>
+        <input type="text" id="social-icon" class="admin-form-control" placeholder="ফন্টঅসাম আইকন (e.g. fa-brands fa-telegram)" required value="fa-brands fa-telegram">
+        <input type="url" id="social-url" class="admin-form-control" placeholder="লিংক URL (e.g. https://t.me/yourgroup)" required>
+        
+        <button type="submit" id="btn-save-social" class="btn-action">সোশ্যাল লিংক সেভ করুন</button>
+      </form>
+
+      <h4 style="margin-top:15px;">বিদ্যমান সাপোর্ট আইকনসমূহ:</h4>
+      <div id="admin-social-list" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- SECTION 12: MARQUEE & BROADCAST -->
     <div id="sec-notices" class="admin-section hidden admin-card">
       <h3><i class="fa-solid fa-bullhorn" style="color:#05b381"></i> নোটিশ ও পুশ নোটিফিকেশন</h3>
       <div class="form-group" style="margin-top:10px;">
