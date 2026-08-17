@@ -87,7 +87,7 @@ function updateThemeToggleIcon(theme) {
 
 initAppTheme();
 
-// AUTH FORM SWITCHERS
+// AUTH FORM SWITCHERS WITH CLEAN URL ROUTING
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
   const loginForm = document.getElementById('login-form');
@@ -97,6 +97,12 @@ window.showRegisterForm = function(e) {
   if (loginForm) loginForm.classList.add('hidden');
   if (forgotForm) forgotForm.classList.add('hidden');
   if (regForm) regForm.classList.remove('hidden');
+
+  const pendingRef = localStorage.getItem('pendingRefCode') || '';
+  const newUrl = '/register' + (pendingRef ? '?ref=' + pendingRef : '');
+  if (window.location.pathname !== '/register') {
+    window.history.pushState({}, '', newUrl);
+  }
 };
 
 window.showLoginForm = function(e) {
@@ -108,6 +114,10 @@ window.showLoginForm = function(e) {
   if (regForm) regForm.classList.add('hidden');
   if (forgotForm) forgotForm.classList.add('hidden');
   if (loginForm) loginForm.classList.remove('hidden');
+
+  if (window.location.pathname !== '/login') {
+    window.history.pushState({}, '', '/login');
+  }
 };
 
 window.showForgotForm = function(e) {
@@ -119,6 +129,10 @@ window.showForgotForm = function(e) {
   if (loginForm) loginForm.classList.add('hidden');
   if (regForm) regForm.classList.add('hidden');
   if (forgotForm) forgotForm.classList.remove('hidden');
+
+  if (window.location.pathname !== '/forgot') {
+    window.history.pushState({}, '', '/forgot');
+  }
 };
 
 let currentUser = null;
@@ -154,14 +168,16 @@ auth.onAuthStateChanged((user) => {
     renderLiveWithdrawsInfinite();
     listenLiveBroadcastNotifications();
     checkAndShowWelcomeNotice();
+    handleInitialPathRouting();
   } else {
     currentUser = null;
     document.getElementById('auth-container').classList.remove('hidden');
     document.getElementById('app-container').classList.add('hidden');
+    handleInitialPathRouting();
   }
 });
 
-// GLOBAL UI FUNCTIONS
+// GLOBAL UI FUNCTIONS & DYNAMIC URL SWITCHER
 window.openSidebar = function() {
   document.getElementById('sidebar-drawer').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('open');
@@ -203,9 +219,10 @@ window.toggleBkashBalance = function() {
   }
 };
 
-window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
+window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = true) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
+  const targetTab = document.getElementById(tabId);
+  if (targetTab) targetTab.classList.add('active');
 
   if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
     resetDepositToGeneralWallet();
@@ -214,8 +231,86 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   if (el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
+  } else {
+    // Highlight bottom nav icon corresponding to tabId
+    const navMap = { 'tab-home': 0, 'tab-wallet': 1, 'tab-vip': 2, 'tab-withdraw': 3, 'tab-profile': 4 };
+    const idx = navMap[tabId];
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    if (idx !== undefined && navItems[idx]) {
+      navItems.forEach(n => n.classList.remove('active'));
+      navItems[idx].classList.add('active');
+    }
+  }
+
+  // DYNAMIC CLEAN URL PATH UPDATE
+  if (pushState) {
+    const routePaths = {
+      'tab-home': '/home',
+      'tab-wallet': '/wallet',
+      'tab-vip': '/vip',
+      'tab-tasks': '/tasks',
+      'tab-deposit': '/deposit',
+      'tab-withdraw': '/withdraw',
+      'tab-profile': '/profile'
+    };
+
+    const newPath = routePaths[tabId] || '/home';
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({ tabId: tabId }, '', newPath);
+    }
   }
 };
+
+// LISTEN TO BROWSER BACK/FORWARD BUTTONS
+window.addEventListener('popstate', (e) => {
+  handleInitialPathRouting();
+});
+
+// ROUTE & REFERRAL AUTO-FILL ENGINE
+function handleInitialPathRouting() {
+  // 1. READ URL REFERRAL CODE (?ref=CODE or ?refCode=CODE)
+  const urlParams = new URLSearchParams(window.location.search);
+  let refCode = urlParams.get('ref') || urlParams.get('refCode');
+
+  if (refCode) {
+    localStorage.setItem('pendingRefCode', refCode);
+  } else {
+    refCode = localStorage.getItem('pendingRefCode');
+  }
+
+  // AUTO PRE-FILL REGISTRATION REFERRAL CODE FIELD
+  if (refCode) {
+    const refInput = document.getElementById('reg-ref');
+    if (refInput) refInput.value = refCode;
+  }
+
+  // 2. PARSE CURRENT URL PATH ROUTE
+  const path = window.location.pathname.toLowerCase();
+
+  if (!currentUser) {
+    if (path === '/register' || refCode) {
+      window.showRegisterForm();
+    } else if (path === '/forgot' || path === '/reset') {
+      window.showForgotForm();
+    } else {
+      window.showLoginForm();
+    }
+  } else {
+    const pathToTabMap = {
+      '/tasks': 'tab-tasks',
+      '/vip': 'tab-vip',
+      '/wallet': 'tab-wallet',
+      '/deposit': 'tab-deposit',
+      '/withdraw': 'tab-withdraw',
+      '/profile': 'tab-profile',
+      '/home': 'tab-home',
+      '/': 'tab-home'
+    };
+
+    const targetTab = pathToTabMap[path] || 'tab-home';
+    switchTab(targetTab, null, false, false);
+  }
+}
 
 function resetDepositToGeneralWallet() {
   const selectEl = document.getElementById('dep-target-plan-select');
@@ -311,7 +406,7 @@ function renderActivePlanDashboardBanner() {
   `;
 }
 
-// HOMEPAGE SLIDER (STRICTLY HIDDEN IF ADMIN HAS NOT ADDED SLIDER)
+// HOMEPAGE CAROUSEL BANNER SLIDER
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
