@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -41,12 +40,12 @@
     <ul class="sidebar-menu">
       <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
       <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ফুল ইনফো</li>
-      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ও রেফার কমিশন %</li>
+      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান, রেফার ও উইথড্র চার্জ %</li>
       <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ইডিটর</li>
       <li onclick="showAdminSection('sec-gateways')"><i class="fa-solid fa-credit-card"></i> আনলিমিটেড পেমেন্ট মেথড</li>
       <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
       <li onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
-      <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট লোগো ও উইথড্র ফি</li>
+      <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট লোগো ও ডিফোল্ট ফি</li>
       <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার</li>
       <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
       <li onclick="showAdminSection('sec-notices')"><i class="fa-solid fa-bullhorn"></i> নোটিশ ও ব্রডকাস্ট</li>
@@ -88,9 +87,9 @@
       </div>
     </div>
 
-    <!-- SECTION 3: VIP PLAN MANAGEMENT WITH REFERRAL COMMISSION % -->
+    <!-- SECTION 3: VIP PLAN MANAGEMENT WITH REF COMMISSION & WITHDRAW CHARGE % -->
     <div id="sec-plans" class="admin-section hidden content-card">
-      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:var(--primary-color)"></i> VIP প্ল্যান ও রেফার কমিশন % সেটিংস</h3>
+      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:var(--primary-color)"></i> VIP প্ল্যান, রেফার ও উইথড্র ফি সেটিং</h3>
       
       <form id="admin-add-plan-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
         <input type="hidden" id="edit-plan-key" value="">
@@ -101,7 +100,9 @@
         <input type="number" id="plan-duration" placeholder="মেয়াদ (দিন)" class="form-control" required>
         <input type="number" id="plan-vip-level" placeholder="VIP লেভেল (1, 2...)" class="form-control" required>
         
-        <input type="number" step="0.1" id="plan-ref-commission" placeholder="রেফার কমিশন % (e.g. 10)" class="form-control" style="grid-column: span 2;" required value="10">
+        <input type="number" step="0.1" id="plan-ref-commission" placeholder="রেফার কমিশন % (e.g. 10)" class="form-control" required value="10">
+        <input type="number" step="0.1" id="plan-withdraw-charge" placeholder="এই প্ল্যানের উইথড্র ফি % (e.g. 5)" class="form-control" required value="5">
+
         <input type="text" id="plan-badge-text" placeholder="কাস্টম রিবন ব্যাজ (e.g. POPULAR, HOT)" class="form-control" style="grid-column: span 2;">
 
         <div style="grid-column: span 2; display:flex; gap:20px; font-size:13px;">
@@ -137,7 +138,7 @@
 
     <!-- SECTION 5: APP LOGO, MIN WITHDRAW & CHARGE SETTINGS -->
     <div id="sec-settings" class="admin-section hidden content-card">
-      <h3><i class="fa-solid fa-gears" style="color:var(--primary-color)"></i> লোগো, উইথড্র ফি ও লিমিট সেটিং</h3>
+      <h3><i class="fa-solid fa-gears" style="color:var(--primary-color)"></i> লোগো, ডিফোল্ট উইথড্র ফি ও লিমিট</h3>
       <div class="form-group" style="margin-top:10px;">
         <label>সাইটের লোগো ছবি URL (Site Logo URL)</label>
         <input type="url" id="cfg-site-logo" class="form-control" placeholder="https://example.com/logo.png">
@@ -147,7 +148,7 @@
         <input type="number" id="cfg-min-withdraw" class="form-control" placeholder="200" value="200">
       </div>
       <div class="form-group">
-        <label>উত্তোলন প্রসেসিং চার্জ (%)</label>
+        <label>ডিফোল্ট উত্তোলন প্রসেসিং চার্জ (%)</label>
         <input type="number" step="0.1" id="cfg-withdraw-charge" class="form-control" placeholder="5" value="5">
       </div>
       <button class="btn-action" onclick="saveSystemSettings()">সেটিংস সেভ করুন</button>
