@@ -51,7 +51,7 @@
       <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
       <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ফুল ইনফো</li>
       <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান, রেফার ও উইথড্র ফি %</li>
-      <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক ইডিটর</li>
+      <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক তৈরি (পরিমাণ সহ)</li>
       <li onclick="showAdminSection('sec-gateways')"><i class="fa-solid fa-credit-card"></i> আনলিমিটেড পেমেন্ট মেথড</li>
       <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
       <li onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
@@ -168,17 +168,31 @@
       <button class="btn-action" onclick="saveSystemSettings()">সেটিংস সেভ করুন</button>
     </div>
 
-    <!-- SECTION 6: TASK CREATION -->
+    <!-- SECTION 6: TASK CREATION WITH QUANTITY FIELD -->
     <div id="sec-tasks" class="admin-section hidden admin-card">
       <h3 id="task-form-title"><i class="fa-solid fa-list-check" style="color:#05b381"></i> টাস্ক তৈরি / ইডিট</h3>
+      
       <form id="admin-add-task-form" style="display: grid; gap: 10px; margin-top: 15px;">
         <input type="hidden" id="edit-task-key" value="">
-        <input type="text" id="task-title" placeholder="টাস্ক শিরোনাম" class="admin-form-control" required>
-        <input type="number" id="task-reward" placeholder="রিওয়ার্ড (৳)" class="admin-form-control" required>
-        <input type="number" id="task-min-vip" placeholder="লেভেল (0 = ফ্রি, 1 = VIP 1...)" class="admin-form-control" required value="0">
+        <input type="text" id="task-title" placeholder="টাস্ক শিরোনাম (e.g. ভিডিও দেখুন)" class="admin-form-control" required>
+        <input type="number" id="task-reward" placeholder="প্রতি টাস্কের রিওয়ার্ড (৳)" class="admin-form-control" required>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:12px; color:#475569;">VIP লেভেল</label>
+            <input type="number" id="task-min-vip" placeholder="লেভেল (0=ফ্রি, 1=VIP 1...)" class="admin-form-control" required value="0">
+          </div>
+          <div id="quantity-input-wrapper">
+            <label style="font-size:12px; color:#475569;">টাস্কের সংখ্যা / পরিমাণ</label>
+            <input type="number" id="task-quantity" placeholder="টাস্ক সংখ্যা" class="admin-form-control" required value="1" min="1">
+          </div>
+        </div>
+
         <button type="submit" id="btn-save-task" class="btn-action">টাস্ক সেভ করুন</button>
         <button type="button" id="btn-cancel-task-edit" class="btn-action btn-cancel hidden" onclick="resetTaskForm()">বাতিল করুন</button>
       </form>
+
+      <h4 style="margin-top:15px;">বিদ্যমান টাস্কসমূহ:</h4>
       <div id="admin-tasks-list" style="margin-top:10px;"></div>
     </div>
 
