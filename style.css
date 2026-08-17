@@ -1,4 +1,5 @@
-:root {
+/* LIGHT & DARK THEME VARIABLES */
+[data-theme="light"] {
   --primary-color: #05b381;
   --primary-dark: #038d65;
   --primary-light: #e6f7f2;
@@ -9,6 +10,20 @@
   --text-muted: #64748b;
   --border-color: #e2e8f0;
   --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.04);
+  --danger: #ff4757;
+}
+
+[data-theme="dark"] {
+  --primary-color: #00f2fe;
+  --primary-dark: #00c6ff;
+  --primary-light: rgba(0, 242, 254, 0.12);
+  --accent-purple: #8b5cf6;
+  --bg-color: #070a1a;
+  --card-bg: #0f172a;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-light: 0 8px 25px rgba(0, 0, 0, 0.4);
   --danger: #ff4757;
 }
 
@@ -25,6 +40,7 @@ body {
   color: var(--text-main);
   min-height: 100vh;
   padding-bottom: 85px;
+  transition: background 0.3s, color 0.3s;
 }
 
 .app-viewport {
@@ -33,6 +49,25 @@ body {
   position: relative;
   background: var(--bg-color);
   min-height: 100vh;
+}
+
+/* THEME TOGGLE BUTTON */
+.theme-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .theme-toggle-btn {
+  background: #1e293b;
+  color: #fbbf24;
 }
 
 .auth-ring-avatar {
@@ -81,6 +116,8 @@ body {
   justify-content: center;
   z-index: 105;
 }
+
+[data-theme="dark"] .notif-wrapper { background: #1e293b; }
 
 .notif-icon { font-size: 18px; color: var(--text-main); }
 .notif-badge-dot {
@@ -131,7 +168,7 @@ body {
   100% { transform: translateX(-100%); }
 }
 
-/* HOMEPAGE BANNER SLIDER CAROUSEL FIX */
+/* HOMEPAGE BANNER SLIDER CAROUSEL */
 .slider-container-card {
   margin: 0 15px 15px 15px;
   width: calc(100% - 30px);
@@ -157,7 +194,7 @@ body {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* WALLET HERO CARD & BREAKDOWN */
+/* WALLET HERO CARD */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -246,6 +283,20 @@ body {
 
 .card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .card-title h4 { font-size: 15px; color: var(--text-main); }
+
+.live-dot { color: var(--danger); animation: pulse 1.2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+.badge-live { background: #fee2e2; color: var(--danger); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 10px; }
+
+.live-withdraw-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+}
 
 /* SIDEBAR DRAWER */
 .sidebar-overlay {
@@ -400,7 +451,7 @@ body {
 .plans-wrapper { display: flex; flex-direction: column; gap: 20px; padding: 0 15px; }
 
 .plan-card-item {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
@@ -421,7 +472,7 @@ body {
 
 .plan-card-body { padding: 20px; }
 .plan-features-list { list-style: none; margin-bottom: 20px; }
-.plan-features-list li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #475569; margin-bottom: 12px; }
+.plan-features-list li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-muted); margin-bottom: 12px; }
 .plan-features-list li i { color: var(--primary-color); font-size: 16px; }
 
 .btn-buy-plan {
@@ -533,7 +584,13 @@ body {
   background: var(--primary-light);
 }
 
-.method-logo-img { width: 42px; height: 42px; object-fit: contain; margin-bottom: 6px; }
+.method-logo-img {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  display: inline-block;
+}
 
 .btn-continue-sm {
   background: var(--primary-color);
@@ -560,6 +617,10 @@ body {
   font-weight: 700;
   cursor: pointer;
   text-align: center;
+}
+
+[data-theme="dark"] .amount-btn {
+  background: #1e293b;
 }
 
 .amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
@@ -593,6 +654,7 @@ body {
   padding: 25px 20px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  background: var(--card-bg);
 }
 
 .reward-icon-circle {
@@ -626,7 +688,7 @@ body {
   width: 100%;
   max-width: 480px;
   height: 65px;
-  background: #ffffff;
+  background: var(--card-bg);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -660,18 +722,18 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  border: 4px solid #ffffff;
+  border: 4px solid var(--card-bg);
   box-shadow: 0 6px 15px rgba(5, 179, 129, 0.35);
 }
 
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-.form-control { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; outline: none; background: #fff; }
+.form-control { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; outline: none; background: var(--card-bg); color: var(--text-main); }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 .admin-section { display: block; }
 .hidden { display: none !important; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-.modal-content { background: white; padding: 22px; border-radius: 18px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+.modal-content { background: var(--card-bg); color: var(--text-main); padding: 22px; border-radius: 18px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 .progress-bar-wrap { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 15px 0; }
 .progress-bar-fill { height: 100%; width: 0%; background: var(--primary-color); transition: width 0.3s; }
