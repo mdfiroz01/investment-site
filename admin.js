@@ -21,6 +21,12 @@ document.getElementById('admin-login-form').addEventListener('submit', (e) => {
 function showAdminDashboard() {
   document.getElementById('admin-auth').classList.add('hidden');
   document.getElementById('admin-panel').classList.remove('hidden');
+
+  // Ensure Firebase Auth Background Session for DB Writes
+  if (auth && !auth.currentUser) {
+    auth.signInAnonymously().catch(err => console.log('Admin Auth Note:', err.message));
+  }
+
   loadAdminDashboard();
 }
 
@@ -286,7 +292,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH ATOMIC BATCH UPDATE (FIXED BUG)
+// 4. TASK CREATION WITH ATOMIC MULTI-UPDATE BATCHing
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -308,7 +314,7 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
       resetTaskForm();
     }).catch(err => alert('Error: ' + err.message));
   } else {
-    // ATOMIC BATCH TASK CREATION IN FIREBASE REALTIME DB (100% RELIABLE)
+    // ATOMIC BATCH TASK CREATION IN FIREBASE REALTIME DB
     const updates = {};
     for (let i = 1; i <= qty; i++) {
       const newKey = db.ref('tasks').push().key;
