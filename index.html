@@ -32,11 +32,11 @@
 </head>
 <body>
 
-  <!-- AUTH MODAL -->
+  <!-- AUTH MODAL CONTAINER -->
   <div id="auth-container" class="modal-overlay">
     <div class="modal-content">
       
-      <!-- LOGIN FORM -->
+      <!-- 1. LOGIN FORM -->
       <form id="login-form">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
@@ -60,7 +60,7 @@
         </p>
       </form>
 
-      <!-- REGISTER FORM -->
+      <!-- 2. REGISTER FORM (WITH AUTO REF CODE FILL) -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
@@ -87,7 +87,7 @@
           <input type="password" id="reg-password" class="form-control" required placeholder="সর্বনিম্ন ৬ অক্ষর">
         </div>
         <div class="form-group">
-          <label>রেফারেল কোড (ঐচ্ছিক)</label>
+          <label>রেফারেল কোড (অটোমেটিক সেট হবে)</label>
           <input type="text" id="reg-ref" class="form-control" placeholder="রেফার কোড">
         </div>
         <button type="submit" class="btn-action">রেজিস্টার করুন</button>
@@ -96,7 +96,7 @@
         </p>
       </form>
 
-      <!-- FORGOT PASSWORD FORM -->
+      <!-- 3. FORGOT / RESET PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
