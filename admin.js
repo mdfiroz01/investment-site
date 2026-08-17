@@ -1,8 +1,22 @@
 const ADMIN_PASS = "admin3";
 
+// ENSURE FIREBASE AUTH SESSION IS ACTIVE FOR ADMIN DATABASE PERMISSIONS
+function ensureAdminFirebaseAuth() {
+  return new Promise((resolve) => {
+    if (auth.currentUser) {
+      resolve();
+    } else {
+      auth.signInAnonymously().then(() => resolve()).catch(() => resolve());
+    }
+  });
+}
+
+// AUTO CHECK SESSION LOGIN
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
-    showAdminDashboard();
+    ensureAdminFirebaseAuth().then(() => {
+      showAdminDashboard();
+    });
   }
 });
 
@@ -12,7 +26,9 @@ document.getElementById('admin-login-form').addEventListener('submit', (e) => {
 
   if (pass === ADMIN_PASS) {
     sessionStorage.setItem('isAdminLoggedIn', 'true');
-    showAdminDashboard();
+    ensureAdminFirebaseAuth().then(() => {
+      showAdminDashboard();
+    });
   } else {
     alert("ভুল এডমিন পাসওয়ার্ড! সঠিক পাসওয়ার্ড দিন: admin3");
   }
@@ -21,12 +37,6 @@ document.getElementById('admin-login-form').addEventListener('submit', (e) => {
 function showAdminDashboard() {
   document.getElementById('admin-auth').classList.add('hidden');
   document.getElementById('admin-panel').classList.remove('hidden');
-
-  // Ensure Firebase Auth Background Session for DB Writes
-  if (auth && !auth.currentUser) {
-    auth.signInAnonymously().catch(err => console.log('Admin Auth Note:', err.message));
-  }
-
   loadAdminDashboard();
 }
 
@@ -73,7 +83,8 @@ function loadAdminDashboard() {
 // ----------------------------------------------------
 // 1. SYSTEM SETTINGS
 // ----------------------------------------------------
-window.saveSystemSettings = function() {
+window.saveSystemSettings = async function() {
+  await ensureAdminFirebaseAuth();
   const logoUrl = document.getElementById('cfg-site-logo').value;
   const minWithdraw = parseFloat(document.getElementById('cfg-min-withdraw').value) || 200;
   const withdrawChargePercent = parseFloat(document.getElementById('cfg-withdraw-charge').value) || 5;
@@ -82,7 +93,8 @@ window.saveSystemSettings = function() {
     logoUrl: logoUrl,
     minWithdraw: minWithdraw,
     withdrawChargePercent: withdrawChargePercent
-  }).then(() => alert('সাইট সেটিংস সফলভাবে সেভ করা হয়েছে!'));
+  }).then(() => alert('সাইট সেটিংস সফলভাবে সেভ করা হয়েছে!'))
+    .catch(err => alert('সেভ ব্যর্থ: ' + err.message));
 };
 
 function loadSettingsAdmin() {
@@ -181,7 +193,8 @@ window.closeEditUserModal = function() {
   document.getElementById('edit-user-modal').classList.add('hidden');
 };
 
-window.saveUserEdit = function() {
+window.saveUserEdit = async function() {
+  await ensureAdminFirebaseAuth();
   const uid = document.getElementById('edit-user-uid').value;
   const updates = {
     name: document.getElementById('edit-user-name').value,
@@ -194,23 +207,26 @@ window.saveUserEdit = function() {
   db.ref('users/' + uid).update(updates).then(() => {
     alert('ইউজার ডাটা সফলভাবে আপডেট হয়েছে!');
     closeEditUserModal();
-  });
+  }).catch(err => alert('আপডেট ব্যর্থ: ' + err.message));
 };
 
-window.toggleBlockUser = function(uid, blockState) {
+window.toggleBlockUser = async function(uid, blockState) {
+  await ensureAdminFirebaseAuth();
   const actionText = blockState ? 'ব্লক' : 'আনব্লক';
   if (confirm(`আপনি কি এই ইউজারকে ${actionText} করতে চান?`)) {
     db.ref('users/' + uid + '/isBlocked').set(blockState).then(() => {
       alert(`ইউজার সফলভাবে ${actionText} করা হয়েছে!`);
-    });
+    }).catch(err => alert('ব্যর্থ: ' + err.message));
   }
 };
 
 // ----------------------------------------------------
 // 3. VIP PLAN EDIT & MANAGEMENT
 // ----------------------------------------------------
-document.getElementById('admin-add-plan-form').addEventListener('submit', (e) => {
+document.getElementById('admin-add-plan-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  await ensureAdminFirebaseAuth();
+
   const editKey = document.getElementById('edit-plan-key').value;
   const planData = {
     name: document.getElementById('plan-name').value,
@@ -229,12 +245,12 @@ document.getElementById('admin-add-plan-form').addEventListener('submit', (e) =>
     db.ref('plans/' + editKey).update(planData).then(() => {
       alert('VIP প্ল্যান সফলভাবে ইডিট করা হয়েছে!');
       resetPlanForm();
-    });
+    }).catch(err => alert('Error: ' + err.message));
   } else {
     db.ref('plans').push(planData).then(() => {
       alert('নতুন VIP প্ল্যান সফলভাবে যোগ করা হয়েছে!');
       resetPlanForm();
-    });
+    }).catch(err => alert('Error: ' + err.message));
   }
 });
 
@@ -292,10 +308,12 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH ATOMIC MULTI-UPDATE BATCHing
+// 4. TASK CREATION WITH BATCH QUANTITY SUPPORT
 // ----------------------------------------------------
-document.getElementById('admin-add-task-form').addEventListener('submit', (e) => {
+document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  await ensureAdminFirebaseAuth();
+
   const editKey = document.getElementById('edit-task-key').value;
   const baseTitle = document.getElementById('task-title').value;
   const reward = parseFloat(document.getElementById('task-reward').value) || 0;
@@ -303,7 +321,6 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
   const qty = parseInt(document.getElementById('task-quantity').value) || 1;
 
   if (editKey) {
-    // EDIT SINGLE TASK
     db.ref('tasks/' + editKey).update({
       title: baseTitle,
       reward: reward,
@@ -314,7 +331,6 @@ document.getElementById('admin-add-task-form').addEventListener('submit', (e) =>
       resetTaskForm();
     }).catch(err => alert('Error: ' + err.message));
   } else {
-    // ATOMIC BATCH TASK CREATION IN FIREBASE REALTIME DB
     const updates = {};
     for (let i = 1; i <= qty; i++) {
       const newKey = db.ref('tasks').push().key;
@@ -381,61 +397,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. SOCIAL MEDIA SUPPORT FAB MANAGEMENT
-// ----------------------------------------------------
-document.getElementById('admin-social-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const editKey = document.getElementById('edit-social-key').value;
-  const socialData = {
-    name: document.getElementById('social-name').value,
-    icon: document.getElementById('social-icon').value,
-    url: document.getElementById('social-url').value
-  };
-
-  if (editKey) {
-    db.ref('social_support/' + editKey).update(socialData).then(() => {
-      alert('সোশ্যাল সাপোর্ট লিংক আপডেট হয়েছে!');
-      resetSocialForm();
-    });
-  } else {
-    const newRef = db.ref('social_support').push();
-    socialData.id = newRef.key;
-    newRef.set(socialData).then(() => {
-      alert('নতুন সোশ্যাল সাপোর্ট লিংক যোগ করা হয়েছে!');
-      resetSocialForm();
-    });
-  }
-});
-
-function loadSocialSupportAdmin() {
-  db.ref('social_support').on('value', snap => {
-    const list = document.getElementById('admin-social-list');
-    if (!list) return;
-    list.innerHTML = '';
-    if (!snap.exists()) return;
-
-    snap.forEach(child => {
-      const s = child.val();
-      const key = child.key;
-      list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
-          <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
-          <div>
-            <button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-  });
-}
-
-function resetSocialForm() {
-  document.getElementById('edit-social-key').value = '';
-  document.getElementById('admin-social-form').reset();
-}
-
-// ----------------------------------------------------
-// 6. DEPOSITS & WITHDRAWALS
+// 5. DEPOSITS MANAGEMENT (FIXED APPROVAL)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -463,7 +425,7 @@ function loadDepositsAdmin() {
             <td>${d.trxId}</td>
             <td>
               <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})">Approve</button>
-              <button class="btn-action-sm btn-danger" onclick="db.ref('deposits/${child.key}/status').set('rejected')">Reject</button>
+              <button class="btn-action-sm btn-danger" onclick="rejectDeposit('${child.key}')">Reject</button>
             </td>
           </tr>
         `;
@@ -477,49 +439,69 @@ function loadDepositsAdmin() {
   });
 }
 
-window.approveDeposit = function(depId, uid, amount) {
-  db.ref('deposits/' + depId).once('value', depSnap => {
-    if (!depSnap.exists()) return;
+// APPROVE DEPOSIT WITH RELIABLE ASYNC EXECUTION
+window.approveDeposit = async function(depId, uid, amount) {
+  try {
+    await ensureAdminFirebaseAuth();
+
+    const depSnap = await db.ref('deposits/' + depId).once('value');
+    if (!depSnap.exists()) {
+      alert('ডিপোজিট রেকর্ড পাওয়া যায়নি!');
+      return;
+    }
     const depData = depSnap.val();
 
-    db.ref('users/' + uid).once('value', userSnap => {
-      if (!userSnap.exists()) return;
-      const user = userSnap.val();
-      const updates = {};
-      
-      let activatedPlanName = null;
-      let activatedPlanPrice = amount;
+    const userSnap = await db.ref('users/' + uid).once('value');
+    if (!userSnap.exists()) {
+      alert('ইউজার ডাটা পাওয়া যায়নি!');
+      return;
+    }
+    const user = userSnap.val();
 
-      if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
-        const target = depData.targetPlan;
-        updates[`users/${uid}/vipLevel`] = target.vipLevel;
-        updates[`users/${uid}/vipPlanName`] = target.planName;
-        updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
-        updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
-        activatedPlanName = target.planName;
+    const updates = {};
+    let activatedPlanName = null;
 
-        db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value', pSnap => {
-          if (pSnap.exists()) {
-            pSnap.forEach(p => {
-              updates[`users/${uid}/withdrawChargePercent`] = p.val().withdrawChargePercent || 5;
-            });
-          }
+    if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
+      const target = depData.targetPlan;
+      updates[`users/${uid}/vipLevel`] = target.vipLevel;
+      updates[`users/${uid}/vipPlanName`] = target.planName;
+      updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
+      updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
+      activatedPlanName = target.planName;
+
+      // Get plan withdraw fee %
+      const planSnap = await db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value');
+      if (planSnap.exists()) {
+        planSnap.forEach(p => {
+          updates[`users/${uid}/withdrawChargePercent`] = p.val().withdrawChargePercent || 5;
         });
-      } else {
-        updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
       }
+    } else {
+      updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
+    }
 
-      updates[`deposits/${depId}/status`] = 'approved';
+    updates[`deposits/${depId}/status`] = 'approved';
 
-      db.ref().update(updates).then(() => {
-        if (activatedPlanName && user.referredBy) {
-          processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', activatedPlanPrice, activatedPlanName);
-        }
+    await db.ref().update(updates);
 
-        alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে!');
-      });
-    });
-  });
+    if (activatedPlanName && user.referredBy) {
+      processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', amount, activatedPlanName);
+    }
+
+    alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে!');
+  } catch (err) {
+    alert('অনুমোদন ব্যর্থ: ' + err.message);
+  }
+};
+
+window.rejectDeposit = async function(depId) {
+  try {
+    await ensureAdminFirebaseAuth();
+    await db.ref('deposits/' + depId + '/status').set('rejected');
+    alert('ডিপোজিট রিকোয়েস্ট বাতিল করা হয়েছে।');
+  } catch (err) {
+    alert('বাতিল ব্যর্থ: ' + err.message);
+  }
 };
 
 function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, planPrice, planName) {
@@ -569,6 +551,9 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
   });
 }
 
+// ----------------------------------------------------
+// 6. WITHDRAWALS MANAGEMENT (FIXED APPROVAL & REJECTION)
+// ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
     const tbody = document.getElementById('admin-wit-table');
@@ -592,7 +577,7 @@ function loadWithdrawsAdmin() {
             <td>${w.walletNumber}</td>
             <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
             <td>
-              <button class="btn-action-sm btn-success" onclick="db.ref('withdraws/${child.key}/status').set('approved')">Approve</button>
+              <button class="btn-action-sm btn-success" onclick="approveWithdraw('${child.key}')">Approve</button>
               <button class="btn-action-sm btn-danger" onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})">Reject</button>
             </td>
           </tr>
@@ -607,20 +592,40 @@ function loadWithdrawsAdmin() {
   });
 }
 
-window.rejectWithdraw = function(witId, uid, amount) {
-  db.ref('users/' + uid).once('value', snap => {
-    const u = snap.val() || {};
-    const updates = {};
-    updates[`users/${uid}/incomeBalance`] = (u.incomeBalance || 0) + amount;
-    updates[`withdraws/${witId}/status`].set('rejected');
-
-    db.ref().update(updates).then(() => alert('উত্তোলন বাতিল ও ব্যালেন্স রিফান্ড করা হয়েছে।'));
-  });
+window.approveWithdraw = async function(witId) {
+  try {
+    await ensureAdminFirebaseAuth();
+    await db.ref('withdraws/' + witId + '/status').set('approved');
+    alert('উত্তোলন রিকোয়েস্ট সফলভাবে অনুমোদন করা হয়েছে!');
+  } catch (err) {
+    alert('অনুমোদন ব্যর্থ: ' + err.message);
+  }
 };
 
-// UNLIMITED DYNAMIC PAYMENT GATEWAYS
-document.getElementById('admin-gateway-form').addEventListener('submit', (e) => {
+window.rejectWithdraw = async function(witId, uid, amount) {
+  try {
+    await ensureAdminFirebaseAuth();
+    const uSnap = await db.ref('users/' + uid).once('value');
+    const u = uSnap.val() || {};
+    
+    const updates = {};
+    updates[`users/${uid}/incomeBalance`] = (u.incomeBalance || 0) + amount;
+    updates[`withdraws/${witId}/status`] = 'rejected';
+
+    await db.ref().update(updates);
+    alert('উত্তোলন বাতিল করা হয়েছে এবং ইউজারের ব্যালেন্স রিফান্ড করা হয়েছে।');
+  } catch (err) {
+    alert('বাতিল ব্যর্থ: ' + err.message);
+  }
+};
+
+// ----------------------------------------------------
+// 7. UNLIMITED DYNAMIC PAYMENT GATEWAYS
+// ----------------------------------------------------
+document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  await ensureAdminFirebaseAuth();
+
   const editKey = document.getElementById('edit-gateway-key').value;
   const gatewayData = {
     name: document.getElementById('gateway-name').value,
@@ -683,8 +688,67 @@ window.resetGatewayForm = function() {
   document.getElementById('admin-gateway-form').reset();
 };
 
-// SLIDER, WELCOME NOTICE & BROADCAST
-window.addSliderBannerImage = function() {
+// ----------------------------------------------------
+// 8. SOCIAL MEDIA SUPPORT FAB
+// ----------------------------------------------------
+document.getElementById('admin-social-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await ensureAdminFirebaseAuth();
+
+  const editKey = document.getElementById('edit-social-key').value;
+  const socialData = {
+    name: document.getElementById('social-name').value,
+    icon: document.getElementById('social-icon').value,
+    url: document.getElementById('social-url').value
+  };
+
+  if (editKey) {
+    db.ref('social_support/' + editKey).update(socialData).then(() => {
+      alert('সোশ্যাল সাপোর্ট লিংক আপডেট হয়েছে!');
+      resetSocialForm();
+    });
+  } else {
+    const newRef = db.ref('social_support').push();
+    socialData.id = newRef.key;
+    newRef.set(socialData).then(() => {
+      alert('নতুন সোশ্যাল সাপোর্ট লিংক যোগ করা হয়েছে!');
+      resetSocialForm();
+    });
+  }
+});
+
+function loadSocialSupportAdmin() {
+  db.ref('social_support').on('value', snap => {
+    const list = document.getElementById('admin-social-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!snap.exists()) return;
+
+    snap.forEach(child => {
+      const s = child.val();
+      const key = child.key;
+      list.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
+          <div>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+}
+
+function resetSocialForm() {
+  document.getElementById('edit-social-key').value = '';
+  document.getElementById('admin-social-form').reset();
+}
+
+// ----------------------------------------------------
+// 9. SLIDER, WELCOME NOTICE & BROADCAST
+// ----------------------------------------------------
+window.addSliderBannerImage = async function() {
+  await ensureAdminFirebaseAuth();
   const url = document.getElementById('admin-slider-url-input').value;
   if (!url) return alert('ইমেজের URL দিন');
   db.ref('slider').push({ url: url }).then(() => {
@@ -709,7 +773,8 @@ function loadSlidersAdmin() {
   });
 }
 
-window.saveWelcomePopUpNotice = function() {
+window.saveWelcomePopUpNotice = async function() {
+  await ensureAdminFirebaseAuth();
   db.ref('notices/welcome').set({
     title: document.getElementById('welcome-title-input').value,
     text: document.getElementById('welcome-text-input').value,
@@ -734,13 +799,15 @@ function loadWelcomeNoticeAdmin() {
   });
 }
 
-window.saveMarqueeNotice = function() {
+window.saveMarqueeNotice = async function() {
+  await ensureAdminFirebaseAuth();
   const text = document.getElementById('admin-notice-input').value;
   if (!text) return;
   db.ref('notices/main').set({ text: text, updatedAt: firebase.database.ServerValue.TIMESTAMP }).then(() => alert('নোটিশ আপডেট হয়েছে!'));
 };
 
-window.sendBroadcastNotification = function() {
+window.sendBroadcastNotification = async function() {
+  await ensureAdminFirebaseAuth();
   const title = document.getElementById('notif-broadcast-title').value;
   const desc = document.getElementById('notif-broadcast-desc').value;
   if (!title || !desc) return alert('টাইটেল ও মেসেজ দুটিই লিখুন।');
