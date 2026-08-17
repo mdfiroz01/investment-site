@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -129,6 +129,7 @@
       <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
       <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
       <li onclick="switchTab('tab-profile'); closeSidebar()"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
+      <li onclick="toggleAppTheme(); closeSidebar()"><i class="fa-solid fa-circle-half-stroke"></i> ডার্ক / লাইট মোড</li>
       <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
     </ul>
   </div>
@@ -136,7 +137,7 @@
   <!-- NOTIFICATION MODAL -->
   <div id="notif-modal" class="modal-overlay hidden">
     <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
         <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-bell" style="color:var(--primary-color)"></i> নোটিফিকেশনসমূহ</h3>
         <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeNotifModal()"></i>
       </div>
@@ -156,7 +157,7 @@
   <!-- MAIN APP CONTAINER -->
   <div id="app-container" class="app-viewport hidden">
 
-    <!-- TOP HEADER -->
+    <!-- TOP HEADER WITH THEME TOGGLE SWITCH -->
     <header class="top-header">
       <div class="header-left">
         <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
@@ -165,9 +166,17 @@
           <h3 class="app-logo">EarnerApp</h3>
         </div>
       </div>
-      <div class="notif-wrapper" onclick="openNotifModal()">
-        <i class="fa-solid fa-bell notif-icon"></i>
-        <span class="notif-badge-dot"></span>
+      
+      <div style="display:flex; align-items:center; gap:12px;">
+        <!-- DARK / LIGHT MODE TOGGLE BUTTON -->
+        <div class="theme-toggle-btn" onclick="toggleAppTheme()" title="থিম পরিবর্তন করুন">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </div>
+
+        <div class="notif-wrapper" onclick="openNotifModal()">
+          <i class="fa-solid fa-bell notif-icon"></i>
+          <span class="notif-badge-dot"></span>
+        </div>
       </div>
     </header>
 
@@ -307,7 +316,7 @@
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
-    <!-- TAB 5: DEPOSIT -->
+    <!-- TAB 5: DEPOSIT (STEP 1 HAS METHOD SELECTOR ALWAYS) -->
     <div id="tab-deposit" class="tab-content">
       
       <!-- STEP 1: METHOD SELECTION -->
@@ -453,7 +462,7 @@
             <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()">
           </div>
 
-          <div id="wit-fee-preview-box" style="background:#f1f5f9; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
+          <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
             <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
             <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
           </div>
@@ -498,7 +507,7 @@
 
   </div>
 
-  <!-- REWARD CELEBRATION MODAL (NO BROWSER ALERT) -->
+  <!-- REWARD CELEBRATION MODAL -->
   <div id="task-modal" class="modal-overlay hidden">
     <div class="modal-content reward-pop-card">
       
