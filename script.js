@@ -736,7 +736,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING (GUARANTEED MULTI-TASK DISPLAY)
+// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -783,7 +783,7 @@ function loadTasks(completedTaskIds = {}) {
     const userVipTasks = [];
 
     if (snap.exists()) {
-      // EXPLICIT UNIQUE FIREBASE KEY MAPPING (FIXES BUG)
+      // EXPLICIT UNIQUE FIREBASE KEY MAPPING FOR EVERY SINGLE TASK
       snap.forEach(child => {
         const task = child.val();
         task.id = child.key; // Unique Firebase Key
