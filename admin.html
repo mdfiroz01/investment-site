@@ -62,7 +62,7 @@
         <i class="fa-solid fa-bars menu-icon" style="color:#0f172a;" onclick="openAdminSidebar()"></i>
         <h3 class="app-logo" style="color:#05b381;">AdminPanel</h3>
       </div>
-      <button class="btn-action" style="width:auto; padding:6px 12px; font-size:11px; background:#64748b;" onclick="adminLogout()">Logout</button>
+      <button class="btn-action-sm btn-cancel" style="padding:6px 12px;" onclick="adminLogout()">Logout</button>
     </header>
 
     <!-- SECTION 1: STATS & OVERVIEW -->
@@ -110,7 +110,7 @@
         </div>
 
         <button type="submit" id="btn-save-plan" class="btn-action" style="grid-column: span 2;">প্ল্যান সেভ করুন</button>
-        <button type="button" id="btn-cancel-plan-edit" class="btn-action hidden" style="grid-column: span 2; background:#64748b;" onclick="resetPlanForm()">বাতিল করুন</button>
+        <button type="button" id="btn-cancel-plan-edit" class="btn-action btn-cancel hidden" style="grid-column: span 2;" onclick="resetPlanForm()">বাতিল করুন</button>
       </form>
 
       <h4>বিদ্যমান প্ল্যানসমূহ:</h4>
@@ -132,7 +132,7 @@
         <input type="url" id="gateway-logo" class="admin-form-control" placeholder="লোগো ছবি URL" required>
 
         <button type="submit" id="btn-save-gateway" class="btn-action">মেথড সেভ করুন</button>
-        <button type="button" id="btn-cancel-gateway" class="btn-action hidden" style="background:#64748b;" onclick="resetGatewayForm()">বাতিল করুন</button>
+        <button type="button" id="btn-cancel-gateway" class="btn-action btn-cancel hidden" onclick="resetGatewayForm()">বাতিল করুন</button>
       </form>
       <div id="admin-gateways-list" style="margin-top:10px;"></div>
     </div>
@@ -164,7 +164,7 @@
         <input type="number" id="task-reward" placeholder="রিওয়ার্ড (৳)" class="admin-form-control" required>
         <input type="number" id="task-min-vip" placeholder="লেভেল (0 = ফ্রি, 1 = VIP 1...)" class="admin-form-control" required value="0">
         <button type="submit" id="btn-save-task" class="btn-action">টাস্ক সেভ করুন</button>
-        <button type="button" id="btn-cancel-task-edit" class="btn-action hidden" style="background:#64748b;" onclick="resetTaskForm()">বাতিল করুন</button>
+        <button type="button" id="btn-cancel-task-edit" class="btn-action btn-cancel hidden" onclick="resetTaskForm()">বাতিল করুন</button>
       </form>
       <div id="admin-tasks-list" style="margin-top:10px;"></div>
     </div>
@@ -233,7 +233,7 @@
         <label><b>পুশ নোটিফিকেশন ব্রডকাস্ট</b></label>
         <input type="text" id="notif-broadcast-title" class="admin-form-control" placeholder="টাইটেল" style="margin-bottom:8px;">
         <textarea id="notif-broadcast-desc" class="admin-form-control" placeholder="মেসেজ..." rows="3"></textarea>
-        <button class="btn-action" style="margin-top:10px; background:var(--accent-purple);" onclick="sendBroadcastNotification()">ব্রডকাস্ট পাঠান 🚀</button>
+        <button class="btn-action btn-secondary" style="margin-top:10px;" onclick="sendBroadcastNotification()">ব্রডকাস্ট পাঠান 🚀</button>
       </div>
     </div>
 
