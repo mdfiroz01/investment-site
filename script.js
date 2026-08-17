@@ -1,4 +1,3 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -737,7 +736,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING (FIXES ALL TASKS SHOWING BUG)
+// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING (GUARANTEED MULTI-TASK DISPLAY)
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -784,10 +783,10 @@ function loadTasks(completedTaskIds = {}) {
     const userVipTasks = [];
 
     if (snap.exists()) {
-      // EXPLICIT UNIQUE FIREBASE KEY BINDING FOR EVERY TASK
+      // EXPLICIT UNIQUE FIREBASE KEY MAPPING (FIXES BUG)
       snap.forEach(child => {
         const task = child.val();
-        task.id = child.key; // Assign Unique Firebase Key
+        task.id = child.key; // Unique Firebase Key
         
         const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
         
