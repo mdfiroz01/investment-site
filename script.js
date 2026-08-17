@@ -1,3 +1,4 @@
+
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -177,7 +178,7 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-// GLOBAL UI FUNCTIONS & DYNAMIC URL SWITCHER
+// GLOBAL UI FUNCTIONS
 window.openSidebar = function() {
   document.getElementById('sidebar-drawer').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('open');
@@ -219,6 +220,42 @@ window.toggleBkashBalance = function() {
   }
 };
 
+window.toggleSupportFab = function() {
+  const container = document.getElementById('fab-support-container');
+  if (container) {
+    container.classList.toggle('open');
+  }
+};
+
+function loadSocialSupportLinks() {
+  db.ref('social_support').on('value', snap => {
+    const menu = document.getElementById('fab-support-menu');
+    if (!menu) return;
+
+    if (!snap.exists()) {
+      menu.innerHTML = `
+        <a href="https://t.me/" target="_blank" class="fab-menu-item">
+          <span>Telegram Group</span> <i class="fa-brands fa-telegram" style="color:#0088cc"></i>
+        </a>
+        <a href="https://wa.me/" target="_blank" class="fab-menu-item">
+          <span>WhatsApp Support</span> <i class="fa-brands fa-whatsapp" style="color:#25d366"></i>
+        </a>
+      `;
+      return;
+    }
+
+    menu.innerHTML = '';
+    snap.forEach(child => {
+      const s = child.val();
+      menu.innerHTML += `
+        <a href="${s.url}" target="_blank" class="fab-menu-item">
+          <span>${s.name}</span> <i class="${s.icon || 'fa-solid fa-headset'}"></i>
+        </a>
+      `;
+    });
+  });
+}
+
 window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = true) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
@@ -232,7 +269,6 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = 
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
   } else {
-    // Highlight bottom nav icon corresponding to tabId
     const navMap = { 'tab-home': 0, 'tab-wallet': 1, 'tab-vip': 2, 'tab-withdraw': 3, 'tab-profile': 4 };
     const idx = navMap[tabId];
     const navItems = document.querySelectorAll('.bottom-nav .nav-item');
@@ -242,7 +278,6 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = 
     }
   }
 
-  // DYNAMIC CLEAN URL PATH UPDATE
   if (pushState) {
     const routePaths = {
       'tab-home': '/home',
@@ -261,14 +296,11 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = 
   }
 };
 
-// LISTEN TO BROWSER BACK/FORWARD BUTTONS
 window.addEventListener('popstate', (e) => {
   handleInitialPathRouting();
 });
 
-// ROUTE & REFERRAL AUTO-FILL ENGINE
 function handleInitialPathRouting() {
-  // 1. READ URL REFERRAL CODE (?ref=CODE or ?refCode=CODE)
   const urlParams = new URLSearchParams(window.location.search);
   let refCode = urlParams.get('ref') || urlParams.get('refCode');
 
@@ -278,13 +310,11 @@ function handleInitialPathRouting() {
     refCode = localStorage.getItem('pendingRefCode');
   }
 
-  // AUTO PRE-FILL REGISTRATION REFERRAL CODE FIELD
   if (refCode) {
     const refInput = document.getElementById('reg-ref');
     if (refInput) refInput.value = refCode;
   }
 
-  // 2. PARSE CURRENT URL PATH ROUTE
   const path = window.location.pathname.toLowerCase();
 
   if (!currentUser) {
@@ -707,7 +737,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
+// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING (FIXES ALL TASKS SHOWING BUG)
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -751,23 +781,25 @@ function loadTasks(completedTaskIds = {}) {
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
 
-    const defaultTasks = [
-      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (শুধুমাত্র নো-প্ল্যান ইউজারের জন্য)', reward: 5, minVip: 0, isFree: true },
-      { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব (VIP 1)', reward: 15, minVip: 1 },
-      { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার (VIP 2)', reward: 50, minVip: 2 },
-      { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ব্রাউজিং (VIP 3)', reward: 110, minVip: 3 }
-    ];
+    const userVipTasks = [];
 
-    const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
-    let availableTasks = [];
-
-    if (userVip === 0) {
-      availableTasks = allTasks.filter(t => (Number(t.minVip || 0) === 0 || t.isFree === true));
-    } else {
-      availableTasks = allTasks.filter(t => Number(t.minVip || 0) === userVip && !t.isFree && Number(t.minVip) !== 0);
+    if (snap.exists()) {
+      // EXPLICIT UNIQUE FIREBASE KEY BINDING FOR EVERY TASK
+      snap.forEach(child => {
+        const task = child.val();
+        task.id = child.key; // Assign Unique Firebase Key
+        
+        const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
+        
+        if (userVip === 0 && isFree) {
+          userVipTasks.push(task);
+        } else if (userVip > 0 && Number(task.minVip || 0) === userVip && !isFree) {
+          userVipTasks.push(task);
+        }
+      });
     }
 
-    if (availableTasks.length === 0) {
+    if (userVipTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:30px 15px;">
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
@@ -779,8 +811,8 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    availableTasks.forEach(task => {
-      const taskId = task.id || 't0';
+    userVipTasks.forEach(task => {
+      const taskId = task.id; // Unique Firebase Key
       const isCompletedToday = completedTaskIds[taskId] === true;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
@@ -1276,6 +1308,8 @@ function renderLiveWithdrawsInfinite() {
 
 // AUTH HANDLERS
 document.addEventListener('DOMContentLoaded', () => {
+  loadSocialSupportLinks();
+
   const loginForm = document.getElementById('login-form');
   const regForm = document.getElementById('register-form');
   const forgotForm = document.getElementById('forgot-password-form');
