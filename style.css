@@ -476,6 +476,7 @@ body.admin-body {
 
 .metric-card i { font-size: 20px; padding: 8px; border-radius: 10px; }
 .icon-today { background: #e0f2fe; color: #0284c7; }
+.icon-today-dark { background: #1e293b; color: #38bdf8; }
 .icon-total { background: #f0fdf4; color: #16a34a; }
 .metric-card p { font-size: 10.5px; color: var(--text-muted); }
 .metric-card h3 { font-size: 16px; font-weight: 800; color: var(--text-main); }
@@ -485,7 +486,7 @@ body.admin-body {
   border: 1px solid var(--border-color);
   margin: 0 12px 12px 12px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: 18px;
   box-shadow: var(--shadow-light);
   width: calc(100% - 24px);
 }
@@ -679,44 +680,51 @@ body.admin-body {
   text-transform: uppercase;
 }
 
-/* SLEEK VIP PLAN CARDS (FIXED BULLETS & COMPACT CARD LAYOUT) */
-.plans-wrapper { display: flex; flex-direction: column; gap: 12px; padding: 0 12px; }
+/* ===================================================
+   EXACT VIP PLAN CARDS (MATCHED WITH YOUR SCREENSHOT)
+=================================================== */
+.plans-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 12px;
+}
 
 .plan-card-item {
   background: var(--card-bg);
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: var(--shadow-light);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
   position: relative;
   border: 1px solid var(--border-color);
-  overflow: hidden;
 }
 
 .plan-bonus-badge {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  padding: 4px 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
   z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .plan-ribbon {
   position: absolute;
-  top: 14px;
-  right: -28px;
-  background: var(--danger);
-  color: white;
-  font-size: 9px;
+  top: 18px;
+  right: -32px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
   font-weight: 800;
-  padding: 3px 28px;
+  padding: 4px 35px;
   transform: rotate(45deg);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   z-index: 5;
   text-transform: uppercase;
 }
@@ -724,38 +732,40 @@ body.admin-body {
 .plan-ribbon.sold-out-ribbon { background: #64748b; }
 
 .plan-card-header {
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 15px;
+  background: #05b381;
+  color: #ffffff;
+  padding: 22px 15px;
   text-align: center;
-  border-radius: 12px;
-  margin-top: 20px;
 }
 
 .plan-card-header h3 {
-  font-size: 14px;
+  font-size: 18px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   font-weight: 800;
+  margin-bottom: 4px;
 }
 
 .plan-card-header h2 {
-  font-size: 20px;
+  font-size: 32px;
   font-weight: 900;
-  margin-top: 2px;
+  color: #ffffff;
 }
 
 .plan-card-header h2 small {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
 }
 
-.plan-card-body { padding: 12px 0 0 0; }
+.plan-card-body {
+  padding: 20px;
+}
 
-/* FIX UNORDERED LIST BULLETS (REMOVES UGLY DOTS) */
+/* FIX: COMPLETELY REMOVES UGLY LIST BULLET DOTS */
 .plan-features-list {
   list-style: none !important;
-  margin: 0 0 12px 0 !important;
+  list-style-type: none !important;
+  margin: 0 0 20px 0 !important;
   padding: 0 !important;
 }
 
@@ -764,40 +774,67 @@ body.admin-body {
   list-style-type: none !important;
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  font-size: 12px !important;
+  gap: 12px !important;
+  font-size: 14px !important;
   color: var(--text-muted) !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 12px !important;
   padding: 0 !important;
 }
 
 .plan-features-list li i {
-  color: var(--primary-color);
-  font-size: 13px;
+  color: #05b381;
+  font-size: 16px;
   flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.plan-features-list li b {
+  color: var(--text-main);
+  font-weight: 700;
 }
 
 .btn-buy-plan {
   width: 100%;
-  padding: 10px;
-  border: none;
-  background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
-  color: #ffffff;
-  font-size: 13px;
+  padding: 12px;
+  border: 2px solid #05b381;
+  background: transparent;
+  color: #05b381;
+  font-size: 15px;
   font-weight: 800;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(5, 179, 129, 0.25);
   transition: all 0.2s;
 }
 
-.btn-buy-plan:active { transform: scale(0.98); }
+.btn-buy-plan:hover, .btn-buy-plan:active {
+  background: #05b381;
+  color: #ffffff;
+}
 
 .btn-buy-plan.sold-out {
-  background: #94a3b8 !important;
-  box-shadow: none !important;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  background: #f1f5f9;
   cursor: not-allowed;
 }
+
+/* WITHDRAW ALL BALANCE BUTTON IN INPUT */
+.btn-all-bal {
+  position: absolute;
+  right: 8px;
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(5, 179, 129, 0.3);
+}
+
+.btn-all-bal:active { transform: scale(0.95); }
 
 /* WELCOME POPUP BUTTONS */
 .btn-welcome-action {
