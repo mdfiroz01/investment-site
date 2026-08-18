@@ -279,27 +279,49 @@ body.admin-body {
   align-items: flex-start;
 }
 
-/* SCROLLING NOTICE BOARD */
+/* SCROLLING NOTICE BOARD (MIC ICON OVERLAP FIXED) */
 .notice-board {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   margin: 12px 15px;
-  padding: 10px 15px;
+  padding: 0 15px;
   border-radius: 30px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 13.5px;
   font-weight: 800;
   color: var(--primary-color);
   box-shadow: var(--shadow-light);
-  overflow: hidden;
   height: 42px;
+  position: relative;
+  overflow: hidden;
+}
+
+.notice-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: var(--card-bg);
+  padding-right: 6px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.notice-text-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .notice-text {
   white-space: nowrap;
-  animation: marquee 28s linear infinite;
+  display: inline-block;
+  animation: marquee 25s linear infinite;
   line-height: 20px;
   font-weight: 800;
 }
@@ -933,9 +955,7 @@ body.admin-body {
   transition: border-color 0.2s;
 }
 
-.form-control:focus {
-  border-color: var(--primary-color);
-}
+.form-control:focus { border-color: var(--primary-color); }
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
