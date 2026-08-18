@@ -14,6 +14,6 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-// Global Firebase Services Reference (Auth & Realtime DB only)
+// Global Firebase Services Reference
 const auth = firebase.auth();
 const db = firebase.database();
