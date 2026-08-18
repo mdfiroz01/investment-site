@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn" data-theme="light">
 <head>
@@ -60,7 +61,7 @@
         </div>
         <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         
-        <!-- REGISTRATION BONUS NOTICE BANNER -->
+        <!-- REGISTRATION BONUS BANNER -->
         <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
           🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
         </div>
@@ -95,15 +96,12 @@
         </p>
       </form>
 
-      <!-- 3. FORGOT / RESET PASSWORD FORM -->
+      <!-- 3. FORGOT PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary-color);">পাসওয়ার্ড রিসেট</h2>
-        <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:18px; line-height:1.4;">
-          আপনার অ্যাকাউন্টের ইমেইল দিন। পাসওয়ার্ড রিসেট করার একটি নিরাপদ লিংক ইমেইলে পাঠানো হবে।
-        </p>
         <div class="form-group">
           <label>রেজিস্টার্ড ইমেইল অ্যাড্রেস</label>
           <input type="email" id="reset-email" class="form-control" required placeholder="example@mail.com">
@@ -179,7 +177,7 @@
     </div>
   </div>
 
-  <!-- POP-UP WELCOME NOTICE MODAL -->
+  <!-- WELCOME NOTICE MODAL -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align:center;">
       <div id="welcome-img-box"></div>
@@ -247,7 +245,7 @@
       </div>
       
       <div style="display:flex; align-items:center; gap:12px;">
-        <div class="theme-toggle-btn" onclick="toggleAppTheme()" title="থিম পরিবর্তন করুন">
+        <div class="theme-toggle-btn" onclick="toggleAppTheme()" title="থিম পরিবর্তন">
           <i id="theme-icon" class="fa-solid fa-moon"></i>
         </div>
 
@@ -258,17 +256,15 @@
       </div>
     </header>
 
-    <!-- SCROLLING NOTICE (FIXED ICON OVERLAP) -->
+    <!-- FIXED NOTICE BOARD WITH MEGAPHONE OVERLAP FIX -->
     <div class="notice-board">
-      <div class="notice-icon-box">
-        <i class="fa-solid fa-bullhorn"></i>
-      </div>
-      <div class="notice-text-wrapper">
+      <i class="fa-solid fa-bullhorn notice-icon-fixed"></i>
+      <div class="notice-marquee-wrapper">
         <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
       </div>
     </div>
 
-    <!-- BKASH STYLE USER PROFILE & BALANCE CARD -->
+    <!-- BKASH STYLE USER PROFILE CARD -->
     <div class="bkash-card">
       <div class="bkash-user-info">
         <img id="usr-avatar" src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="bkash-avatar" alt="Avatar">
@@ -290,7 +286,7 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-home" class="tab-content active">
 
-      <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
+      <!-- CAROUSEL BANNER SLIDER -->
       <div class="slider-container-card hidden" id="homepage-slider-card">
         <div class="slider-wrapper">
           <img id="slider-img" src="" alt="Banner Slider" class="slider-img">
@@ -335,7 +331,7 @@
         <canvas id="incomeChart"></canvas>
       </div>
 
-      <!-- INFINITE AUTO LIVE WITHDRAW FEED -->
+      <!-- INFINITE LIVE WITHDRAW FEED -->
       <div class="content-card">
         <div class="card-title">
           <h4><i class="fa-solid fa-circle-dot live-dot"></i> লাইভ পেমেন্ট উইথড্র</h4>
@@ -353,7 +349,6 @@
         <p>ডিপোজিট ও ইনকাম ব্যালেন্স দেখুন এবং লেনদেন করুন</p>
       </div>
 
-      <!-- WALLET HERO BALANCE CARD -->
       <div class="wallet-hero-card">
         <p style="font-size:12px; opacity:0.9;">মোট ওয়ালেট ব্যালেন্স</p>
         <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:6px 0; color:#ffffff;">৳০.০০</h1>
@@ -401,7 +396,7 @@
     <!-- TAB 5: DEPOSIT -->
     <div id="tab-deposit" class="tab-content">
       
-      <!-- STEP 1: METHOD SELECTION -->
+      <!-- STEP 1 -->
       <div id="dep-step-1">
         <div class="deposit-hero-banner">
           <p>ব্যালেন্স যোগ করুন ✨</p>
@@ -437,7 +432,7 @@
         </div>
       </div>
 
-      <!-- STEP 2: AMOUNT & TARGET PLAN SELECTION -->
+      <!-- STEP 2 -->
       <div id="dep-step-2" class="hidden">
         <div class="deposit-hero-banner">
           <p>ডিপোজিট পরিমাণ ও প্ল্যান ✨</p>
@@ -477,7 +472,7 @@
         </div>
       </div>
 
-      <!-- STEP 3: TRANSACTION VERIFY -->
+      <!-- STEP 3 -->
       <div id="dep-step-3" class="hidden">
         <div class="deposit-hero-banner">
           <p>ডিপোজিট ভেরিফাই ✨</p>
@@ -511,7 +506,7 @@
 
             <div class="step-row"><span class="step-num">4</span> টাকার পরিমাণ: <b id="step3-confirm-amount" style="color:var(--primary-color)">৳ 500</b></div>
             <div class="step-row"><span class="step-num">5</span> Payment complete হলে confirmation message থেকে Transaction ID কপি করুন।</div>
-            <div class="step-row"><span class="step-num">6</span> উপরে Transaction ID বসিয়ে নিচের VERIFY বাটনে ক্লিক করুন।</div>
+            <div class="step-row"><span class="step-num">6</span> উপরে Transaction ID বসিয়ে VERIFY বাটনে ক্লিক করুন।</div>
           </div>
         </div>
 
@@ -581,7 +576,7 @@
       </div>
     </div>
 
-    <!-- TAB 7: PROFILE & REFERRAL HISTORY -->
+    <!-- TAB 7: PROFILE -->
     <div id="tab-profile" class="tab-content">
       <div class="content-card">
         <h4>প্রোফাইল আপডেট</h4>
@@ -599,7 +594,6 @@
         <button class="btn-action" style="background:var(--accent-purple)" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i> লিংক কপি করুন</button>
       </div>
 
-      <!-- DETAILED REFERRAL COMMISSION HISTORY -->
       <div class="content-card">
         <h4><i class="fa-solid fa-users-viewfinder" style="color:var(--primary-color)"></i> রেফারেল কমিশন ইতিহাস</h4>
         <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">কোন ইউজার কোন প্ল্যান এক্টিভ করায় কত টাকা কমিশন পেয়েছেন</p>
