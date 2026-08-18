@@ -1,3 +1,4 @@
+
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -341,6 +342,7 @@ function loadUserData() {
     document.getElementById('prof-name').value = userData.name || '';
     document.getElementById('prof-phone').value = userData.phone || '';
     
+    // FORMATTED REFERRAL LINK: `domain/register?ref=CODE`
     document.getElementById('ref-link-input').value = window.location.origin + '/register?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
@@ -431,56 +433,67 @@ function renderActivePlanDashboardBanner() {
   activePlanTimerInterval = setInterval(updateTimer, 1000);
 }
 
-// RENDER CLAIMABLE PLAN ACTIVATION BONUS ON TASK PAGE (ONLY FOR ELIGIBLE USERS)
+// MANUAL CLAIMABLE PLAN BONUS ON TASK PAGE WITH ELIGIBILITY CHECK
 function renderTaskPagePlanBonusBanner() {
   const container = document.getElementById('task-plan-bonus-banner');
   if (!container) return;
 
-  const unclaimedBonus = Number(userData ? userData.unclaimedPlanBonus : 0);
-  const planBonusTitle = userData ? (userData.unclaimedPlanBonusTitle || 'VIP Plan') : 'VIP Plan';
+  if (userData && userData.vipLevel && userData.vipLevel > 0) {
+    const eligibleBonus = Number(userData.eligiblePlanBonus || 0);
+    const isClaimed = userData.planBonusClaimed === true;
 
-  if (unclaimedBonus > 0) {
-    container.innerHTML = `
-      <div class="claim-bonus-card">
-        <div>
-          <span style="font-size:11px; opacity:0.9; display:block;">🎉 প্ল্যান এক্টিভেশন বোনাস প্রস্তুত!</span>
-          <strong style="font-size:15px; color:#ffffff;">${planBonusTitle} - ৳${unclaimedBonus}</strong>
+    if (eligibleBonus > 0 && !isClaimed) {
+      container.innerHTML = `
+        <div style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:#ffffff; padding:14px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(245, 158, 11, 0.35);">
+          <div>
+            <span style="font-size:11px; opacity:0.9; display:block;">এক্টিভ প্ল্যান বোনাস</span>
+            <strong style="font-size:16px; color:#fff;">🎁 ৳${eligibleBonus} বোনাস প্রাপ্তিযোগ্য</strong>
+          </div>
+          <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; background:#ffffff !important; color:#d97706 !important; font-weight:800;" onclick="claimActivePlanBonus()">
+            ক্লেইম করুন 🚀
+          </button>
         </div>
-        <button class="btn-claim-bonus" onclick="claimPlanBonus()">🎁 ক্লেইম করুন</button>
-      </div>
-    `;
+      `;
+    } else if (isClaimed && eligibleBonus > 0) {
+      container.innerHTML = `
+        <div style="background:var(--primary-light); color:var(--primary-color); padding:10px 14px; border-radius:12px; font-size:12px; font-weight:800; text-align:center; border:1px dashed var(--primary-color);">
+          ✓ আপনার প্ল্যান এক্টিভেশন বোনাস (৳${eligibleBonus}) ইতিমধ্যে ক্লেইম করা হয়েছে।
+        </div>
+      `;
+    } else {
+      container.innerHTML = '';
+    }
   } else {
     container.innerHTML = '';
   }
 }
 
-// CLAIM PLAN BONUS ACTION
-window.claimPlanBonus = function() {
-  if (!userData || !userData.unclaimedPlanBonus || userData.unclaimedPlanBonus <= 0) return;
+// CLAIM PLAN ACTIVATION BONUS
+window.claimActivePlanBonus = function() {
+  if (!userData || !userData.eligiblePlanBonus || userData.planBonusClaimed === true) return;
 
-  const bonusAmt = Number(userData.unclaimedPlanBonus);
-  const bonusTitle = userData.unclaimedPlanBonusTitle || 'VIP Plan';
-
+  const bonusAmt = Number(userData.eligiblePlanBonus);
   const updates = {};
-  updates['users/' + currentUser.uid + '/incomeBalance'] = (userData.incomeBalance || 0) + bonusAmt;
-  updates['users/' + currentUser.uid + '/unclaimedPlanBonus'] = 0;
+  updates[`users/${currentUser.uid}/incomeBalance`] = (userData.incomeBalance || 0) + bonusAmt;
+  updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + bonusAmt;
+  updates[`users/${currentUser.uid}/planBonusClaimed`] = true;
 
   db.ref().update(updates).then(() => {
     db.ref('history').push().set({
       uid: currentUser.uid,
       type: 'Plan Bonus',
       amount: bonusAmt,
-      title: `Claimed Activation Bonus for ${bonusTitle}`,
+      title: `Claimed Plan Activation Bonus`,
       status: 'approved',
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
-    showCustomAlert(`অভিনন্দন! ৳${bonusAmt} প্ল্যান এক্টিভেশন বোনাস সফলভাবে আপনার ইনকাম ওয়ালেটে জমা হয়েছে!`, "বোনাস ক্লেইম সফল 🎉", "success");
+    showCustomAlert(`🎉 অভিনন্দন! আপনি সফলভাবে ৳${bonusAmt} প্ল্যান এক্টিভেশন বোনাস পেয়ে গেছেন।`, "বোনাস ক্লেইমড!", "success");
     renderTaskPagePlanBonusBanner();
   });
 };
 
-// SLIDER & WELCOME NOTICE
+// SLIDER & WELCOME NOTICE WITH BEAUTIFUL BUTTONS
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
@@ -538,7 +551,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS & CONFIG
+// GATEWAYS & CONFIG (REGISTRATION BONUS DISPLAY ON REGISTER PAGE)
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -624,7 +637,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// EXACT VIP PLANS CARD RENDERER (ACTIVE PLAN INDICATOR & NO BULLETS)
+// VIP PLANS LOAD & PURCHASE (WITH ACTIVE PLAN CHECK)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -661,15 +674,15 @@ function renderPlanCardHTML(plan) {
   const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
   const actBonus = Number(plan.activationBonus || 0);
 
-  const isUserActivePlan = userData && userData.vipLevel === vipLevel;
+  const isCurrentActive = userData && userData.vipLevel === vipLevel;
 
   return `
     <div class="plan-card-item">
       ${actBonus > 0 ? `<div class="plan-bonus-badge">🎁 ৳${actBonus} বোনাস</div>` : ''}
       ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
       
-      <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : (isUserActivePlan ? 'background:#038d65;' : '')}">
-        <h3>${planName} ${isUserActivePlan ? '(এক্টিভ)' : ''}</h3>
+      <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
+        <h3>${planName}</h3>
         <h2>৳${planPrice} <small>/মাস</small></h2>
       </div>
       <div class="plan-card-body">
@@ -683,12 +696,12 @@ function renderPlanCardHTML(plan) {
           <li><i class="fa-solid fa-headset"></i> <span>২৪/৭ সাপোর্ট</span></li>
         </ul>
         
-        ${isUserActivePlan 
-          ? `<button class="btn-buy-plan active-plan" disabled>✓ এক্টিভ প্ল্যান (ACTIVE)</button>`
-          : `<button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-              ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
-              ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
-            </button>`
+        ${isCurrentActive ? 
+          `<button class="btn-buy-plan active-current-plan" disabled>এক্টিভ আছে ✓</button>` :
+          `<button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
+            ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
+            ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
+          </button>`
         }
       </div>
     </div>
@@ -717,16 +730,11 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     updates['users/' + currentUser.uid + '/withdrawChargePercent'] = withdrawChargePercent;
     updates['users/' + currentUser.uid + '/vipActivatedAt'] = Date.now();
     updates['users/' + currentUser.uid + '/vipExpireAt'] = expireTimestamp;
-
-    if (activationBonus > 0) {
-      updates['users/' + currentUser.uid + '/unclaimedPlanBonus'] = activationBonus;
-      updates['users/' + currentUser.uid + '/unclaimedPlanBonusTitle'] = planName;
-    } else {
-      updates['users/' + currentUser.uid + '/unclaimedPlanBonus'] = 0;
-    }
+    updates['users/' + currentUser.uid + '/eligiblePlanBonus'] = activationBonus;
+    updates['users/' + currentUser.uid + '/planBonusClaimed'] = false;
 
     db.ref().update(updates).then(() => {
-      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে!${activationBonus > 0 ? ` আপনার ৳${activationBonus} বোনাস ক্লেইম করতে টাস্ক পেজে যান।` : ''}`, "প্ল্যান আনলকড! 🎉", "success");
+      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে!${activationBonus > 0 ? ` আপনার ৳${activationBonus} বোনাস টাস্ক পেজে ক্লেইমের জন্য জমা হয়েছে।` : ''}`, "প্ল্যান আনলকড! 🎉", "success");
       switchTab('tab-tasks');
     }).catch(err => showCustomAlert('Error: ' + err.message, "ত্রুটি", "error"));
   });
@@ -751,7 +759,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH COMPLETED TASK HIDING & SLEEK TASK CARDS
+// TASK SYSTEM WITH COMPLETED TASK HIDING & ALL COMPLETED CARD DISPLAY
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -837,27 +845,25 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    // RENDER SLEEK PROFESSIONAL TASK CARDS
+    // RENDER ONLY UNCOMPLETED REMAINING TASKS (PRO CARD LAYOUT)
     remainingTasks.forEach(task => {
       const taskId = task.id;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
 
       container.innerHTML += `
         <div class="task-card-item">
-          <div class="task-card-left">
-            <div class="task-icon-box">
-              <i class="fa-solid fa-circle-play"></i>
+          <div class="task-info-box">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <h4>${task.title}</h4>
+              ${isFreeTask ? '<span style="background:#e0f2fe; color:#0284c7; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px;">FREE</span>' : ''}
             </div>
-            <div>
-              <div class="task-title-row">
-                <h4>${task.title}</h4>
-                ${isFreeTask ? '<span class="task-free-badge">FREE</span>' : ''}
-              </div>
-              <p class="task-reward-txt">রিওয়ার্ড: <b>৳${task.reward}</b></p>
+            <div class="task-reward-tag">
+              <i class="fa-solid fa-coins" style="color:#f59e0b;"></i> রিওয়ার্ড: <b>৳${task.reward}</b>
             </div>
           </div>
-          <button class="btn-start-task" onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
-            টাস্ক শুরু <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+          <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px;" 
+            onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
+            টাস্ক শুরু করুন
           </button>
         </div>
       `;
@@ -1046,7 +1052,7 @@ function loadDepositHistory() {
   });
 }
 
-// E-WALLET SETUP & WITHDRAWAL LOGIC
+// E-WALLET SETUP & WITHDRAWAL LOGIC (UNIQUE WALLET CONSTRAINT CHECK)
 function checkAndRenderEWalletView() {
   const notSetCard = document.getElementById('withdraw-wallet-not-set-card');
   const setView = document.getElementById('withdraw-wallet-set-view');
@@ -1137,13 +1143,13 @@ window.calculateWithdrawFeePreview = function() {
   document.getElementById('wit-net-receive').innerText = '৳' + netAmount.toFixed(2);
 };
 
-// SELECT ALL AVAILABLE WITHDRAWABLE BALANCE
+// WITHDRAW ALL BALANCE FUNCTION
 window.selectAllBalanceForWithdraw = function() {
   if (!userData) return;
-  const totalAvailable = (userData.incomeBalance || 0) + (userData.depositBalance || 0);
+  const totalAvailable = (userData.depositBalance || 0) + (userData.incomeBalance || 0);
   const amtInput = document.getElementById('wit-amount');
   if (amtInput) {
-    amtInput.value = totalAvailable > 0 ? totalAvailable : 0;
+    amtInput.value = totalAvailable;
     calculateWithdrawFeePreview();
   }
 };
@@ -1284,7 +1290,7 @@ function loadReferralCommissionHistory() {
   });
 }
 
-// PROFILE UPDATE
+// PROFILE UPDATE (AUTOMATICALLY USES DEFAULT AVATAR)
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
