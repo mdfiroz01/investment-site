@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -137,7 +138,7 @@
       <h3 id="app-confirm-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">নিশ্চিতকরণ</h3>
       <p id="app-confirm-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p>
       <div style="display:flex; gap:10px;">
-        <button class="btn-action" style="background:#64748b;" onclick="closeCustomConfirm()">বাতিল</button>
+        <button class="btn-action" style="background:#64748b !important;" onclick="closeCustomConfirm()">বাতিল</button>
         <button class="btn-action" onclick="executeCustomConfirm()">হ্যাঁ, নিশ্চিত 👍</button>
       </div>
     </div>
@@ -182,7 +183,7 @@
       <h3 id="welcome-title" style="font-size:18px; color:var(--primary-color); margin-bottom:8px;">স্বাগতম!</h3>
       <p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p>
       <div id="welcome-btn-container" style="margin-bottom:10px;"></div>
-      <button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
+      <button class="btn-continue-sm" style="background:#64748b; color:#fff;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
     </div>
   </div>
 
@@ -389,6 +390,8 @@
         <h2>দৈনিক টাস্কসমূহ</h2>
         <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
       </div>
+      <!-- PLAN BONUS CLAIM BANNER CONTAINER -->
+      <div id="plan-bonus-claim-container"></div>
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
@@ -519,7 +522,7 @@
     <!-- TAB 6: WITHDRAW PAGE -->
     <div id="tab-withdraw" class="tab-content">
       <div class="plan-page-header">
-        <h2>E-WalletPayment method</h2>
+        <h2>E-Wallet Payment Method</h2>
         <p id="withdraw-rules-summary">সর্বনিম্ন উত্তোলন ও প্রসেসিং চার্জ প্রযোজ্য</p>
       </div>
 
