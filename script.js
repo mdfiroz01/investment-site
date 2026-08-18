@@ -1,3 +1,4 @@
+
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -607,7 +608,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// ULTRA COMPACT SLEEK VIP PLANS CARD RENDERER
+// ULTRA COMPACT SLEEK VIP PLANS CARD RENDERER (BULLET DOTS COMPLETELY REMOVED)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -646,36 +647,27 @@ function renderPlanCardHTML(plan) {
 
   return `
     <div class="plan-card-item">
-      <div class="plan-card-top-bar">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span class="plan-level-pill">VIP ${vipLevel}</span>
-          <h3 class="plan-title-text">${planName}</h3>
-        </div>
-        ${actBonus > 0 ? `<span class="plan-bonus-chip">🎁 ৳${actBonus} বোনাস</span>` : (badgeText ? `<span class="plan-badge-chip">${badgeText}</span>` : '')}
+      ${actBonus > 0 ? `<div class="plan-bonus-badge">🎁 ৳${actBonus} বোনাস</div>` : ''}
+      ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
+      
+      <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
+        <h3>${planName}</h3>
+        <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
       </div>
-
-      <div class="plan-price-row">
-        <div>
-          <span class="plan-price-val">৳${planPrice}</span>
-          <small class="plan-duration-tag">/${duration} দিন</small>
-        </div>
-        <div style="text-align:right;">
-          <span style="font-size:10px; color:var(--text-muted); display:block;">দৈনিক ইনকাম</span>
-          <strong style="font-size:14px; color:var(--primary-color);">৳${dailyProfit}</strong>
-        </div>
+      <div class="plan-card-body">
+        <ul class="plan-features-list">
+          <li><i class="fa-solid fa-circle-check"></i> <span>প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</span></li>
+          <li><i class="fa-solid fa-coins"></i> <span>দৈনিক আয়: <b>৳${dailyProfit}</b></span></li>
+          ${actBonus > 0 ? `<li style="color:#f59e0b; font-weight:bold;"><i class="fa-solid fa-gift"></i> <span>প্ল্যান এক্টিভ বোনাস: <b>৳${actBonus}</b></span></li>` : ''}
+          <li><i class="fa-solid fa-percent"></i> <span>উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></span></li>
+          <li><i class="fa-solid fa-calendar-days"></i> <span>মেয়াদ: <b>${duration} দিন</b></span></li>
+          <li><i class="fa-solid fa-chart-line"></i> <span>মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></span></li>
+        </ul>
+        <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
+          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
+          ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
+        </button>
       </div>
-
-      <div class="plan-card-features-grid">
-        <div><i class="fa-solid fa-list-check"></i> দৈনিক ${dailyTasks}টি টাস্ক</div>
-        <div><i class="fa-solid fa-percent"></i> উইথড্র ফি ${witCharge}%</div>
-        <div><i class="fa-solid fa-calendar-days"></i> মেয়াদ ${duration} দিন</div>
-        <div><i class="fa-solid fa-chart-line"></i> মোট ৳${(dailyProfit * duration).toFixed(0)}</div>
-      </div>
-
-      <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-        ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
-        ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান এক্টিভ করুন 🚀'}
-      </button>
     </div>
   `;
 }
@@ -1262,7 +1254,7 @@ function loadReferralCommissionHistory() {
   });
 }
 
-// PROFILE UPDATE (AUTOMATICALLY USES SITE LOGO / DEFAULT AVATAR)
+// PROFILE UPDATE (AUTOMATICALLY USES DEFAULT AVATAR)
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
