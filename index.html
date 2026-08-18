@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn" data-theme="light">
 <head>
@@ -222,10 +223,12 @@
       </div>
     </header>
 
-    <!-- SCROLLING NOTICE -->
+    <!-- SCROLLING NOTICE (FIXED PINNED ICON) -->
     <div class="notice-board">
-      <i class="fa-solid fa-bullhorn"></i>
-      <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
+      <i class="fa-solid fa-bullhorn notice-icon-pin"></i>
+      <div class="notice-marquee-container">
+        <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
+      </div>
     </div>
 
     <!-- BKASH STYLE USER PROFILE & BALANCE CARD -->
@@ -250,7 +253,7 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-home" class="tab-content active">
 
-      <!-- HOMEPAGE CAROUSEL BANNER SLIDER (HIDDEN IF NO ADMIN SLIDER) -->
+      <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
       <div class="slider-container-card hidden" id="homepage-slider-card">
         <div class="slider-wrapper">
           <img id="slider-img" src="" alt="Banner Slider" class="slider-img">
