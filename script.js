@@ -378,7 +378,6 @@ function renderActivePlanDashboardBanner() {
     return;
   }
 
-  // CHECK EXPIRATION
   const expireTime = userData.vipExpireAt || 0;
 
   function updateTimer() {
@@ -389,7 +388,6 @@ function renderActivePlanDashboardBanner() {
       clearInterval(activePlanTimerInterval);
       activePlanTimerInterval = null;
 
-      // EXPIRE PLAN IN DATABASE
       db.ref('users/' + currentUser.uid).update({
         vipLevel: 0,
         vipPlanName: 'নো প্ল্যান',
@@ -609,7 +607,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (PLAN ACTIVATION BONUS IN CORNER BADGE)
+// ULTRA COMPACT SLEEK VIP PLANS CARD RENDERER
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -648,27 +646,36 @@ function renderPlanCardHTML(plan) {
 
   return `
     <div class="plan-card-item">
-      ${actBonus > 0 ? `<div class="plan-bonus-badge">🎁 ৳${actBonus} বোনাস</div>` : ''}
-      ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
-      
-      <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
-        <h3>${planName}</h3>
-        <h2>৳${planPrice} <small>/মাস</small></h2>
+      <div class="plan-card-top-bar">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="plan-level-pill">VIP ${vipLevel}</span>
+          <h3 class="plan-title-text">${planName}</h3>
+        </div>
+        ${actBonus > 0 ? `<span class="plan-bonus-chip">🎁 ৳${actBonus} বোনাস</span>` : (badgeText ? `<span class="plan-badge-chip">${badgeText}</span>` : '')}
       </div>
-      <div class="plan-card-body">
-        <ul class="plan-features-list">
-          <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
-          <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
-          ${actBonus > 0 ? `<li style="color:#f59e0b; font-weight:bold;"><i class="fa-solid fa-gift"></i> প্ল্যান এক্টিভ বোনাস: <b>৳${actBonus}</b></li>` : ''}
-          <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
-          <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
-          <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
-        </ul>
-        <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
-          ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
-        </button>
+
+      <div class="plan-price-row">
+        <div>
+          <span class="plan-price-val">৳${planPrice}</span>
+          <small class="plan-duration-tag">/${duration} দিন</small>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-size:10px; color:var(--text-muted); display:block;">দৈনিক ইনকাম</span>
+          <strong style="font-size:14px; color:var(--primary-color);">৳${dailyProfit}</strong>
+        </div>
       </div>
+
+      <div class="plan-card-features-grid">
+        <div><i class="fa-solid fa-list-check"></i> দৈনিক ${dailyTasks}টি টাস্ক</div>
+        <div><i class="fa-solid fa-percent"></i> উইথড্র ফি ${witCharge}%</div>
+        <div><i class="fa-solid fa-calendar-days"></i> মেয়াদ ${duration} দিন</div>
+        <div><i class="fa-solid fa-chart-line"></i> মোট ৳${(dailyProfit * duration).toFixed(0)}</div>
+      </div>
+
+      <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
+        ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
+        ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান এক্টিভ করুন 🚀'}
+      </button>
     </div>
   `;
 }
