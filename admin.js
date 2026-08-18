@@ -84,11 +84,13 @@ function loadAdminDashboard() {
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
   const logoUrl = document.getElementById('cfg-site-logo').value;
+  const regBonus = parseFloat(document.getElementById('cfg-reg-bonus').value) || 0;
   const minWithdraw = parseFloat(document.getElementById('cfg-min-withdraw').value) || 200;
   const withdrawChargePercent = parseFloat(document.getElementById('cfg-withdraw-charge').value) || 5;
 
   db.ref('settings/config').set({
     logoUrl: logoUrl,
+    regBonus: regBonus,
     minWithdraw: minWithdraw,
     withdrawChargePercent: withdrawChargePercent
   }).then(() => alert('সাইট সেটিংস সফলভাবে সেভ করা হয়েছে!'))
@@ -100,6 +102,7 @@ function loadSettingsAdmin() {
     if (snap.exists()) {
       const cfg = snap.val();
       document.getElementById('cfg-site-logo').value = cfg.logoUrl || '';
+      document.getElementById('cfg-reg-bonus').value = cfg.regBonus || 0;
       document.getElementById('cfg-min-withdraw').value = cfg.minWithdraw || 200;
       document.getElementById('cfg-withdraw-charge').value = cfg.withdrawChargePercent || 5;
     }
@@ -235,6 +238,7 @@ document.getElementById('admin-add-plan-form').addEventListener('submit', async 
     vipLevel: parseInt(document.getElementById('plan-vip-level').value),
     refCommissionPercent: parseFloat(document.getElementById('plan-ref-commission').value) || 10,
     withdrawChargePercent: parseFloat(document.getElementById('plan-withdraw-charge').value) || 5,
+    activationBonus: parseFloat(document.getElementById('plan-activation-bonus').value) || 0,
     badgeText: document.getElementById('plan-badge-text').value,
     isSoldOut: document.getElementById('plan-is-soldout').checked
   };
@@ -269,7 +273,7 @@ function loadPlansAdmin() {
             ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
           </div>
           <div>
-            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
+            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true}, ${p.activationBonus || 0})">Edit</button>
             <button class="btn-action-sm btn-danger" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -278,7 +282,7 @@ function loadPlansAdmin() {
   });
 }
 
-window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, badgeText, isSoldOut) {
+window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, badgeText, isSoldOut, actBonus = 0) {
   document.getElementById('edit-plan-key').value = key;
   document.getElementById('plan-name').value = name;
   document.getElementById('plan-price').value = price;
@@ -288,6 +292,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-vip-level').value = vip;
   document.getElementById('plan-ref-commission').value = refComm;
   document.getElementById('plan-withdraw-charge').value = witCharge;
+  document.getElementById('plan-activation-bonus').value = actBonus;
   document.getElementById('plan-badge-text').value = badgeText;
   document.getElementById('plan-is-soldout').checked = isSoldOut;
 
@@ -306,7 +311,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH ATOMIC MULTI-UPDATE BATCHing
+// 4. TASK CREATION WITH ATOMIC BATCH UPDATE
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -677,9 +682,7 @@ window.rejectWithdraw = async function(witId, uid, amount) {
   }
 };
 
-// ----------------------------------------------------
-// 8. UNLIMITED DYNAMIC PAYMENT GATEWAYS
-// ----------------------------------------------------
+// UNLIMITED DYNAMIC PAYMENT GATEWAYS
 document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
@@ -746,9 +749,7 @@ window.resetGatewayForm = function() {
   document.getElementById('admin-gateway-form').reset();
 };
 
-// ----------------------------------------------------
-// 9. SLIDER, WELCOME NOTICE & BROADCAST
-// ----------------------------------------------------
+// SLIDER, WELCOME NOTICE & BROADCAST
 window.addSliderBannerImage = async function() {
   await ensureAdminFirebaseAuth();
   const url = document.getElementById('admin-slider-url-input').value;
