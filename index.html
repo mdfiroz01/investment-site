@@ -6,8 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarnerApp - Premium Platform</title>
 
+  <!-- FAVICON ICON -->
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
 
+  <!-- OPEN GRAPH META TAGS -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
   <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
@@ -17,6 +19,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -174,14 +177,14 @@
     </div>
   </div>
 
-  <!-- WELCOME NOTICE MODAL -->
+  <!-- WELCOME NOTICE MODAL WITH BEAUTIFUL BUTTONS -->
   <div id="welcome-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align:center;">
       <div id="welcome-img-box"></div>
       <h3 id="welcome-title" style="font-size:18px; color:var(--primary-color); margin-bottom:8px;">স্বাগতম!</h3>
       <p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p>
       <div id="welcome-btn-container" style="margin-bottom:10px;"></div>
-      <button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
+      <button class="btn-action" style="background:#64748b; padding:10px;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
     </div>
   </div>
 
@@ -586,7 +589,6 @@
         <form id="profile-update-form" style="margin-top:15px;" onsubmit="handleProfileUpdate(event)">
           <div class="form-group"><label>নাম</label><input type="text" id="prof-name" class="form-control" required></div>
           <div class="form-group"><label>ফোন</label><input type="text" id="prof-phone" class="form-control" required></div>
-          <div class="form-group"><label>অবতার ইউআরএল (Avatar URL)</label><input type="url" id="prof-avatar" class="form-control"></div>
           <button type="submit" class="btn-action">সেভ করুন</button>
         </form>
       </div>
