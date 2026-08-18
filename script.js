@@ -1,6 +1,6 @@
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
-// UNIVERSAL CUSTOM ALERT SYSTEM
+// UNIVERSAL CUSTOM ALERT SYSTEM (NO BROWSER ALERT)
 window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি", iconType = "success") {
   const modal = document.getElementById('app-alert-modal');
   const titleEl = document.getElementById('app-alert-title');
@@ -30,7 +30,7 @@ window.closeCustomAlert = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-// UNIVERSAL CUSTOM CONFIRM SYSTEM
+// UNIVERSAL CUSTOM CONFIRM SYSTEM (NO BROWSER CONFIRM)
 let onConfirmCallback = null;
 
 window.showCustomConfirm = function(title, message, onConfirm) {
@@ -90,13 +90,9 @@ initAppTheme();
 // AUTH FORM SWITCHERS WITH CLEAN URL ROUTING
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (regForm) regForm.classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
 
   const pendingRef = localStorage.getItem('pendingRefCode') || '';
   const newUrl = '/register' + (pendingRef ? '?ref=' + pendingRef : '');
@@ -107,13 +103,9 @@ window.showRegisterForm = function(e) {
 
 window.showLoginForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (loginForm) loginForm.classList.remove('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
 
   if (window.location.pathname !== '/login') {
     window.history.pushState({}, '', '/login');
@@ -122,13 +114,9 @@ window.showLoginForm = function(e) {
 
 window.showForgotForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.remove('hidden');
 
   if (window.location.pathname !== '/forgot') {
     window.history.pushState({}, '', '/forgot');
@@ -140,7 +128,6 @@ let userData = null;
 let isBalanceShown = false;
 let selectedDepositMethodName = 'bKash';
 let selectedDepositAmountVal = 500;
-let selectedWithdrawMethodName = 'bKash';
 let activeTaskObj = null;
 let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
@@ -242,7 +229,6 @@ window.openWalletSetupModal = function() {
     if (document.getElementById('setup-wallet-method')) document.getElementById('setup-wallet-method').value = ws.method || 'bKash';
     if (document.getElementById('setup-account-name')) document.getElementById('setup-account-name').value = ws.accountName || '';
     if (document.getElementById('setup-wallet-number')) document.getElementById('setup-wallet-number').value = ws.walletNumber || '';
-    if (document.getElementById('setup-wallet-pin')) document.getElementById('setup-wallet-pin').value = ws.pin || '';
   }
 };
 
@@ -376,7 +362,7 @@ function resetDepositToGeneralWallet() {
   goToDepositStep(1);
 }
 
-// USER DATA REALTIME LOAD WITH STRICT EXPIRY CHECK
+// USER DATA REALTIME LOAD
 function loadUserData() {
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
@@ -692,7 +678,7 @@ function loadVIPPlans() {
     planList.forEach((plan) => {
       container.innerHTML += renderPlanCardHTML(plan);
       if (depPlanSelect && !plan.isSoldOut) {
-        depPlanSelect.innerHTML += `<option value="${plan.vipLevel}" data-price="${plan.price}" data-name="${plan.name}" data-tasks="${plan.dailyTasks}" data-profit="${plan.dailyProfit}" data-duration="${plan.durationDays || 30}">${plan.name} - ৳${plan.price}</option>`;
+        depPlanSelect.innerHTML += `<option value="${plan.vipLevel}" data-price="${plan.price}" data-name="${plan.name}" data-tasks="${plan.dailyTasks}" data-profit="${plan.dailyProfit}" data-duration="${plan.durationDays || 30}" data-bonus="${plan.activationBonus || 0}">${plan.name} - ৳${plan.price}</option>`;
       }
     });
   });
@@ -700,14 +686,7 @@ function loadVIPPlans() {
 
 function renderPlanCardHTML(plan) {
   const isSoldOut = plan.isSoldOut === true;
-  const userVip = userData ? Number(userData.vipLevel || 0) : 0;
-  const isCurrentActivePlan = userVip > 0 && Number(plan.vipLevel) === userVip;
-
-  let badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
-  if (isCurrentActivePlan) {
-    badgeText = 'এক্টিভ প্ল্যান';
-  }
-
+  const badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
   const planName = plan.name || 'VIP Plan';
   const planPrice = Number(plan.price || 0);
   const dailyTasks = Number(plan.dailyTasks || 1);
@@ -716,6 +695,9 @@ function renderPlanCardHTML(plan) {
   const vipLevel = Number(plan.vipLevel || 1);
   const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
   const actBonus = Number(plan.activationBonus || 0);
+
+  const userVip = userData ? Number(userData.vipLevel || 0) : 0;
+  const isCurrentActivePlan = userVip > 0 && Number(plan.vipLevel) === userVip;
 
   let btnClass = 'btn-buy-plan';
   let btnText = 'প্ল্যান কিনুন';
@@ -738,7 +720,7 @@ function renderPlanCardHTML(plan) {
         : (isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : ''))}
       <div class="plan-card-header" style="${isCurrentActivePlan ? 'background:linear-gradient(135deg, #05b381 0%, #038d65 100%)' : (isSoldOut ? 'background:#64748b' : '')}">
         <h3>${planName}</h3>
-        2>৳${planPrice} <small>/${duration} দিন</small></h2>
+        <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
         ${actBonus > 0 ? `<div class="plan-bonus-tag">🎁 এক্টিভেশন বোনাস ৳${actBonus}</div>` : ''}
       </div>
       <div class="plan-card-body">
@@ -913,8 +895,10 @@ function loadTasks(completedTaskIds = {}) {
       availableTasks = allTasks.filter(t => Number(t.minVip || 0) === userVip && !t.isFree && Number(t.minVip) !== 0);
     }
 
-    const uncompletedTasks = availableTasks.filter(task => !completedTaskIds[task.id]);
+    // EXCLUDE COMPLETED TASKS
+    const uncompletedTasks = availableTasks.filter(task => !completedTaskIds[task.id || task.title]);
 
+    // IF ALL TASKS COMPLETED FOR TODAY -> SHOW CELEBRATION CARD
     if (availableTasks.length > 0 && uncompletedTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:35px 20px;">
@@ -943,7 +927,7 @@ function loadTasks(completedTaskIds = {}) {
     }
 
     uncompletedTasks.forEach(task => {
-      const taskId = task.id;
+      const taskId = task.id || task.title;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
 
@@ -1237,6 +1221,7 @@ window.handleWalletSetupSubmit = function(e) {
     db.ref('users/' + currentUser.uid + '/walletSetup').set(walletSetupData).then(() => {
       closeWalletSetupModal();
       showCustomAlert('আপনার উইথড্র ওয়ালেট ও ৫ সংখ্যার পিন সফলভাবে সেভ করা হয়েছে!', 'সেটআপ সফল', 'success');
+      renderWithdrawPageForm();
     });
   });
 };
@@ -1401,8 +1386,7 @@ window.handleWithdrawSubmit = function(e) {
     });
   }).then(() => {
     showCustomAlert('উত্তোলন রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'উত্তোলন সফল', 'success');
-    document.getElementById('withdraw-form').reset();
-    calculateWithdrawFeePreview();
+    renderWithdrawPageForm();
     loadWithdrawHistory();
   });
 };
@@ -1580,8 +1564,6 @@ function renderLiveWithdrawsInfinite() {
 
 // AUTH HANDLERS
 document.addEventListener('DOMContentLoaded', () => {
-  loadSocialSupportLinks();
-
   const loginForm = document.getElementById('login-form');
   const regForm = document.getElementById('register-form');
   const forgotForm = document.getElementById('forgot-password-form');
@@ -1676,5 +1658,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
-window.logout = function() { auth.signOut(); };
