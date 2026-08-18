@@ -1,3 +1,4 @@
+
 /* LIGHT & DARK THEME VARIABLES FOR USER PANEL */
 [data-theme="light"] {
   --primary-color: #05b381;
@@ -51,9 +52,7 @@ body {
   min-height: 100vh;
 }
 
-/* ===================================================
-   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS
-=================================================== */
+/* ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS */
 body.admin-body {
   background: #e2e8f0 !important;
   color: #0f172a !important;
@@ -106,7 +105,6 @@ body.admin-body {
   box-shadow: 0 0 0 3px rgba(5, 179, 129, 0.15) !important;
 }
 
-/* SOLID VISIBLE BUTTONS FOR ADMIN PANEL */
 .btn-action {
   width: 100% !important;
   padding: 13px !important;
@@ -127,30 +125,11 @@ body.admin-body {
   color: #ffffff !important;
 }
 
-.btn-secondary {
-  background: #2563eb !important;
-  color: #ffffff !important;
-}
-
-.btn-success {
-  background: #10b981 !important;
-  color: #ffffff !important;
-}
-
-.btn-danger {
-  background: #ef4444 !important;
-  color: #ffffff !important;
-}
-
-.btn-info {
-  background: #0284c7 !important;
-  color: #ffffff !important;
-}
-
-.btn-cancel {
-  background: #64748b !important;
-  color: #ffffff !important;
-}
+.btn-secondary { background: #2563eb !important; color: #ffffff !important; }
+.btn-success { background: #10b981 !important; color: #ffffff !important; }
+.btn-danger { background: #ef4444 !important; color: #ffffff !important; }
+.btn-info { background: #0284c7 !important; color: #ffffff !important; }
+.btn-cancel { background: #64748b !important; color: #ffffff !important; }
 
 .btn-action-sm {
   border: none !important;
@@ -186,10 +165,6 @@ body.admin-body {
   color: #0f172a !important;
 }
 
-.admin-table small {
-  color: #64748b !important;
-}
-
 /* LOGIN / REGISTER RING AVATAR LOGO */
 .auth-ring-avatar {
   width: 75px;
@@ -208,7 +183,7 @@ body.admin-body {
   border: 1.5px solid var(--primary-color);
 }
 
-/* TOP HEADER & THEME TOGGLE */
+/* TOP HEADER */
 .top-header {
   background: var(--card-bg);
   padding: 14px 20px;
@@ -277,22 +252,33 @@ body.admin-body {
   align-items: flex-start;
 }
 
-/* SLOW & BOLD SCROLLING NOTICE */
+/* ENHANCED BEAUTIFUL SCROLLING NOTICE BOARD */
 .notice-board {
   background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--primary-color);
   margin: 12px 15px;
-  padding: 10px 15px;
+  padding: 8px 16px;
   border-radius: 30px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13.5px;
   font-weight: 800;
   color: var(--primary-color);
-  box-shadow: var(--shadow-light);
+  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.12);
   overflow: hidden;
-  height: 42px;
+  height: 44px;
+}
+
+.notice-board i {
+  font-size: 16px;
+  color: var(--primary-color);
+  animation: hornPulse 1.5s infinite alternate;
+}
+
+@keyframes hornPulse {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(1.2); color: var(--danger); opacity: 1; }
 }
 
 .notice-text {
@@ -300,6 +286,7 @@ body.admin-body {
   animation: marquee 28s linear infinite;
   line-height: 20px;
   font-weight: 800;
+  letter-spacing: 0.3px;
 }
 
 @keyframes marquee {
@@ -307,7 +294,7 @@ body.admin-body {
   100% { transform: translateX(-100%); }
 }
 
-/* HOMEPAGE BANNER SLIDER CAROUSEL FIX */
+/* HOMEPAGE BANNER SLIDER CAROUSEL */
 .slider-container-card {
   margin: 0 15px 15px 15px;
   width: calc(100% - 30px);
@@ -333,7 +320,7 @@ body.admin-body {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* WALLET HERO CARD & BREAKDOWN */
+/* WALLET HERO CARD */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -454,14 +441,8 @@ body.admin-body {
   transition: transform 0.2s;
 }
 
-.fab-menu-item:hover {
-  transform: scale(1.05);
-}
-
-.fab-menu-item i {
-  font-size: 18px;
-  color: var(--primary-color);
-}
+.fab-menu-item:hover { transform: scale(1.05); }
+.fab-menu-item i { font-size: 18px; color: var(--primary-color); }
 
 /* CARDS & METRICS */
 .dashboard-grid {
@@ -626,7 +607,7 @@ body.admin-body {
 .menu-card i { font-size: 22px; color: var(--primary-color); margin-bottom: 6px; }
 .menu-card span { display: block; font-size: 11px; color: var(--text-main); font-weight: 600; }
 
-/* ACTIVE PLAN HERO CARD ON DASHBOARD */
+/* ACTIVE PLAN HERO CARD ON DASHBOARD WITH VALIDITY COUNTDOWN */
 .active-plan-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: white;
@@ -662,6 +643,18 @@ body.admin-body {
 
 .active-plan-metrics p { font-size: 11px; opacity: 0.85; }
 .active-plan-metrics strong { font-size: 14px; font-weight: 800; display: block; margin-top: 2px; }
+
+.plan-validity-box {
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+}
 
 /* PLAN CARDS */
 .plan-page-header { text-align: center; margin: 15px 0 20px 0; }
@@ -842,6 +835,29 @@ body.admin-body {
 [data-theme="dark"] .amount-btn { background: #1e293b; }
 
 .amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+.btn-action {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.3);
+}
+
+.btn-copy {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
 
 /* REWARD POP-UP CELEBRATION MODAL */
 .reward-pop-card {
