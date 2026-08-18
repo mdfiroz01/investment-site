@@ -140,7 +140,6 @@ let userData = null;
 let isBalanceShown = false;
 let selectedDepositMethodName = 'bKash';
 let selectedDepositAmountVal = 500;
-let selectedWithdrawMethodName = 'bKash';
 let activeTaskObj = null;
 let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
@@ -225,6 +224,21 @@ window.toggleSupportFab = function() {
   if (container) {
     container.classList.toggle('open');
   }
+};
+
+window.openWalletSetupModal = function() {
+  document.getElementById('wallet-setup-modal').classList.remove('hidden');
+  if (userData && userData.walletSetup) {
+    const ws = userData.walletSetup;
+    if (document.getElementById('setup-wallet-method')) document.getElementById('setup-wallet-method').value = ws.method || 'bKash';
+    if (document.getElementById('setup-account-name')) document.getElementById('setup-account-name').value = ws.accountName || '';
+    if (document.getElementById('setup-wallet-number')) document.getElementById('setup-wallet-number').value = ws.walletNumber || '';
+    if (document.getElementById('setup-wallet-pin')) document.getElementById('setup-wallet-pin').value = ws.pin || '';
+  }
+};
+
+window.closeWalletSetupModal = function() {
+  document.getElementById('wallet-setup-modal').classList.add('hidden');
 };
 
 function loadSocialSupportLinks() {
@@ -353,7 +367,7 @@ function resetDepositToGeneralWallet() {
   goToDepositStep(1);
 }
 
-// USER DATA REALTIME LOAD WITH STRICT EXPIRY CHECK & COUNTDOWN
+// USER DATA REALTIME LOAD
 function loadUserData() {
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
@@ -364,7 +378,6 @@ function loadUserData() {
       return;
     }
 
-    // STRICT PLAN EXPIRY CHECK (ONLY IF VIP LEVEL > 0 AND EXPIRATION TIMESTAMP IS REACHED)
     if (userData.vipLevel > 0 && userData.vipExpireAt && typeof userData.vipExpireAt === 'number' && Date.now() >= userData.vipExpireAt) {
       db.ref('users/' + currentUser.uid).update({
         vipLevel: 0,
@@ -408,17 +421,16 @@ function loadUserData() {
 
     document.getElementById('prof-name').value = userData.name || '';
     document.getElementById('prof-phone').value = userData.phone || '';
-    document.getElementById('prof-avatar').value = userAvatar;
     document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
+    renderWithdrawPageForm(); // Render single saved wallet withdraw form
     initIncomeChartRealtime();
-    loadVIPPlans(); // RE-RENDER PLANS TO MARK CURRENT ACTIVE PLAN
+    loadVIPPlans();
   });
 }
 
-// RENDER ACTIVE PLAN HERO CARD WITH LIVE TICKING COUNTDOWN (DAYS, HOURS, MIN, SEC)
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -558,7 +570,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS, APP SETTINGS & NOTICES
+// GATEWAYS & NOTICES
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -587,15 +599,13 @@ function loadGatewaysAndNotices() {
 
   db.ref('payment_gateways').on('value', snap => {
     const depGrid = document.getElementById('deposit-methods-grid');
-    const witGrid = document.getElementById('withdraw-methods-grid');
 
     if (!snap.exists()) {
-      renderDefaultGateways(depGrid, witGrid);
+      renderDefaultGateways(depGrid);
       return;
     }
 
     if (depGrid) depGrid.innerHTML = '';
-    if (witGrid) witGrid.innerHTML = '';
 
     snap.forEach((child) => {
       const g = child.val();
@@ -603,9 +613,6 @@ function loadGatewaysAndNotices() {
 
       if (type === 'deposit' || type === 'both') {
         if (depGrid) depGrid.innerHTML += renderGatewayCardHTML(g, 'deposit');
-      }
-      if (type === 'withdraw' || type === 'both') {
-        if (witGrid) witGrid.innerHTML += renderGatewayCardHTML(g, 'withdraw');
       }
     });
   });
@@ -615,25 +622,16 @@ function renderGatewayCardHTML(g, mode) {
   const name = g.name || 'Method';
   const logo = g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png';
 
-  if (mode === 'deposit') {
-    return `
-      <div class="method-box" onclick="selectDepositMethod('${name}')">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-        <h5 style="font-size:13px;">${name}</h5>
-        <button class="btn-continue-sm">Continue ></button>
-      </div>
-    `;
-  } else {
-    return `
-      <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('${name}', this)">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-        <h5 style="font-size:13px;">${name}</h5>
-      </div>
-    `;
-  }
+  return `
+    <div class="method-box" onclick="selectDepositMethod('${name}')">
+      <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+      <h5 style="font-size:13px;">${name}</h5>
+      <button class="btn-continue-sm">Continue ></button>
+    </div>
+  `;
 }
 
-function renderDefaultGateways(depGrid, witGrid) {
+function renderDefaultGateways(depGrid) {
   const defaults = [
     { name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' },
     { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' },
@@ -642,9 +640,6 @@ function renderDefaultGateways(depGrid, witGrid) {
 
   if (depGrid) {
     depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'deposit')).join('');
-  }
-  if (witGrid) {
-    witGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'withdraw')).join('');
   }
 }
 
@@ -658,7 +653,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (WITH ACTIVE PLAN RIBBON & BUTTON MARKING)
+// VIP PLANS LOAD & PURCHASE
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -815,7 +810,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
+// TASK SYSTEM: COMPLETED TASKS REMOVE & ALL-TASKS COMPLETED CELEBRATION CARD
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -859,24 +854,42 @@ function loadTasks(completedTaskIds = {}) {
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
 
-    const userVipTasks = [];
+    const defaultTasks = [
+      { id: 't0', title: 'ডেইলি ফ্রি টাস্ক (শুধুমাত্র নো-প্ল্যান ইউজারের জন্য)', reward: 5, minVip: 0, isFree: true },
+      { id: 't1', title: 'ইউটিউব ভিডিও লাইক ও চ্যানেল সাবস্ক্রাইব (VIP 1)', reward: 15, minVip: 1 },
+      { id: 't2', title: 'ফেসবুক পেজ ফলো ও পোস্ট শেয়ার (VIP 2)', reward: 50, minVip: 2 },
+      { id: 't3', title: 'ওয়েবসাইট ভিজিট ও ব্রাউজিং (VIP 3)', reward: 110, minVip: 3 }
+    ];
 
-    if (snap.exists()) {
-      snap.forEach(child => {
-        const task = child.val();
-        task.id = child.key;
-        
-        const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
-        
-        if (userVip === 0 && isFree) {
-          userVipTasks.push(task);
-        } else if (userVip > 0 && Number(task.minVip || 0) === userVip && !isFree) {
-          userVipTasks.push(task);
-        }
-      });
+    const allTasks = snap.exists() ? Object.values(snap.val()) : defaultTasks;
+    let availableTasks = [];
+
+    if (userVip === 0) {
+      availableTasks = allTasks.filter(t => (Number(t.minVip || 0) === 0 || t.isFree === true));
+    } else {
+      availableTasks = allTasks.filter(t => Number(t.minVip || 0) === userVip && !t.isFree && Number(t.minVip) !== 0);
     }
 
-    if (userVipTasks.length === 0) {
+    // REMOVE ALREADY COMPLETED TASKS FROM DISPLAY LIST
+    const uncompletedTasks = availableTasks.filter(task => !completedTaskIds[task.id]);
+
+    // IF ALL TASKS FOR TODAY ARE COMPLETED -> SHOW CELEBRATION CARD
+    if (availableTasks.length > 0 && uncompletedTasks.length === 0) {
+      container.innerHTML = `
+        <div class="content-card" style="text-align:center; padding:35px 20px;">
+          <div class="reward-icon-circle" style="background:#d1fae5; margin-bottom:15px;">
+            <i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i>
+          </div>
+          <h3 style="font-size:18px; font-weight:800; color:var(--primary-color); margin-bottom:6px;">আজকের সকল টাস্ক সম্পন্ন! 🎉</h3>
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+            অভিনন্দন! আজকের দিনের জন্য নির্ধারিত সকল টাস্ক আপনি সফলভাবে সম্পন্ন করেছেন। আগামীকাল নতুন টাস্ক পাওয়ার জন্য অপেক্ষা করুন।
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    if (availableTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:30px 15px;">
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
@@ -888,9 +901,8 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    userVipTasks.forEach(task => {
+    uncompletedTasks.forEach(task => {
       const taskId = task.id;
-      const isCompletedToday = completedTaskIds[taskId] === true;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
 
@@ -898,11 +910,7 @@ function loadTasks(completedTaskIds = {}) {
       let btnDisabled = false;
       let btnStyle = '';
 
-      if (isCompletedToday) {
-        btnText = 'সম্পন্ন হয়েছে ✓';
-        btnDisabled = true;
-        btnStyle = 'background:#10b981; cursor:not-allowed;';
-      } else if (limitReached) {
+      if (limitReached) {
         btnText = 'আজকের লিমিট শেষ 🔒';
         btnDisabled = true;
         btnStyle = 'background:#ef4444; cursor:not-allowed;';
@@ -1125,12 +1133,88 @@ function loadDepositHistory() {
   });
 }
 
-// WITHDRAW METHOD SELECTOR & SUBMIT
-window.selectWithdrawMethod = function(method, el) {
-  selectedWithdrawMethodName = method;
-  document.querySelectorAll('.withdraw-method-box').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
+// WALLET METHOD & 5-DIGIT PIN SETUP
+window.handleWalletSetupSubmit = function(e) {
+  e.preventDefault();
+  const method = document.getElementById('setup-wallet-method').value;
+  const accName = document.getElementById('setup-account-name').value;
+  const walletNum = document.getElementById('setup-wallet-number').value;
+  const pin = document.getElementById('setup-wallet-pin').value;
+
+  if (!pin || pin.length !== 5 || isNaN(pin)) {
+    showCustomAlert('অনুগ্রহ করে সঠিক ৫ সংখ্যার পিন প্রদান করুন!', 'ভুল পিন', 'warning');
+    return;
+  }
+
+  const walletSetupData = {
+    method: method,
+    accountName: accName,
+    walletNumber: walletNum,
+    pin: pin
+  };
+
+  db.ref('users/' + currentUser.uid + '/walletSetup').set(walletSetupData).then(() => {
+    closeWalletSetupModal();
+    showCustomAlert('আপনার উইথড্র ওয়ালেট ও ৫ সংখ্যার পিন সফলভাবে সেভ করা হয়েছে!', 'সেটআপ সফল', 'success');
+  });
 };
+
+// RENDER SAVED SINGLE WALLET WITHDRAWAL FORM
+function renderWithdrawPageForm() {
+  const container = document.getElementById('withdraw-page-container');
+  if (!container) return;
+
+  if (!userData || !userData.walletSetup) {
+    container.innerHTML = `
+      <div class="content-card" style="text-align:center; padding:30px 15px;">
+        <i class="fa-solid fa-wallet" style="font-size:40px; color:var(--primary-color); margin-bottom:12px;"></i>
+        <h3 style="font-size:16px; margin-bottom:6px; color:var(--text-main);">উইথড্র ওয়ালেট সেটআপ করা নেই!</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">টাকা তোলার আগে আপনার ওয়ালেট তথ্য ও ৫ সংখ্যার সিকিউরিটি পিন সেভ করুন।</p>
+        <button class="btn-action" style="max-width:260px; margin:0 auto;" onclick="openWalletSetupModal()">ওয়ালেট ও পিন সেটআপ করুন ⚙️</button>
+      </div>
+    `;
+    return;
+  }
+
+  const ws = userData.walletSetup;
+
+  container.innerHTML = `
+    <div class="content-card">
+      <div style="background:var(--primary-light); border:1px solid var(--border-color); border-radius:14px; padding:14px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary-color); font-size:18px;"></i>
+            <strong style="font-size:14px; color:var(--text-main);">${ws.method} Wallet</strong>
+          </div>
+          <button class="btn-continue-sm" style="width:auto; padding:4px 10px;" onclick="openWalletSetupModal()">পরিবর্তন ⚙️</button>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:var(--text-muted);">
+          <div>হোল্ডার নাম: <b style="color:var(--text-main)">${ws.accountName}</b></div>
+          <div>নম্বর: <b style="color:var(--primary-color)">${ws.walletNumber}</b></div>
+        </div>
+      </div>
+
+      <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
+        <div class="form-group">
+          <label>উত্তোলনের পরিমাণ (৳)</label>
+          <input type="number" id="wit-amount" class="form-control" required placeholder="সর্বনিম্ন ৳${systemMinWithdraw}" oninput="calculateWithdrawFeePreview()">
+        </div>
+
+        <div class="form-group">
+          <label>আপনার ৫ সংখ্যার পিন নম্বর (Security PIN)</label>
+          <input type="password" id="wit-pin-input" class="form-control" required maxlength="5" minlength="5" placeholder="৫ সংখ্যার পিন লিখুন">
+        </div>
+
+        <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
+          <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
+          <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
+        </div>
+
+        <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন 💸</button>
+      </form>
+    </div>
+  `;
+}
 
 function getActiveWithdrawChargePercent() {
   if (userData && userData.withdrawChargePercent !== undefined) {
@@ -1140,13 +1224,17 @@ function getActiveWithdrawChargePercent() {
 }
 
 window.calculateWithdrawFeePreview = function() {
-  const amt = parseFloat(document.getElementById('wit-amount').value) || 0;
+  const amtInput = document.getElementById('wit-amount');
+  if (!amtInput) return;
+  const amt = parseFloat(amtInput.value) || 0;
   const activeCharge = getActiveWithdrawChargePercent();
   const chargeFee = amt * (activeCharge / 100);
   const netAmount = Math.max(0, amt - chargeFee);
 
-  document.getElementById('wit-fee-amount').innerText = '৳' + chargeFee.toFixed(2);
-  document.getElementById('wit-net-receive').innerText = '৳' + netAmount.toFixed(2);
+  const feeEl = document.getElementById('wit-fee-amount');
+  const netEl = document.getElementById('wit-net-receive');
+  if (feeEl) feeEl.innerText = '৳' + chargeFee.toFixed(2);
+  if (netEl) netEl.innerText = '৳' + netAmount.toFixed(2);
 };
 
 window.handleWithdrawSubmit = function(e) {
@@ -1158,9 +1246,22 @@ window.handleWithdrawSubmit = function(e) {
     return;
   }
 
-  const num = document.getElementById('wit-number').value;
-  const amt = parseFloat(document.getElementById('wit-amount').value);
+  if (!userData.walletSetup) {
+    showCustomAlert('আগে আপনার উইথড্র ওয়ালেট ও ৫ সংখ্যার পিন সেটআপ করুন!', 'ওয়ালেট প্রয়োজন', 'warning');
+    openWalletSetupModal();
+    return;
+  }
 
+  const amt = parseFloat(document.getElementById('wit-amount').value);
+  const enteredPin = document.getElementById('wit-pin-input').value;
+
+  // 1. PIN VERIFICATION
+  if (enteredPin !== userData.walletSetup.pin) {
+    showCustomAlert('ভুল ৫ সংখ্যার সিকিউরিটি পিন প্রদান করেছেন!', 'ভুল পিন', 'error');
+    return;
+  }
+
+  // 2. LIMIT CHECK
   if (!amt || amt < systemMinWithdraw) {
     showCustomAlert(`সর্বনিম্ন ৳${systemMinWithdraw} টাকা উত্তোলন করতে পারবেন।`, 'উত্তোলন লিমিট', 'warning');
     return;
@@ -1196,8 +1297,9 @@ window.handleWithdrawSubmit = function(e) {
       id: witRef.key,
       uid: currentUser.uid,
       email: currentUser.email,
-      method: selectedWithdrawMethodName,
-      walletNumber: num,
+      method: userData.walletSetup.method,
+      walletNumber: userData.walletSetup.walletNumber,
+      accountName: userData.walletSetup.accountName,
       amount: amt,
       chargePercent: activeCharge,
       netAmount: Math.max(0, amt - (amt * activeCharge / 100)),
@@ -1278,10 +1380,9 @@ window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
   const phone = document.getElementById('prof-phone').value;
-  const avatar = document.getElementById('prof-avatar').value || DEFAULT_AVATAR;
 
-  db.ref('users/' + currentUser.uid).update({ name, phone, avatar }).then(() => {
-    showCustomAlert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!', 'আপডেট সফল', 'success');
+  db.ref('users/' + currentUser.uid).update({ name, phone }).then(() => {
+    showCustomAlert('প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!', 'আপডেট সফল', 'success');
   });
 };
 
