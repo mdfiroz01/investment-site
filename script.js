@@ -1,4 +1,3 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -211,12 +210,13 @@ function loadSocialSupportLinks() {
   });
 }
 
-// TAB SWITCHER & HASH ROUTING
+// TAB SWITCHER & HASH ROUTING (PREVENTS 404 ERROR)
 window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
 
+  // ONLY RESET TO GENERAL WALLET IF NOT DIRECTLY TRIGGERED FROM PLAN PURCHASE
   if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
     resetDepositToGeneralWallet();
   }
@@ -637,7 +637,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (WITH ACTIVE PLAN CHECK)
+// ULTRA PRO PLAN CARDS RENDERER (EXACTLY MATCHING SCREENSHOT + NO BULLETS)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -740,26 +740,28 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   });
 };
 
+// AUTO SELECT TARGET PLAN AND AMOUNT WHEN DEPOSITING FOR PLAN
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
-  const amtInput = document.getElementById('input-dep-amount');
-  if (amtInput) amtInput.value = price;
 
-  const selectEl = document.getElementById('dep-target-plan-select');
-  if (selectEl) {
-    for (let i = 0; i < selectEl.options.length; i++) {
-      if (selectEl.options[i].getAttribute('data-name') === planName) {
-        selectEl.selectedIndex = i;
-        break;
-      }
-    }
-  }
-
+  // SWITCH TAB FIRST WITH isDirectPlanTrigger = true TO PREVENT RESET
   switchTab('tab-deposit', null, true);
   goToDepositStep(1);
+
+  // EXPLICITLY SET PLAN & PRICE IN DEPOSIT FORM
+  setTimeout(() => {
+    const amtInput = document.getElementById('input-dep-amount');
+    if (amtInput) amtInput.value = price;
+
+    const selectEl = document.getElementById('dep-target-plan-select');
+    if (selectEl) {
+      selectEl.value = vipLevel.toString();
+      onDepositPlanTargetChange(selectEl);
+    }
+  }, 50);
 }
 
-// TASK SYSTEM WITH COMPLETED TASK HIDING & ALL COMPLETED CARD DISPLAY
+// TASK SYSTEM WITH COMPLETED TASK HIDING & SLEEK TASK CARDS
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -855,15 +857,15 @@ function loadTasks(completedTaskIds = {}) {
           <div class="task-info-box">
             <div style="display:flex; align-items:center; gap:6px;">
               <h4>${task.title}</h4>
-              ${isFreeTask ? '<span style="background:#e0f2fe; color:#0284c7; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px;">FREE</span>' : ''}
+              ${isFreeTask ? '<span class="task-free-badge">FREE</span>' : ''}
             </div>
             <div class="task-reward-tag">
               <i class="fa-solid fa-coins" style="color:#f59e0b;"></i> রিওয়ার্ড: <b>৳${task.reward}</b>
             </div>
           </div>
-          <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px;" 
+          <button class="btn-action btn-start-task" 
             onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
-            টাস্ক শুরু করুন
+            <i class="fa-solid fa-play"></i> শুরু করুন
           </button>
         </div>
       `;
