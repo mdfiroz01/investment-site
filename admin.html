@@ -50,7 +50,7 @@
     <ul class="sidebar-menu">
       <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
       <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ফুল ইনফো</li>
-      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান, রেফার ও উইথড্র ফি %</li>
+      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান ও রেফার কমিশন %</li>
       <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক তৈরি (পরিমাণ সহ)</li>
       <li onclick="showAdminSection('sec-gateways')"><i class="fa-solid fa-credit-card"></i> আনলিমিটেড পেমেন্ট মেথড</li>
       <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
@@ -103,7 +103,7 @@
 
     <!-- SECTION 3: VIP PLAN MANAGEMENT -->
     <div id="sec-plans" class="admin-section hidden admin-card">
-      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:#05b381"></i> VIP প্ল্যান, রেফার ও উইথড্র ফি সেটিং</h3>
+      <h3 id="plan-form-title"><i class="fa-solid fa-crown" style="color:#05b381"></i> VIP প্ল্যান ও বোনাস সেটিং</h3>
       
       <form id="admin-add-plan-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
         <input type="hidden" id="edit-plan-key" value="">
@@ -154,7 +154,7 @@
 
     <!-- SECTION 5: APP LOGO, MIN WITHDRAW & CHARGE SETTINGS -->
     <div id="sec-settings" class="admin-section hidden admin-card">
-      <h3><i class="fa-solid fa-gears" style="color:#05b381"></i> লোগো, বোনাস, উইথড্র ফি ও লিমিট</h3>
+      <h3><i class="fa-solid fa-gears" style="color:#05b381"></i> লোগো, বোনাস ও উত্তোলন সেটিং</h3>
       <div class="form-group" style="margin-top:10px;">
         <label>সাইটের লোগো ছবি URL (Site Logo URL)</label>
         <input type="url" id="cfg-site-logo" class="admin-form-control" placeholder="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" value="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
@@ -174,9 +174,9 @@
       <button class="btn-action" onclick="saveSystemSettings()">সেটিংস সেভ করুন</button>
     </div>
 
-    <!-- SECTION 6: TASK CREATION WITH QUANTITY FIELD -->
+    <!-- SECTION 6: TASK CREATION WITH QUANTITY -->
     <div id="sec-tasks" class="admin-section hidden admin-card">
-      <h3 id="task-form-title"><i class="fa-solid fa-list-check" style="color:#05b381"></i> টাস্ক তৈরি / ইডিট</h3>
+      <h3 id="task-form-title"><i class="fa-solid fa-list-check" style="color:#05b381"></i> টাস্ক তৈরি ও ইডিট</h3>
       
       <form id="admin-add-task-form" style="display: grid; gap: 10px; margin-top: 15px;">
         <input type="hidden" id="edit-task-key" value="">
