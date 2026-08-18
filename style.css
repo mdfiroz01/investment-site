@@ -1,5 +1,6 @@
-
-/* LIGHT & DARK THEME VARIABLES FOR USER PANEL */
+/* ===================================================
+   LIGHT & DARK THEME VARIABLES FOR USER PANEL
+=================================================== */
 [data-theme="light"] {
   --primary-color: #05b381;
   --primary-dark: #038d65;
@@ -278,7 +279,7 @@ body.admin-body {
   align-items: flex-start;
 }
 
-/* SLOW & BOLD SCROLLING NOTICE */
+/* SCROLLING NOTICE BOARD */
 .notice-board {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -308,7 +309,7 @@ body.admin-body {
   100% { transform: translateX(-100%); }
 }
 
-/* HOMEPAGE BANNER SLIDER CAROUSEL FIX */
+/* HOMEPAGE BANNER SLIDER */
 .slider-container-card {
   margin: 0 15px 15px 15px;
   width: calc(100% - 30px);
@@ -385,7 +386,7 @@ body.admin-body {
   cursor: pointer;
 }
 
-/* FLOATING 90-DEGREE SUPPORT FAB WHEEL */
+/* FLOATING SUPPORT FAB WHEEL */
 .fab-support-container {
   position: fixed;
   bottom: 80px;
@@ -455,14 +456,8 @@ body.admin-body {
   transition: transform 0.2s;
 }
 
-.fab-menu-item:hover {
-  transform: scale(1.05);
-}
-
-.fab-menu-item i {
-  font-size: 18px;
-  color: var(--primary-color);
-}
+.fab-menu-item:hover { transform: scale(1.05); }
+.fab-menu-item i { font-size: 18px; color: var(--primary-color); }
 
 /* CARDS & METRICS */
 .dashboard-grid {
@@ -627,7 +622,7 @@ body.admin-body {
 .menu-card i { font-size: 22px; color: var(--primary-color); margin-bottom: 6px; }
 .menu-card span { display: block; font-size: 11px; color: var(--text-main); font-weight: 600; }
 
-/* ACTIVE PLAN HERO CARD ON DASHBOARD */
+/* ACTIVE PLAN BANNER ON DASHBOARD */
 .active-plan-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: white;
@@ -733,43 +728,7 @@ body.admin-body {
 
 .plan-ribbon.sold-out-ribbon { background: #64748b; }
 
-/* E-WALLET ADD PAYMENT METHOD BOX */
-.e-wallet-add-box {
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 40px 20px;
-  text-align: center;
-  cursor: pointer;
-  background: var(--card-bg);
-  margin: 15px;
-  transition: background 0.3s;
-}
-
-.e-wallet-add-box:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
-}
-
-.add-payment-bottom-btn {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 30px);
-  max-width: 450px;
-  padding: 14px;
-  background: #facc15;
-  color: #000;
-  font-weight: 800;
-  font-size: 15px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 99;
-}
-
-/* DEPOSIT CARDS */
+/* DEPOSIT & WITHDRAW CARDS */
 .deposit-hero-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   border-radius: 18px;
@@ -874,4 +833,164 @@ body.admin-body {
   font-weight: 700;
   cursor: pointer;
   text-align: center;
+}
+
+[data-theme="dark"] .amount-btn { background: #1e293b; }
+
+.amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+/* REWARD POP-UP CELEBRATION MODAL */
+.reward-pop-card {
+  text-align: center;
+  padding: 25px 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  background: var(--card-bg);
+}
+
+.reward-icon-circle {
+  width: 65px;
+  height: 65px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+}
+
+.gold-coin-glow {
+  font-size: 32px;
+  color: #f59e0b;
+  animation: bounceGlow 1.5s infinite alternate;
+}
+
+@keyframes bounceGlow {
+  from { transform: scale(1); filter: drop-shadow(0 0 2px #f59e0b); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 10px #f59e0b); }
+}
+
+/* BOTTOM NAVIGATION */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 65px;
+  background: var(--card-bg);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  z-index: 1000;
+  border-top: 1px solid var(--border-color);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #94a3b8;
+  font-size: 11px;
+  cursor: pointer;
+  width: 20%;
+}
+
+.nav-item.active { color: var(--primary-color); }
+.nav-item i { font-size: 18px; }
+
+.plan-center-btn { position: relative; top: -15px; }
+
+.center-circle {
+  width: 52px;
+  height: 52px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 4px solid var(--card-bg);
+  box-shadow: 0 6px 15px rgba(5, 179, 129, 0.35);
+}
+
+/* FORM CONTROLS & GENERAL UTILITIES */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  outline: none;
+  background: var(--card-bg);
+  color: var(--text-main);
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.admin-section { display: block; }
+.hidden { display: none !important; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background: var(--card-bg);
+  color: var(--text-main);
+  padding: 22px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.progress-bar-wrap {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--primary-color);
+  transition: width 0.3s;
+}
+
+.btn-copy {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
