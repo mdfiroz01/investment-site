@@ -1362,3 +1362,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+window.logout = function() { auth.signOut(); };
+
