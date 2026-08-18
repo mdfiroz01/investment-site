@@ -352,7 +352,7 @@ function resetDepositToGeneralWallet() {
   goToDepositStep(1);
 }
 
-// USER DATA REALTIME LOAD
+// USER DATA REALTIME LOAD WITH AUTO PLAN EXPIRY CHECK
 function loadUserData() {
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
@@ -360,6 +360,20 @@ function loadUserData() {
     if (userData.isBlocked === true) {
       showCustomAlert("আপনার একাউন্টটি সাময়িকভাবে স্থগিত করা হয়েছে!", "অ্যাকাউন্ট স্থগিত", "lock");
       auth.signOut();
+      return;
+    }
+
+    // CHECK PLAN EXPIRY AUTOMATICALLY
+    if (userData.vipExpireAt && Date.now() >= userData.vipExpireAt) {
+      db.ref('users/' + currentUser.uid).update({
+        vipLevel: 0,
+        vipPlanName: 'মেয়াদ শেষ (Expired)',
+        maxDailyTasks: 0,
+        vipDailyProfit: 0,
+        vipExpireAt: null
+      }).then(() => {
+        showCustomAlert("আপনার এক্টিভ প্ল্যানের মেয়াদ শেষ হয়ে গেছে! অনুগ্রহ করে নতুন প্ল্যান ক্রয় করুন।", "মেয়াদ শেষ ⏳", "warning");
+      });
       return;
     }
 
@@ -402,6 +416,7 @@ function loadUserData() {
   });
 }
 
+// RENDER ACTIVE PLAN HERO CARD WITH DYNAMIC COUNTDOWN
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -421,8 +436,16 @@ function renderActivePlanDashboardBanner() {
     return;
   }
 
+  let countdownText = 'মেয়াদ: ৩০ দিন';
+  if (userData.vipExpireAt) {
+    const msLeft = Math.max(0, userData.vipExpireAt - Date.now());
+    const daysLeft = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.floor((msLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    countdownText = `মেয়াদের বাকি: ${daysLeft} দিন ${hoursLeft} ঘণ্টা`;
+  }
+
   container.innerHTML = `
-    <div class="active-plan-banner" style="padding:15px; border-radius:14px;">
+    <div class="active-plan-banner" style="padding:16px; border-radius:16px;">
       <div class="active-plan-header">
         <h4><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
         <span class="plan-live-tag">ACTIVE</span>
@@ -430,6 +453,10 @@ function renderActivePlanDashboardBanner() {
       <div class="active-plan-metrics">
         <div><p>দৈনিক টাস্ক</p><strong>${userData.maxDailyTasks || 0} টি</strong></div>
         <div><p>দৈনিক আয়</p><strong>৳${userData.vipDailyProfit || 0}</strong></div>
+      </div>
+      <div class="plan-validity-box">
+        <span><i class="fa-solid fa-clock"></i> মেয়াদের সময়সীমা</span>
+        <span style="color:#ffffff">${countdownText}</span>
       </div>
     </div>
   `;
@@ -609,7 +636,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE
+// VIP PLANS LOAD & PURCHASE WITH VALIDITY TIMESTAMP SETTING
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -631,7 +658,7 @@ function loadVIPPlans() {
     planList.forEach((plan) => {
       container.innerHTML += renderPlanCardHTML(plan);
       if (depPlanSelect && !plan.isSoldOut) {
-        depPlanSelect.innerHTML += `<option value="${plan.vipLevel}" data-price="${plan.price}" data-name="${plan.name}" data-tasks="${plan.dailyTasks}" data-profit="${plan.dailyProfit}">${plan.name} - ৳${plan.price}</option>`;
+        depPlanSelect.innerHTML += `<option value="${plan.vipLevel}" data-price="${plan.price}" data-name="${plan.name}" data-tasks="${plan.dailyTasks}" data-profit="${plan.dailyProfit}" data-duration="${plan.durationDays || 30}">${plan.name} - ৳${plan.price}</option>`;
       }
     });
   });
@@ -653,19 +680,19 @@ function renderPlanCardHTML(plan) {
       ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
       <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
         <h3>${planName}</h3>
-        <h2>৳${planPrice} <small>/মাস</small></h2>
+        <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
       </div>
       <div class="plan-card-body">
         <ul class="plan-features-list">
           <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
           <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
           <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
-          <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
-          <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
+          <li><i class="fa-solid fa-calendar-days"></i> মেয়াদের সময়সীমা: <b>${duration} দিন</b></li>
+          <li><i class="fa-solid fa-chart-line"></i> মোট সম্ভাব্য আয়: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
           <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
         </ul>
         <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge})"`}>
+          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${duration})"`}>
           ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
         </button>
       </div>
@@ -673,7 +700,7 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5) {
+window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5, durationDays = 30) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
@@ -682,7 +709,10 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     return;
   }
 
-  showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (ডিপোজিট ব্যালেন্স থেকে কাটা হবে)`, function() {
+  showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (মেয়াদ: ${durationDays} দিন)`, function() {
+    const nowMs = Date.now();
+    const expireMs = nowMs + (durationDays * 24 * 60 * 60 * 1000);
+
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
     updates['users/' + currentUser.uid + '/vipLevel'] = vipLevel;
@@ -690,6 +720,8 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     updates['users/' + currentUser.uid + '/maxDailyTasks'] = dailyTasks;
     updates['users/' + currentUser.uid + '/vipDailyProfit'] = dailyProfit;
     updates['users/' + currentUser.uid + '/withdrawChargePercent'] = withdrawChargePercent;
+    updates['users/' + currentUser.uid + '/vipActivatedAt'] = nowMs;
+    updates['users/' + currentUser.uid + '/vipExpireAt'] = expireMs;
 
     db.ref().update(updates).then(() => {
       userData.depositBalance = depBal - price;
@@ -698,6 +730,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
       userData.maxDailyTasks = dailyTasks;
       userData.vipDailyProfit = dailyProfit;
       userData.withdrawChargePercent = withdrawChargePercent;
+      userData.vipExpireAt = expireMs;
 
       const histRef = db.ref('history').push();
       histRef.set({
@@ -709,7 +742,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
 
-      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে।`, "প্ল্যান আনলকড! 🎉", "success");
+      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে। মেয়াদের সময়সীমা ${durationDays} দিন।`, "প্ল্যান এক্টিভেটেড! 🎉", "success");
       renderActivePlanDashboardBanner();
       switchTab('tab-tasks');
     }).catch(err => showCustomAlert('Error: ' + err.message, "ত্রুটি", "error"));
@@ -736,7 +769,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING
+// TASK SYSTEM WITH EXACT VIP LEVEL FILTERING
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -783,10 +816,9 @@ function loadTasks(completedTaskIds = {}) {
     const userVipTasks = [];
 
     if (snap.exists()) {
-      // EXPLICIT UNIQUE FIREBASE KEY MAPPING FOR EVERY SINGLE TASK
       snap.forEach(child => {
         const task = child.val();
-        task.id = child.key; // Unique Firebase Key
+        task.id = child.key;
         
         const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
         
@@ -811,7 +843,7 @@ function loadTasks(completedTaskIds = {}) {
     }
 
     userVipTasks.forEach(task => {
-      const taskId = task.id; // Unique Firebase Key
+      const taskId = task.id;
       const isCompletedToday = completedTaskIds[taskId] === true;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
       const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
@@ -998,7 +1030,8 @@ window.submitDepositFinal = function() {
       vipLevel: parseInt(targetPlanSelect.value),
       planName: opt.getAttribute('data-name'),
       dailyTasks: parseInt(opt.getAttribute('data-tasks')),
-      dailyProfit: parseFloat(opt.getAttribute('data-profit'))
+      dailyProfit: parseFloat(opt.getAttribute('data-profit')),
+      durationDays: parseInt(opt.getAttribute('data-duration') || 30)
     };
   }
 
@@ -1278,61 +1311,12 @@ function renderLiveWithdrawsInfinite() {
 
   const mockFeed = [
     { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
-  { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
-  { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
-  { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
-  { num: '013****3456', method: 'Nagad', amount: '৳২০০০' },
-  { num: '017****7821', method: 'Rocket', amount: '৳৯৫০' },
-  { num: '018****2345', method: 'bKash', amount: '৳৮০০' },
-  { num: '019****6789', method: 'Nagad', amount: '৳১৭৫০' },
-  { num: '016****4321', method: 'Rocket', amount: '৳১১০০' },
-  { num: '013****9876', method: 'bKash', amount: '৳৬৫০' },
-  { num: '017****5566', method: 'Nagad', amount: '৳২২০০' },
-  { num: '018****1122', method: 'Rocket', amount: '৳৮৫০' },
-  { num: '019****3344', method: 'bKash', amount: '৳১৩০০' },
-  { num: '016****7788', method: 'Nagad', amount: '৳৯০০' },
-  { num: '013****6655', method: 'Rocket', amount: '৳১৪৫০' },
-  { num: '017****9087', method: 'bKash', amount: '৳৭০০' },
-  { num: '018****3456', method: 'Nagad', amount: '৳১৮০০' },
-  { num: '019****7890', method: 'Rocket', amount: '৳১২৫০' },
-  { num: '016****1234', method: 'bKash', amount: '৳৯৫০' },
-  { num: '013****5678', method: 'Nagad', amount: '৳১৫৫০' },
-  { num: '017****2468', method: 'Rocket', amount: '৳৬০০' },
-  { num: '018****1357', method: 'bKash', amount: '৳২১০০' },
-  { num: '019****8642', method: 'Nagad', amount: '৳৭৫০' },
-  { num: '016****9753', method: 'Rocket', amount: '৳১৬০০' },
-  { num: '013****4826', method: 'bKash', amount: '৳১১০০' },
-  { num: '017****3141', method: 'Nagad', amount: '৳৮৫০' },
-  { num: '018****5926', method: 'Rocket', amount: '৳১৯০০' },
-  { num: '019****2718', method: 'bKash', amount: '৳৭০০' },
-  { num: '016****6384', method: 'Nagad', amount: '৳১৩৫০' },
-  { num: '013****1597', method: 'Rocket', amount: '৳১০০০' },
-  { num: '017****4839', method: 'bKash', amount: '৳১৭০০' },
-  { num: '018****7261', method: 'Nagad', amount: '৳৬৫০' },
-  { num: '019****3847', method: 'Rocket', amount: '৳১৪০০' },
-  { num: '016****9512', method: 'bKash', amount: '৳৯০০' },
-  { num: '013****6273', method: 'Nagad', amount: '৳২৩০০' },
-  { num: '017****8456', method: 'Rocket', amount: '৳৮০০' },
-  { num: '018****1639', method: 'bKash', amount: '৳১২৫০' },
-  { num: '019****5274', method: 'Nagad', amount: '৳১০৫০' },
-  { num: '016****7391', method: 'Rocket', amount: '৳১৮৫০' },
-  { num: '013****8462', method: 'bKash', amount: '৳৭৫০' },
-  { num: '017****2958', method: 'Nagad', amount: '৳১৫০০' },
-  { num: '018****6743', method: 'Rocket', amount: '৳৯৫০' },
-  { num: '019****4185', method: 'bKash', amount: '৳২০০০' },
-  { num: '016****8527', method: 'Nagad', amount: '৳৮০০' },
-  { num: '013****3749', method: 'Rocket', amount: '৳১২০০' },
-  { num: '017****6315', method: 'bKash', amount: '৳১৬৫০' },
-  { num: '018****9472', method: 'Nagad', amount: '৳৭০০' },
-  { num: '019****2864', method: 'Rocket', amount: '৳১৩০০' },
-  { num: '016****5193', method: 'bKash', amount: '৳৯৫০' },
-  { num: '013****7628', method: 'Nagad', amount: '৳১৮০০' },
-  { num: '017****4086', method: 'Rocket', amount: '৳১১০০' },
-  { num: '018****8351', method: 'bKash', amount: '৳১৪৫০' },
-  { num: '019****6937', method: 'Nagad', amount: '৳৮৫০' },
-  { num: '016****2479', method: 'Rocket', amount: '৳২১০০' },
-  { num: '013****5816', method: 'bKash', amount: '৳৬০০' }
-];
+    { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
+    { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
+    { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
+    { num: '013****3456', method: 'Nagad', amount: '৳২০০০' }
+  ];
+
   let feedIndex = 0;
 
   function rotateFeed() {
