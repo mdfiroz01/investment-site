@@ -1,50 +1,26 @@
 const ADMIN_PASS = "admin3";
 
-// Ensure Firebase Auth session for Admin operations
 function ensureAdminFirebaseAuth() {
   return new Promise((resolve) => {
-    if (typeof auth !== 'undefined' && auth.currentUser) {
+    if (auth.currentUser) {
       resolve();
-    } else if (typeof auth !== 'undefined') {
-      auth.signInAnonymously().then(() => resolve()).catch(() => resolve());
     } else {
-      resolve();
+      auth.signInAnonymously().then(() => resolve()).catch(() => resolve());
     }
   });
 }
 
-// Initial session check
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
     ensureAdminFirebaseAuth().then(() => {
       showAdminDashboard();
     });
   }
-
-  // Attach login listener
-  const loginForm = document.getElementById('admin-login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleAdminLogin);
-  }
-
-  // Attach add/edit forms
-  const planForm = document.getElementById('admin-add-plan-form');
-  if (planForm) planForm.addEventListener('submit', handlePlanSubmit);
-
-  const taskForm = document.getElementById('admin-add-task-form');
-  if (taskForm) taskForm.addEventListener('submit', handleTaskSubmit);
-
-  const gatewayForm = document.getElementById('admin-gateway-form');
-  if (gatewayForm) gatewayForm.addEventListener('submit', handleGatewaySubmit);
-
-  const socialForm = document.getElementById('admin-social-form');
-  if (socialForm) socialForm.addEventListener('submit', handleSocialSubmit);
 });
 
-function handleAdminLogin(e) {
+document.getElementById('admin-login-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const passEl = document.getElementById('admin-pass');
-  const pass = passEl ? passEl.value : '';
+  const pass = document.getElementById('admin-pass').value;
 
   if (pass === ADMIN_PASS) {
     sessionStorage.setItem('isAdminLoggedIn', 'true');
@@ -52,39 +28,31 @@ function handleAdminLogin(e) {
       showAdminDashboard();
     });
   } else {
-    alert("ভুল এডমিন পাসওয়ার্ড! সঠিক পাসওয়ার্ড: admin3");
+    alert("ভুল এডমিন পাসওয়ার্ড! সঠিক পাসওয়ার্ড দিন: admin3");
   }
-}
+});
 
 function showAdminDashboard() {
-  const authEl = document.getElementById('admin-auth');
-  const panelEl = document.getElementById('admin-panel');
-  if (authEl) authEl.classList.add('hidden');
-  if (panelEl) panelEl.classList.remove('hidden');
+  document.getElementById('admin-auth').classList.add('hidden');
+  document.getElementById('admin-panel').classList.remove('hidden');
   loadAdminDashboard();
 }
 
 window.adminLogout = function() {
   sessionStorage.removeItem('isAdminLoggedIn');
-  const authEl = document.getElementById('admin-auth');
-  const panelEl = document.getElementById('admin-panel');
-  if (authEl) authEl.classList.remove('hidden');
-  if (panelEl) panelEl.classList.add('hidden');
+  document.getElementById('admin-auth').classList.remove('hidden');
+  document.getElementById('admin-panel').classList.add('hidden');
 };
 
 // ADMIN SIDEBAR DRAWER & SECTION SWITCHING
 window.openAdminSidebar = function() {
-  const drawer = document.getElementById('admin-sidebar-drawer');
-  const overlay = document.getElementById('admin-sidebar-overlay');
-  if (drawer) drawer.classList.add('open');
-  if (overlay) overlay.classList.add('open');
+  document.getElementById('admin-sidebar-drawer').classList.add('open');
+  document.getElementById('admin-sidebar-overlay').classList.add('open');
 };
 
 window.closeAdminSidebar = function() {
-  const drawer = document.getElementById('admin-sidebar-drawer');
-  const overlay = document.getElementById('admin-sidebar-overlay');
-  if (drawer) drawer.classList.remove('open');
-  if (overlay) overlay.classList.remove('open');
+  document.getElementById('admin-sidebar-drawer').classList.remove('open');
+  document.getElementById('admin-sidebar-overlay').classList.remove('open');
 };
 
 window.showAdminSection = function(secId) {
@@ -94,7 +62,6 @@ window.showAdminSection = function(secId) {
   const target = document.getElementById(secId);
   if (target) {
     target.classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
 
@@ -112,11 +79,11 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS
+// 1. SYSTEM SETTINGS (REG BONUS, LOGO, WITHDRAW)
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
-  const logoUrl = document.getElementById('cfg-site-logo').value.trim();
+  const logoUrl = document.getElementById('cfg-site-logo').value;
   const regBonus = parseFloat(document.getElementById('cfg-reg-bonus').value) || 0;
   const minWithdraw = parseFloat(document.getElementById('cfg-min-withdraw').value) || 200;
   const withdrawChargePercent = parseFloat(document.getElementById('cfg-withdraw-charge').value) || 5;
@@ -134,15 +101,15 @@ function loadSettingsAdmin() {
   db.ref('settings/config').once('value', snap => {
     if (snap.exists()) {
       const cfg = snap.val();
-      if (document.getElementById('cfg-site-logo')) document.getElementById('cfg-site-logo').value = cfg.logoUrl || '';
-      if (document.getElementById('cfg-reg-bonus')) document.getElementById('cfg-reg-bonus').value = cfg.regBonus || 0;
-      if (document.getElementById('cfg-min-withdraw')) document.getElementById('cfg-min-withdraw').value = cfg.minWithdraw || 200;
-      if (document.getElementById('cfg-withdraw-charge')) document.getElementById('cfg-withdraw-charge').value = cfg.withdrawChargePercent || 5;
+      document.getElementById('cfg-site-logo').value = cfg.logoUrl || '';
+      document.getElementById('cfg-reg-bonus').value = cfg.regBonus || 0;
+      document.getElementById('cfg-min-withdraw').value = cfg.minWithdraw || 200;
+      document.getElementById('cfg-withdraw-charge').value = cfg.withdrawChargePercent || 5;
     }
   });
 
   db.ref('notices/main').once('value', snap => {
-    if (snap.exists() && document.getElementById('admin-notice-input')) {
+    if (snap.exists()) {
       document.getElementById('admin-notice-input').value = snap.val().text || '';
     }
   });
@@ -153,17 +120,11 @@ function loadSettingsAdmin() {
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
-    const statUsers = document.getElementById('stat-users');
-    if (statUsers) statUsers.innerText = snap.exists() ? snap.numChildren() : 0;
-    
+    document.getElementById('stat-users').innerText = snap.exists() ? snap.numChildren() : 0;
     const tbody = document.getElementById('admin-users-table');
-    if (!tbody) return;
     tbody.innerHTML = '';
 
-    if (!snap.exists()) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">কোনো ইউজার পাওয়া যায়নি</td></tr>';
-      return;
-    }
+    if (!snap.exists()) return;
 
     snap.forEach(child => {
       const u = child.val();
@@ -171,25 +132,17 @@ function loadUsersAdmin() {
       const isBlocked = u.isBlocked === true;
       const totalBal = (u.depositBalance || 0) + (u.incomeBalance || 0);
 
-      const safeName = (u.name || 'User').replace(/'/g, "\\'");
-      const safePhone = (u.phone || '').replace(/'/g, "\\'");
-
       tbody.innerHTML += `
         <tr>
-          <td>
-            <b>${u.name || 'User'}</b><br>
-            <small style="color:#64748b">${u.email || 'N/A'}</small>
-          </td>
-          <td><b>৳${totalBal.toFixed(2)}</b></td>
+          <td><b>${u.name || 'User'}</b><br><small>${u.email || ''}</small></td>
+          <td>৳${totalBal.toFixed(2)}</td>
           <td>VIP ${u.vipLevel || 0}</td>
           <td>
-            <div style="display:flex; gap:4px; flex-wrap:wrap;">
-              <button class="btn-action-sm btn-info" onclick="viewFullUserInfo('${uid}')">Info</button>
-              <button class="btn-action-sm btn-secondary" onclick="openEditUserModal('${uid}', '${safeName}', '${safePhone}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})">Edit</button>
-              <button class="btn-action-sm ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlockUser('${uid}', ${!isBlocked})">
-                ${isBlocked ? 'Unblock' : 'Block'}
-              </button>
-            </div>
+            <button class="btn-action-sm btn-info" onclick="viewFullUserInfo('${uid}')">Full Info</button>
+            <button class="btn-action-sm btn-secondary" onclick="openEditUserModal('${uid}', '${u.name || ''}', '${u.phone || ''}', ${u.depositBalance || 0}, ${u.incomeBalance || 0}, ${u.vipLevel || 0})">Edit</button>
+            <button class="btn-action-sm ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlockUser('${uid}', ${!isBlocked})">
+              ${isBlocked ? 'Unblock' : 'Block'}
+            </button>
           </td>
         </tr>
       `;
@@ -202,23 +155,20 @@ window.viewFullUserInfo = function(uid) {
     if (!snap.exists()) return;
     const u = snap.val();
     const modalBody = document.getElementById('user-full-details-body');
-    if (!modalBody) return;
     
     modalBody.innerHTML = `
-      <div style="display:grid; gap:8px;">
-        <div><b>ইউজার নাম:</b> ${u.name || 'N/A'}</div>
-        <div><b>ইমেইল:</b> ${u.email || 'N/A'}</div>
-        <div><b>ফোন নম্বর:</b> ${u.phone || 'N/A'}</div>
-        <div><b>কান্ট্রি:</b> ${u.country || 'N/A'}</div>
-        <div><b>ডিপোজিট ব্যালেন্স:</b> ৳${(u.depositBalance || 0).toFixed(2)}</div>
-        <div><b>ইনকাম ব্যালেন্স:</b> ৳${(u.incomeBalance || 0).toFixed(2)}</div>
-        <div><b>মোট ব্যালেন্স:</b> ৳${((u.depositBalance || 0) + (u.incomeBalance || 0)).toFixed(2)}</div>
-        <div><b>এক্টিভ VIP লেভেল:</b> VIP ${u.vipLevel || 0} (${u.vipPlanName || 'নো প্ল্যান'})</div>
-        <div><b>উইথড্র ফি (%):</b> ${u.withdrawChargePercent || 5}%</div>
-        <div><b>নিজের রেফার কোড:</b> <code>${u.refCode || 'N/A'}</code></div>
-        <div><b>যার রেফারে জয়েন করেছে:</b> <code>${u.referredBy || 'কারো রেফারে নয়'}</code></div>
-        <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}; font-weight:bold;">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
-      </div>
+      <div><b>ইউজার নাম:</b> ${u.name || 'N/A'}</div>
+      <div><b>ইমেইল:</b> ${u.email || 'N/A'}</div>
+      <div><b>ফোন নম্বর:</b> ${u.phone || 'N/A'}</div>
+      <div><b>কান্ট্রি:</b> ${u.country || 'N/A'}</div>
+      <div><b>ডিপোজিট ব্যালেন্স:</b> ৳${(u.depositBalance || 0).toFixed(2)}</div>
+      <div><b>ইনকাম ব্যালেন্স:</b> ৳${(u.incomeBalance || 0).toFixed(2)}</div>
+      <div><b>মোট ব্যালেন্স:</b> ৳${((u.depositBalance || 0) + (u.incomeBalance || 0)).toFixed(2)}</div>
+      <div><b>এক্টিভ VIP লেভেল:</b> VIP ${u.vipLevel || 0} (${u.vipPlanName || 'নো প্ল্যান'})</div>
+      <div><b>উইথড্র ফি (%):</b> ${u.withdrawChargePercent || 5}%</div>
+      <div><b>নিজের রেফার কোড:</b> ${u.refCode || 'N/A'}</div>
+      <div><b>যার রেফারে জয়েন করেছে:</b> ${u.referredBy || 'কারো রেফারে নয়'}</div>
+      <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}; font-weight:bold;">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
     `;
 
     document.getElementById('user-info-modal').classList.remove('hidden');
@@ -226,8 +176,7 @@ window.viewFullUserInfo = function(uid) {
 };
 
 window.closeUserInfoModal = function() {
-  const modal = document.getElementById('user-info-modal');
-  if (modal) modal.classList.add('hidden');
+  document.getElementById('user-info-modal').classList.add('hidden');
 };
 
 window.openEditUserModal = function(uid, name, phone, depBal, incBal, vip) {
@@ -242,8 +191,7 @@ window.openEditUserModal = function(uid, name, phone, depBal, incBal, vip) {
 };
 
 window.closeEditUserModal = function() {
-  const modal = document.getElementById('edit-user-modal');
-  if (modal) modal.classList.add('hidden');
+  document.getElementById('edit-user-modal').classList.add('hidden');
 };
 
 window.saveUserEdit = async function() {
@@ -276,22 +224,22 @@ window.toggleBlockUser = async function(uid, blockState) {
 // ----------------------------------------------------
 // 3. VIP PLAN EDIT & MANAGEMENT
 // ----------------------------------------------------
-async function handlePlanSubmit(e) {
+document.getElementById('admin-add-plan-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
 
   const editKey = document.getElementById('edit-plan-key').value;
   const planData = {
-    name: document.getElementById('plan-name').value.trim(),
-    price: parseFloat(document.getElementById('plan-price').value) || 0,
-    dailyTasks: parseInt(document.getElementById('plan-daily-tasks').value) || 1,
-    dailyProfit: parseFloat(document.getElementById('plan-daily-profit').value) || 0,
-    durationDays: parseInt(document.getElementById('plan-duration').value) || 30,
-    vipLevel: parseInt(document.getElementById('plan-vip-level').value) || 1,
+    name: document.getElementById('plan-name').value,
+    price: parseFloat(document.getElementById('plan-price').value),
+    dailyTasks: parseInt(document.getElementById('plan-daily-tasks').value),
+    dailyProfit: parseFloat(document.getElementById('plan-daily-profit').value),
+    durationDays: parseInt(document.getElementById('plan-duration').value),
+    vipLevel: parseInt(document.getElementById('plan-vip-level').value),
     refCommissionPercent: parseFloat(document.getElementById('plan-ref-commission').value) || 10,
     withdrawChargePercent: parseFloat(document.getElementById('plan-withdraw-charge').value) || 5,
     activationBonus: parseFloat(document.getElementById('plan-activation-bonus').value) || 0,
-    badgeText: document.getElementById('plan-badge-text').value.trim(),
+    badgeText: document.getElementById('plan-badge-text').value,
     isSoldOut: document.getElementById('plan-is-soldout').checked
   };
 
@@ -306,48 +254,33 @@ async function handlePlanSubmit(e) {
       resetPlanForm();
     }).catch(err => alert('Error: ' + err.message));
   }
-}
+});
 
 function loadPlansAdmin() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('admin-plans-list');
-    if (!container) return;
     container.innerHTML = '';
-    
-    if (!snap.exists()) {
-      container.innerHTML = '<div style="font-size:12px; color:#64748b;">কোনো প্ল্যান পাওয়া যায়নি</div>';
-      return;
-    }
+    if (!snap.exists()) return;
 
     snap.forEach(child => {
       const p = child.val();
       const key = child.key;
-      const safeBadge = (p.badgeText || '').replace(/'/g, "\\'");
-      const safeName = (p.name || '').replace(/'/g, "\\'");
-
       container.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:8px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div>
-            <b style="font-size:13px; color:#0f172a;">${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
-            <small style="color:#05b381; font-weight:700;">[Ref: ${p.refCommissionPercent || 10}%, Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
-            ${p.isSoldOut ? '<span style="color:#ef4444; font-weight:bold; margin-left:5px;">[Sold Out]</span>' : ''}
+            <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
+            <small style="color:#05b381">[Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
+            ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
           </div>
-          <div style="display:flex; gap:6px;">
-            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${safeName}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${safeBadge}', ${p.isSoldOut === true}, ${p.activationBonus || 0})">Edit</button>
-            <button class="btn-action-sm btn-danger" onclick="deletePlan('${key}')">Delete</button>
+          <div>
+            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true}, ${p.activationBonus || 0})">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
     });
   });
 }
-
-window.deletePlan = async function(key) {
-  if (confirm("আপনি কি এই VIP প্ল্যানটি মুছে ফেলতে চান?")) {
-    await ensureAdminFirebaseAuth();
-    db.ref('plans/' + key).remove();
-  }
-};
 
 window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, badgeText, isSoldOut, actBonus = 0) {
   document.getElementById('edit-plan-key').value = key;
@@ -364,7 +297,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-is-soldout').checked = isSoldOut;
 
   document.getElementById('plan-form-title').innerText = 'VIP প্ল্যান ইডিট করুন';
-  document.getElementById('btn-save-plan').innerText = 'আপডেট সেভ করুন 💾';
+  document.getElementById('btn-save-plan').innerText = 'আপডেট সেভ করুন';
   document.getElementById('btn-cancel-plan-edit').classList.remove('hidden');
   showAdminSection('sec-plans');
 };
@@ -372,20 +305,20 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
 window.resetPlanForm = function() {
   document.getElementById('edit-plan-key').value = '';
   document.getElementById('admin-add-plan-form').reset();
-  document.getElementById('plan-form-title').innerText = 'VIP প্ল্যান তৈরি ও ইডিট';
-  document.getElementById('btn-save-plan').innerText = 'সেভ প্ল্যান 💾';
+  document.getElementById('plan-form-title').innerText = 'VIP প্ল্যান তৈরি / ইডিট';
+  document.getElementById('btn-save-plan').innerText = 'প্ল্যান সেভ করুন';
   document.getElementById('btn-cancel-plan-edit').classList.add('hidden');
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION
+// 4. TASK CREATION WITH ATOMIC BATCH UPDATE
 // ----------------------------------------------------
-async function handleTaskSubmit(e) {
+document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
 
   const editKey = document.getElementById('edit-task-key').value;
-  const baseTitle = document.getElementById('task-title').value.trim();
+  const baseTitle = document.getElementById('task-title').value;
   const reward = parseFloat(document.getElementById('task-reward').value) || 0;
   const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
   const qty = parseInt(document.getElementById('task-quantity').value) || 1;
@@ -416,47 +349,33 @@ async function handleTaskSubmit(e) {
     }
 
     db.ref().update(updates).then(() => {
-      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক সেভ করা হয়েছে!`);
+      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি ও সেভ করা হয়েছে!`);
       resetTaskForm();
     }).catch(err => alert('Error: ' + err.message));
   }
-}
+});
 
 function loadTasksAdmin() {
   db.ref('tasks').on('value', snap => {
     const list = document.getElementById('admin-tasks-list');
-    if (!list) return;
     list.innerHTML = '';
-    
-    if (!snap.exists()) {
-      list.innerHTML = '<div style="font-size:12px; color:#64748b;">কোনো টাস্ক পাওয়া যায়নি</div>';
-      return;
-    }
+    if (!snap.exists()) return;
 
     snap.forEach(child => {
       const t = child.val();
       const key = child.key;
-      const safeTitle = (t.title || '').replace(/'/g, "\\'");
-
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px; font-size:12px;">
-          <div><b>${t.title}</b> - ৳${t.reward} <small style="color:#64748b">(Level ${t.minVip})</small></div>
-          <div style="display:flex; gap:6px;">
-            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${safeTitle}', ${t.reward}, ${t.minVip})">Edit</button>
-            <button class="btn-action-sm btn-danger" onclick="deleteTask('${key}')">Delete</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
+          <div>
+            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('tasks/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
     });
   });
 }
-
-window.deleteTask = async function(key) {
-  if (confirm("আপনি কি এই টাস্কটি মুছে ফেলতে চান?")) {
-    await ensureAdminFirebaseAuth();
-    db.ref('tasks/' + key).remove();
-  }
-};
 
 window.editTask = function(key, title, reward, minVip) {
   document.getElementById('edit-task-key').value = key;
@@ -466,7 +385,7 @@ window.editTask = function(key, title, reward, minVip) {
   document.getElementById('task-quantity').value = 1;
 
   document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
-  document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন 💾';
+  document.getElementById('btn-save-task').innerText = 'টাস্ক আপডেট করুন';
   document.getElementById('btn-cancel-task-edit').classList.remove('hidden');
   showAdminSection('sec-tasks');
 };
@@ -475,23 +394,23 @@ window.resetTaskForm = function() {
   document.getElementById('edit-task-key').value = '';
   document.getElementById('admin-add-task-form').reset();
   document.getElementById('task-quantity').value = 1;
-  document.getElementById('task-form-title').innerText = 'টাস্ক তৈরি ও ইডিট';
-  document.getElementById('btn-save-task').innerText = 'টাস্ক সেভ করুন 💾';
+  document.getElementById('task-form-title').innerText = 'টাস্ক তৈরি / ইডিট';
+  document.getElementById('btn-save-task').innerText = 'টাস্ক সেভ করুন';
   document.getElementById('btn-cancel-task-edit').classList.add('hidden');
 };
 
 // ----------------------------------------------------
 // 5. SOCIAL MEDIA SUPPORT FAB MANAGEMENT
 // ----------------------------------------------------
-async function handleSocialSubmit(e) {
+document.getElementById('admin-social-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
 
   const editKey = document.getElementById('edit-social-key').value;
   const socialData = {
-    name: document.getElementById('social-name').value.trim(),
-    icon: document.getElementById('social-icon').value.trim(),
-    url: document.getElementById('social-url').value.trim()
+    name: document.getElementById('social-name').value,
+    icon: document.getElementById('social-icon').value,
+    url: document.getElementById('social-url').value
   };
 
   if (editKey) {
@@ -507,7 +426,7 @@ async function handleSocialSubmit(e) {
       resetSocialForm();
     });
   }
-}
+});
 
 function loadSocialSupportAdmin() {
   db.ref('social_support').on('value', snap => {
@@ -520,10 +439,10 @@ function loadSocialSupportAdmin() {
       const s = child.val();
       const key = child.key;
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
           <div>
-            <button class="btn-action-sm btn-danger" onclick="deleteSocial('${key}')">Delete</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
@@ -531,30 +450,22 @@ function loadSocialSupportAdmin() {
   });
 }
 
-window.deleteSocial = async function(key) {
-  if (confirm("আপনি কি এই সোশ্যাল লিংকটি মুছে ফেলতে চান?")) {
-    await ensureAdminFirebaseAuth();
-    db.ref('social_support/' + key).remove();
-  }
-};
-
 function resetSocialForm() {
   document.getElementById('edit-social-key').value = '';
   document.getElementById('admin-social-form').reset();
 }
 
 // ----------------------------------------------------
-// 6. DEPOSITS MANAGEMENT
+// 6. DEPOSITS MANAGEMENT (DIRECT PLAN APPROVAL WITH EXPIRY SET)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
     const tbody = document.getElementById('admin-dep-table');
-    if (!tbody) return;
     tbody.innerHTML = '';
     let pendingCount = 0;
 
     if (!snap.exists()) {
-      if (document.getElementById('stat-pending-dep')) document.getElementById('stat-pending-dep').innerText = 0;
+      document.getElementById('stat-pending-dep').innerText = 0;
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং ডিপোজিট নেই</td></tr>';
       return;
     }
@@ -563,19 +474,17 @@ function loadDepositsAdmin() {
       const d = child.val();
       if (d.status === 'pending') {
         pendingCount++;
-        const targetText = d.targetPlan && d.targetPlan !== 'wallet' ? `<br><small style="color:#05b381; font-weight:bold;">Target: ${d.targetPlan.planName}</small>` : '';
+        const targetText = d.targetPlan && d.targetPlan !== 'wallet' ? `<br><small style="color:#05b381">Target: ${d.targetPlan.planName}</small>` : '';
         
         tbody.innerHTML += `
           <tr>
             <td>${d.email || 'User'}${targetText}</td>
-            <td><b>${d.method}</b></td>
+            <td>${d.method}</td>
             <td>৳${d.amount}</td>
-            <td><code>${d.trxId}</code></td>
+            <td>${d.trxId}</td>
             <td>
-              <div style="display:flex; gap:4px;">
-                <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})">Approve</button>
-                <button class="btn-action-sm btn-danger" onclick="rejectDeposit('${child.key}')">Reject</button>
-              </div>
+              <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})">Approve</button>
+              <button class="btn-action-sm btn-danger" onclick="rejectDeposit('${child.key}')">Reject</button>
             </td>
           </tr>
         `;
@@ -585,9 +494,7 @@ function loadDepositsAdmin() {
     if (pendingCount === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং ডিপোজিট নেই</td></tr>';
     }
-    if (document.getElementById('stat-pending-dep')) {
-      document.getElementById('stat-pending-dep').innerText = pendingCount;
-    }
+    document.getElementById('stat-pending-dep').innerText = pendingCount;
   });
 }
 
@@ -596,11 +503,17 @@ window.approveDeposit = async function(depId, uid, amount) {
     await ensureAdminFirebaseAuth();
 
     const depSnap = await db.ref('deposits/' + depId).once('value');
-    if (!depSnap.exists()) return alert('ডিপোজিট রেকর্ড পাওয়া যায়নি!');
+    if (!depSnap.exists()) {
+      alert('ডিপোজিট রেকর্ড পাওয়া যায়নি!');
+      return;
+    }
     const depData = depSnap.val();
 
     const userSnap = await db.ref('users/' + uid).once('value');
-    if (!userSnap.exists()) return alert('ইউজার ডাটা পাওয়া যায়নি!');
+    if (!userSnap.exists()) {
+      alert('ইউজার ডাটা পাওয়া যায়নি!');
+      return;
+    }
     const user = userSnap.val();
 
     const updates = {};
@@ -707,12 +620,11 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
     const tbody = document.getElementById('admin-wit-table');
-    if (!tbody) return;
     tbody.innerHTML = '';
     let pendingCount = 0;
 
     if (!snap.exists()) {
-      if (document.getElementById('stat-pending-wit')) document.getElementById('stat-pending-wit').innerText = 0;
+      document.getElementById('stat-pending-wit').innerText = 0;
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং উত্তোলন নেই</td></tr>';
       return;
     }
@@ -724,14 +636,12 @@ function loadWithdrawsAdmin() {
         tbody.innerHTML += `
           <tr>
             <td>${w.email || 'User'}</td>
-            <td><b>${w.method}</b></td>
-            <td><code>${w.walletNumber}</code></td>
+            <td>${w.method}</td>
+            <td>${w.walletNumber}</td>
             <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
             <td>
-              <div style="display:flex; gap:4px;">
-                <button class="btn-action-sm btn-success" onclick="approveWithdraw('${child.key}')">Approve</button>
-                <button class="btn-action-sm btn-danger" onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})">Reject</button>
-              </div>
+              <button class="btn-action-sm btn-success" onclick="approveWithdraw('${child.key}')">Approve</button>
+              <button class="btn-action-sm btn-danger" onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})">Reject</button>
             </td>
           </tr>
         `;
@@ -741,9 +651,7 @@ function loadWithdrawsAdmin() {
     if (pendingCount === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পেন্ডিং উত্তোলন নেই</td></tr>';
     }
-    if (document.getElementById('stat-pending-wit')) {
-      document.getElementById('stat-pending-wit').innerText = pendingCount;
-    }
+    document.getElementById('stat-pending-wit').innerText = pendingCount;
   });
 }
 
@@ -775,18 +683,18 @@ window.rejectWithdraw = async function(witId, uid, amount) {
 };
 
 // ----------------------------------------------------
-// 8. UNLIMITED PAYMENT GATEWAYS
+// 8. UNLIMITED DYNAMIC PAYMENT GATEWAYS
 // ----------------------------------------------------
-async function handleGatewaySubmit(e) {
+document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
 
   const editKey = document.getElementById('edit-gateway-key').value;
   const gatewayData = {
-    name: document.getElementById('gateway-name').value.trim(),
+    name: document.getElementById('gateway-name').value,
     type: document.getElementById('gateway-type').value,
-    number: document.getElementById('gateway-number').value.trim(),
-    logoUrl: document.getElementById('gateway-logo').value.trim()
+    number: document.getElementById('gateway-number').value,
+    logoUrl: document.getElementById('gateway-logo').value
   };
 
   if (editKey) {
@@ -802,44 +710,32 @@ async function handleGatewaySubmit(e) {
       resetGatewayForm();
     });
   }
-}
+});
 
 function loadGatewaysAdmin() {
   db.ref('payment_gateways').on('value', snap => {
     const list = document.getElementById('admin-gateways-list');
-    if (!list) return;
     list.innerHTML = '';
     if (!snap.exists()) return;
 
     snap.forEach(child => {
       const g = child.val();
       const key = child.key;
-      const safeName = (g.name || '').replace(/'/g, "\\'");
-      const safeNumber = (g.number || '').replace(/'/g, "\\'");
-      const safeLogo = (g.logoUrl || '').replace(/'/g, "\\'");
-
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <img src="${g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png'}" style="width:28px; height:28px; object-fit:contain;">
-            <div><b>${g.name}</b> (${g.type})<br><small style="color:#64748b">${g.number}</small></div>
+            <div><b>${g.name}</b> (${g.type})<br><small>${g.number}</small></div>
           </div>
-          <div style="display:flex; gap:6px;">
-            <button class="btn-action-sm btn-secondary" onclick="editGateway('${key}', '${safeName}', '${g.type}', '${safeNumber}', '${safeLogo}')">Edit</button>
-            <button class="btn-action-sm btn-danger" onclick="deleteGateway('${key}')">Delete</button>
+          <div>
+            <button class="btn-action-sm btn-secondary" onclick="editGateway('${key}', '${g.name}', '${g.type}', '${g.number}', '${g.logoUrl}')">Edit</button>
+            <button class="btn-action-sm btn-danger" onclick="db.ref('payment_gateways/${key}').remove()">Delete</button>
           </div>
         </div>
       `;
     });
   });
 }
-
-window.deleteGateway = async function(key) {
-  if (confirm("আপনি কি এই পেমেন্ট মেথডটি মুছে ফেলতে চান?")) {
-    await ensureAdminFirebaseAuth();
-    db.ref('payment_gateways/' + key).remove();
-  }
-};
 
 window.editGateway = function(key, name, type, number, logo) {
   document.getElementById('edit-gateway-key').value = key;
@@ -860,39 +756,29 @@ window.resetGatewayForm = function() {
 // ----------------------------------------------------
 window.addSliderBannerImage = async function() {
   await ensureAdminFirebaseAuth();
-  const urlEl = document.getElementById('admin-slider-url-input');
-  const url = urlEl ? urlEl.value.trim() : '';
+  const url = document.getElementById('admin-slider-url-input').value;
   if (!url) return alert('ইমেজের URL দিন');
   db.ref('slider').push({ url: url }).then(() => {
     alert('স্লাইডার ইমেজ এড হয়েছে!');
-    if (urlEl) urlEl.value = '';
+    document.getElementById('admin-slider-url-input').value = '';
   });
 };
 
 function loadSlidersAdmin() {
   db.ref('slider').on('value', snap => {
     const list = document.getElementById('admin-sliders-list');
-    if (!list) return;
     list.innerHTML = '';
     if (!snap.exists()) return;
-
     snap.forEach(child => {
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px;">
-          <img src="${child.val().url}" style="width:70px; height:40px; border-radius:6px; object-fit:cover;">
-          <button class="btn-action-sm btn-danger" onclick="deleteSlider('${child.key}')">Delete</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0;">
+          <img src="${child.val().url}" style="width:60px; height:35px; border-radius:6px; object-fit:cover;">
+          <button class="btn-action-sm btn-danger" onclick="db.ref('slider/${child.key}').remove()">Delete</button>
         </div>
       `;
     });
   });
 }
-
-window.deleteSlider = async function(key) {
-  if (confirm("আপনি কি এই স্লাইডার ইমেজটি মুছে ফেলতে চান?")) {
-    await ensureAdminFirebaseAuth();
-    db.ref('slider/' + key).remove();
-  }
-};
 
 window.saveWelcomePopUpNotice = async function() {
   await ensureAdminFirebaseAuth();
@@ -910,27 +796,27 @@ function loadWelcomeNoticeAdmin() {
   db.ref('notices/welcome').once('value', snap => {
     if (snap.exists()) {
       const w = snap.val();
-      if (document.getElementById('welcome-title-input')) document.getElementById('welcome-title-input').value = w.title || '';
-      if (document.getElementById('welcome-text-input')) document.getElementById('welcome-text-input').value = w.text || '';
-      if (document.getElementById('welcome-image-input')) document.getElementById('welcome-image-input').value = w.image || '';
-      if (document.getElementById('welcome-btn-text-input')) document.getElementById('welcome-btn-text-input').value = w.btnText || '';
-      if (document.getElementById('welcome-btn-url-input')) document.getElementById('welcome-btn-url-input').value = w.btnUrl || '';
-      if (document.getElementById('welcome-enable-toggle')) document.getElementById('welcome-enable-toggle').checked = w.enabled !== false;
+      document.getElementById('welcome-title-input').value = w.title || '';
+      document.getElementById('welcome-text-input').value = w.text || '';
+      document.getElementById('welcome-image-input').value = w.image || '';
+      document.getElementById('welcome-btn-text-input').value = w.btnText || '';
+      document.getElementById('welcome-btn-url-input').value = w.btnUrl || '';
+      document.getElementById('welcome-enable-toggle').checked = w.enabled !== false;
     }
   });
 }
 
 window.saveMarqueeNotice = async function() {
   await ensureAdminFirebaseAuth();
-  const text = document.getElementById('admin-notice-input').value.trim();
-  if (!text) return alert('নোটিশ টেক্সট লিখুন');
+  const text = document.getElementById('admin-notice-input').value;
+  if (!text) return;
   db.ref('notices/main').set({ text: text, updatedAt: firebase.database.ServerValue.TIMESTAMP }).then(() => alert('নোটিশ আপডেট হয়েছে!'));
 };
 
 window.sendBroadcastNotification = async function() {
   await ensureAdminFirebaseAuth();
-  const title = document.getElementById('notif-broadcast-title').value.trim();
-  const desc = document.getElementById('notif-broadcast-desc').value.trim();
+  const title = document.getElementById('notif-broadcast-title').value;
+  const desc = document.getElementById('notif-broadcast-desc').value;
   if (!title || !desc) return alert('টাইটেল ও মেসেজ দুটিই লিখুন।');
 
   db.ref('notifications/broadcast').set({
