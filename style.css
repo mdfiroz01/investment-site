@@ -214,7 +214,7 @@ body.admin-body {
   border-radius: 50%;
 }
 
-/* NOTICE BOARD WITH FIXED ICON ON LEFT (TEXT DOES NOT OVERLAP ICON) */
+/* NOTICE BOARD WITH FIXED ICON ON LEFT */
 .notice-board {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -224,7 +224,7 @@ body.admin-body {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 800;
   color: var(--primary-color);
   box-shadow: var(--shadow-light);
@@ -581,7 +581,7 @@ body.admin-body {
 .menu-card i { font-size: 22px; color: var(--primary-color); margin-bottom: 6px; }
 .menu-card span { display: block; font-size: 11px; color: var(--text-main); font-weight: 600; }
 
-/* ACTIVE PLAN BANNER ON DASHBOARD */
+/* ACTIVE PLAN BANNER ON DASHBOARD WITH COUNTDOWN TIMER */
 .active-plan-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: white;
@@ -618,7 +618,21 @@ body.admin-body {
 .active-plan-metrics p { font-size: 11px; opacity: 0.85; }
 .active-plan-metrics strong { font-size: 14px; font-weight: 800; display: block; margin-top: 2px; }
 
-/* PLAN CARDS */
+/* LIVE COUNTDOWN DISPLAY BADGE */
+.countdown-box-pill {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffeaa7;
+  letter-spacing: 0.5px;
+}
+
+/* PLAN CARDS & CORNER BONUS BADGE */
 .plan-page-header { text-align: center; margin: 15px 0 20px 0; }
 .plan-page-header h2 { font-size: 22px; color: var(--text-main); font-weight: 800; }
 .plan-page-header p { font-size: 12px; color: var(--text-muted); }
@@ -632,6 +646,23 @@ body.admin-body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   position: relative;
   border: 1px solid var(--border-color);
+}
+
+.plan-card-bonus-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.4);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .plan-card-header {
@@ -686,6 +717,22 @@ body.admin-body {
 }
 
 .plan-ribbon.sold-out-ribbon { background: #64748b; }
+
+/* WELCOME POP-UP ACTION BUTTONS */
+.welcome-btn-primary {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 12px;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.35);
+  margin-bottom: 8px;
+}
 
 /* DEPOSIT & WITHDRAW CARDS */
 .deposit-hero-banner {
@@ -795,10 +842,9 @@ body.admin-body {
 }
 
 [data-theme="dark"] .amount-btn { background: #1e293b; }
-
 .amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-/* REWARD POP-UP CELEBRATION MODAL */
+/* REWARD POP-UP MODAL */
 .reward-pop-card {
   text-align: center;
   padding: 25px 20px;
