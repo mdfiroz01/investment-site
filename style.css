@@ -1,3 +1,4 @@
+
 /* LIGHT & DARK THEME VARIABLES FOR USER PANEL */
 [data-theme="light"] {
   --primary-color: #05b381;
@@ -104,12 +105,13 @@ body.admin-body {
   box-shadow: 0 0 0 3px rgba(5, 179, 129, 0.15) !important;
 }
 
+/* SOLID VISIBLE BUTTONS FOR ADMIN PANEL */
 .btn-action {
   width: 100% !important;
   padding: 13px !important;
   border: none !important;
   border-radius: 12px !important;
-  background: #05b381 !important;
+  background: var(--primary-color) !important;
   color: #ffffff !important;
   font-size: 15px !important;
   font-weight: 800 !important;
@@ -120,7 +122,7 @@ body.admin-body {
 }
 
 .btn-action:hover, .btn-action:active {
-  background: #038d65 !important;
+  background: var(--primary-dark) !important;
   color: #ffffff !important;
 }
 
@@ -182,7 +184,7 @@ body.admin-body {
   border: 1.5px solid var(--primary-color);
 }
 
-/* TOP HEADER */
+/* TOP HEADER & THEME TOGGLE */
 .top-header {
   background: var(--card-bg);
   padding: 14px 20px;
@@ -251,7 +253,7 @@ body.admin-body {
   align-items: flex-start;
 }
 
-/* ENHANCED BEAUTIFUL SCROLLING NOTICE BOARD WITH FIXED PINNED ICON */
+/* SLOW & BOLD SCROLLING NOTICE */
 .notice-board {
   background: var(--card-bg);
   border: 1.5px solid var(--primary-color);
@@ -329,7 +331,7 @@ body.admin-body {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* WALLET HERO CARD */
+/* WALLET HERO CARD & BREAKDOWN */
 .wallet-hero-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
@@ -378,6 +380,92 @@ body.admin-body {
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* E-WALLET ADD PAYMENT METHOD CARD (EXACT SCREENSHOT MATCH) */
+.ewallet-empty-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 35px 20px;
+  text-align: center;
+  cursor: pointer;
+  margin: 10px 15px 20px 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  width: calc(100% - 30px);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s;
+}
+
+.ewallet-empty-card:active { transform: scale(0.98); }
+
+.dashed-plus-box {
+  width: 45px;
+  height: 45px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px auto;
+  color: #cbd5e1;
+  font-size: 20px;
+}
+
+.ewallet-empty-card span {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* YELLOW BOTTOM BUTTON MATCHING SCREENSHOT */
+.btn-yellow-bottom {
+  background: #ffd600 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(255, 214, 0, 0.4) !important;
+  margin: 10px 15px 20px 15px;
+  width: calc(100% - 30px) !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+}
+
+.btn-yellow-bottom:active {
+  transform: scale(0.98);
+}
+
+/* SAVED WALLET WITHDRAWAL CARD WITH ALL BUTTON */
+.saved-wallet-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 18px;
+  margin: 0 15px 15px 15px;
+  width: calc(100% - 30px);
+  box-shadow: var(--shadow-light);
+}
+
+.amount-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-all-bal {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 44px;
 }
 
 /* FLOATING 90-DEGREE SUPPORT FAB WHEEL */
@@ -529,8 +617,7 @@ body.admin-body {
   left: -280px;
   width: 280px;
   height: 100%;
-  background: #ffffff !important;
-  color: #0f172a !important;
+  background: var(--card-bg);
   z-index: 2001;
   padding: 25px 20px;
   transition: all 0.3s ease;
@@ -542,16 +629,16 @@ body.admin-body {
 .sidebar-menu { list-style: none; }
 .sidebar-menu li {
   padding: 14px 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
   cursor: pointer;
-  color: #334155 !important;
+  color: var(--text-main);
   font-weight: 600;
 }
-.sidebar-menu li i { color: #05b381; font-size: 18px; }
+.sidebar-menu li i { color: var(--primary-color); font-size: 18px; }
 
 /* BKASH STYLE PROFILE CARD */
 .bkash-card {
@@ -665,7 +752,7 @@ body.admin-body {
   font-weight: 700;
 }
 
-/* PLAN CARDS WITH ACTIVE BADGE */
+/* PLAN CARDS */
 .plan-page-header { text-align: center; margin: 15px 0 20px 0; }
 .plan-page-header h2 { font-size: 22px; color: var(--text-main); font-weight: 800; }
 .plan-page-header p { font-size: 12px; color: var(--text-muted); }
@@ -742,7 +829,30 @@ body.admin-body {
 .plan-ribbon.active-plan-ribbon { background: #10b981; }
 .plan-ribbon.sold-out-ribbon { background: #64748b; }
 
-/* DEPOSIT & WITHDRAW CARDS */
+/* PLAN CORNER BONUS BADGE */
+.plan-bonus-tag {
+  background: #10b981;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* BONUS CLAIM HERO CARD IN TASKS PAGE */
+.bonus-claim-hero-card {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(109, 40, 217, 0.3);
+}
+
+/* DEPOSIT CARDS */
 .deposit-hero-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   border-radius: 18px;
@@ -853,19 +963,6 @@ body.admin-body {
 
 .amount-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-.btn-action {
-  width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary-color);
-  color: white;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.3);
-}
-
 .btn-copy {
   background: var(--primary-color);
   color: white;
@@ -961,7 +1058,7 @@ body.admin-body {
 .tab-content.active { display: block; }
 .admin-section { display: block; }
 .hidden { display: none !important; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
 .modal-content { background: var(--card-bg); color: var(--text-main); padding: 22px; border-radius: 18px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 .progress-bar-wrap { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 15px 0; }
 .progress-bar-fill { height: 100%; width: 0%; background: var(--primary-color); transition: width 0.3s; }
