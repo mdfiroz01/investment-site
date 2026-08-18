@@ -1,4 +1,3 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -608,7 +607,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// ULTRA COMPACT SLEEK VIP PLANS CARD RENDERER (BULLET DOTS COMPLETELY REMOVED)
+// ULTRA PRO PLAN CARDS RENDERER (EXACTLY MATCHING SCREENSHOT + NO BULLETS)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -652,7 +651,7 @@ function renderPlanCardHTML(plan) {
       
       <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
         <h3>${planName}</h3>
-        <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
+        <h2>৳${planPrice} <small>/মাস</small></h2>
       </div>
       <div class="plan-card-body">
         <ul class="plan-features-list">
@@ -662,6 +661,7 @@ function renderPlanCardHTML(plan) {
           <li><i class="fa-solid fa-percent"></i> <span>উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></span></li>
           <li><i class="fa-solid fa-calendar-days"></i> <span>মেয়াদ: <b>${duration} দিন</b></span></li>
           <li><i class="fa-solid fa-chart-line"></i> <span>মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></span></li>
+          <li><i class="fa-solid fa-headset"></i> <span>২৪/৭ সাপোর্ট</span></li>
         </ul>
         <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
           ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus}, ${duration})"`}>
@@ -1116,6 +1116,17 @@ window.calculateWithdrawFeePreview = function() {
 
   document.getElementById('wit-fee-amount').innerText = '৳' + chargeFee.toFixed(2);
   document.getElementById('wit-net-receive').innerText = '৳' + netAmount.toFixed(2);
+};
+
+// WITHDRAW ALL BALANCE FUNCTION
+window.selectAllBalanceForWithdraw = function() {
+  if (!userData) return;
+  const totalAvailable = (userData.depositBalance || 0) + (userData.incomeBalance || 0);
+  const amtInput = document.getElementById('wit-amount');
+  if (amtInput) {
+    amtInput.value = totalAvailable;
+    calculateWithdrawFeePreview();
+  }
 };
 
 window.handleWithdrawSubmit = function(e) {
