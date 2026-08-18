@@ -1,10 +1,15 @@
-
 {
   "rules": {
     "users": {
       "$uid": {
         ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'admin@gmail.com')"
+        ".write": "auth != null"
+      }
+    },
+    "wallets": {
+      "$walletNumber": {
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     },
     "deposits": {
@@ -21,11 +26,11 @@
     },
     "tasks": {
       ".read": "auth != null",
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+      ".write": "auth != null"
     },
     "plans": {
       ".read": "auth != null",
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+      ".write": "auth != null"
     },
     "history": {
       ".read": "auth != null",
@@ -39,30 +44,32 @@
     },
     "notices": {
       ".read": true,
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+      ".write": "auth != null"
     },
     "slider": {
       ".read": true,
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
-    },
-    "payments": {
-      ".read": "auth != null",
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
-    },
-    "settings": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
-    },
-    "social_support": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+      ".write": "auth != null"
     },
     "payment_gateways": {
       ".read": true,
-      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+      ".write": "auth != null"
     },
-    "used_wallets": {
-      ".read": "auth != null",
+    "social_support": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "notifications": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "referral_commissions": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "settings": {
+      ".read": true,
       ".write": "auth != null"
     }
   }
