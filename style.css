@@ -1,4 +1,3 @@
-
 /* LIGHT & DARK THEME VARIABLES FOR USER PANEL */
 [data-theme="light"] {
   --primary-color: #05b381;
@@ -108,7 +107,7 @@ body.admin-body {
 
 .btn-action-sm {
   border: none !important;
-  padding: 4px 8px !important;
+  padding: 5px 10px !important;
   border-radius: 6px !important;
   font-size: 11px !important;
   font-weight: 700 !important;
@@ -271,6 +270,48 @@ body.admin-body {
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-100%); }
+}
+
+/* BEAUTIFUL PROFESSIONAL PAGE TITLE HERO CARDS */
+.page-title-card {
+  background: linear-gradient(135deg, var(--card-bg) 0%, var(--primary-light) 100%);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+  margin: 0 12px 14px 12px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-light);
+}
+
+.page-title-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.25);
+}
+
+.page-title-card h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.page-title-card p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.3;
 }
 
 /* SLIDER */
@@ -578,7 +619,7 @@ body.admin-body {
 .menu-card i { font-size: 18px; color: var(--primary-color); margin-bottom: 4px; }
 .menu-card span { display: block; font-size: 10.5px; color: var(--text-main); font-weight: 600; }
 
-/* ACTIVE PLAN BANNER ON DASHBOARD WITH LIVE COUNTDOWN TIMER */
+/* ACTIVE PLAN BANNER ON DASHBOARD WITH LIVE TIMER */
 .active-plan-banner {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: white;
@@ -640,119 +681,125 @@ body.admin-body {
   text-transform: uppercase;
 }
 
-/* COMPACT VIP PLAN CARDS (REDUCED SIZE MATCHING TOP CARDS) */
-.plan-page-header { text-align: center; margin: 10px 0 15px 0; }
-.plan-page-header h2 { font-size: 18px; color: var(--text-main); font-weight: 800; }
-.plan-page-header p { font-size: 11px; color: var(--text-muted); }
-
-.plans-wrapper { display: flex; flex-direction: column; gap: 14px; padding: 0 12px; }
+/* ULTRA COMPACT SLEEK VIP PLAN CARDS (MATCHES TOP PROFILE CARD) */
+.plans-wrapper { display: flex; flex-direction: column; gap: 12px; padding: 0 12px; }
 
 .plan-card-item {
   background: var(--card-bg);
   border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  padding: 14px;
+  box-shadow: var(--shadow-light);
   position: relative;
   border: 1px solid var(--border-color);
+  transition: transform 0.2s;
 }
 
-.plan-bonus-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+.plan-card-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.plan-level-pill {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.plan-title-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.plan-bonus-chip {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #ffffff;
   font-size: 10px;
   font-weight: 800;
   padding: 3px 8px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-  z-index: 5;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
 }
 
-.plan-card-header {
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 15px;
-  text-align: center;
-}
-
-.plan-card-header h3 {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.plan-badge-chip {
+  background: var(--danger);
+  color: #ffffff;
+  font-size: 9.5px;
   font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
 }
 
-.plan-card-header h2 {
+.plan-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-color);
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.plan-price-val {
   font-size: 20px;
   font-weight: 900;
-  margin-top: 2px;
+  color: var(--primary-color);
 }
 
-.plan-card-header h2 small {
+.plan-duration-tag {
   font-size: 11px;
-  font-weight: 500;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
-.plan-card-body { padding: 12px 15px; }
-
-.plan-features-list {
-  list-style: none;
+.plan-card-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 10px;
   margin-bottom: 12px;
+  font-size: 11.5px;
+  color: var(--text-muted);
 }
 
-.plan-features-list li {
+.plan-card-features-grid div {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+  gap: 6px;
 }
 
-.plan-features-list li i {
+.plan-card-features-grid i {
   color: var(--primary-color);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .btn-buy-plan {
   width: 100%;
-  padding: 8px 12px;
-  border: 1.5px solid var(--primary-color);
-  background: transparent;
-  color: var(--primary-color);
+  padding: 10px;
+  border: none;
+  background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
+  color: #ffffff;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   border-radius: 10px;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5, 179, 129, 0.25);
   transition: all 0.2s;
 }
 
-.btn-buy-plan:hover, .btn-buy-plan:active { background: var(--primary-color); color: white; }
+.btn-buy-plan:active { transform: scale(0.98); }
 
 .btn-buy-plan.sold-out {
-  border-color: #cbd5e1;
-  color: #94a3b8;
-  background: #f1f5f9;
+  background: #94a3b8 !important;
+  box-shadow: none !important;
   cursor: not-allowed;
 }
-
-.plan-ribbon {
-  position: absolute;
-  top: 14px;
-  right: -28px;
-  background: var(--danger);
-  color: white;
-  font-size: 9px;
-  font-weight: 800;
-  padding: 3px 28px;
-  transform: rotate(45deg);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-  z-index: 5;
-}
-
-.plan-ribbon.sold-out-ribbon { background: #64748b; }
 
 /* WELCOME POPUP BUTTONS */
 .btn-welcome-action {
