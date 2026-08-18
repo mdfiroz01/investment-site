@@ -408,7 +408,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT (APPROVAL WITH PLAN BONUS CREDIT)
+// 5. DEPOSITS MANAGEMENT (APPROVAL WITH PLAN BONUS CREDIT & EXPIRATION DATE)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -477,7 +477,9 @@ window.approveDeposit = async function(depId, uid, amount) {
       if (planSnap.exists()) {
         planSnap.forEach(p => {
           const planVal = p.val();
+          const durationDays = planVal.durationDays || 30;
           updates[`users/${uid}/withdrawChargePercent`] = planVal.withdrawChargePercent || 5;
+          updates[`users/${uid}/planExpiresAt`] = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
           
           if (planVal.activationBonus && planVal.activationBonus > 0) {
             updates[`users/${uid}/incomeBalance`] = (user.incomeBalance || 0) + planVal.activationBonus;
