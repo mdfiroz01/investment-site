@@ -81,20 +81,20 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS
+// 1. SYSTEM SETTINGS (INCLUDES REGISTRATION BONUS)
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
   const logoUrl = document.getElementById('cfg-site-logo').value;
+  const regBonus = parseFloat(document.getElementById('cfg-reg-bonus').value) || 0;
   const minWithdraw = parseFloat(document.getElementById('cfg-min-withdraw').value) || 200;
   const withdrawChargePercent = parseFloat(document.getElementById('cfg-withdraw-charge').value) || 5;
-  const regBonus = parseFloat(document.getElementById('cfg-reg-bonus').value) || 0;
 
   db.ref('settings/config').set({
     logoUrl: logoUrl,
+    regBonus: regBonus,
     minWithdraw: minWithdraw,
-    withdrawChargePercent: withdrawChargePercent,
-    regBonus: regBonus
+    withdrawChargePercent: withdrawChargePercent
   }).then(() => alert('সাইট সেটিংস সফলভাবে সেভ করা হয়েছে!'))
     .catch(err => alert('সেভ ব্যর্থ: ' + err.message));
 };
@@ -104,9 +104,9 @@ function loadSettingsAdmin() {
     if (snap.exists()) {
       const cfg = snap.val();
       document.getElementById('cfg-site-logo').value = cfg.logoUrl || '';
+      document.getElementById('cfg-reg-bonus').value = cfg.regBonus || 0;
       document.getElementById('cfg-min-withdraw').value = cfg.minWithdraw || 200;
       document.getElementById('cfg-withdraw-charge').value = cfg.withdrawChargePercent || 5;
-      document.getElementById('cfg-reg-bonus').value = cfg.regBonus || 0;
     }
   });
 
@@ -118,7 +118,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT
+// 2. USER MANAGEMENT (SHOWS E-WALLET DETAILS)
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -157,6 +157,7 @@ window.viewFullUserInfo = function(uid) {
     if (!snap.exists()) return;
     const u = snap.val();
     const modalBody = document.getElementById('user-full-details-body');
+    const w = u.wallet || {};
     
     modalBody.innerHTML = `
       <div><b>ইউজার নাম:</b> ${u.name || 'N/A'}</div>
@@ -166,11 +167,16 @@ window.viewFullUserInfo = function(uid) {
       <div><b>ডিপোজিট ব্যালেন্স:</b> ৳${(u.depositBalance || 0).toFixed(2)}</div>
       <div><b>ইনকাম ব্যালেন্স:</b> ৳${(u.incomeBalance || 0).toFixed(2)}</div>
       <div><b>মোট ব্যালেন্স:</b> ৳${((u.depositBalance || 0) + (u.incomeBalance || 0)).toFixed(2)}</div>
-      <div><b>এক্টিভ VIP লেভেল:</b> VIP ${u.vipLevel || 0} (${u.vipPlanName || 'নো প্ল্যান'})</div>
+      <div><b>এক্টিভ VIP:</b> VIP ${u.vipLevel || 0} (${u.vipPlanName || 'নো প্ল্যান'})</div>
       <div><b>উইথড্র ফি (%):</b> ${u.withdrawChargePercent || 5}%</div>
-      <div><b>সেট করা ই-ওয়ালেট:</b> ${u.wallet ? `${u.wallet.method} (${u.wallet.number})` : 'কোনো ওয়ালেট নেই'}</div>
-      <div><b>নিজের রেফার কোড:</b> ${u.refCode || 'N/A'}</div>
-      <div><b>যার রেফারে জয়েন করেছে:</b> ${u.referredBy || 'কারো রেফারে নয়'}</div>
+      <div><b>রেফার কোড:</b> ${u.refCode || 'N/A'}</div>
+      <hr style="margin:8px 0; border:0; border-top:1px solid #cbd5e1;">
+      <div style="color:#05b381; font-weight:bold;">সেট করা E-Wallet তথ্য:</div>
+      <div><b>পেমেন্ট মেথড:</b> ${w.accountType || 'যুক্ত করা হয়নি'}</div>
+      <div><b>ওয়ালেট নাম:</b> ${w.fullName || 'N/A'}</div>
+      <div><b>ওয়ালেট নম্বর:</b> ${w.walletNumber || 'N/A'}</div>
+      <div><b>উইথড্র পিন:</b> ${w.withdrawPin || 'N/A'}</div>
+      <hr style="margin:8px 0; border:0; border-top:1px solid #cbd5e1;">
       <div><b>স্ট্যাটাস:</b> <span style="color:${u.isBlocked ? 'red':'green'}; font-weight:bold;">${u.isBlocked ? 'Blocked' : 'Active'}</span></div>
     `;
 
@@ -225,7 +231,7 @@ window.toggleBlockUser = async function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN EDIT & MANAGEMENT
+// 3. VIP PLAN MANAGEMENT (WITH ACTIVATION BONUS)
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -241,7 +247,7 @@ document.getElementById('admin-add-plan-form').addEventListener('submit', async 
     vipLevel: parseInt(document.getElementById('plan-vip-level').value),
     refCommissionPercent: parseFloat(document.getElementById('plan-ref-commission').value) || 10,
     withdrawChargePercent: parseFloat(document.getElementById('plan-withdraw-charge').value) || 5,
-    activeBonus: parseFloat(document.getElementById('plan-active-bonus').value) || 0,
+    activationBonus: parseFloat(document.getElementById('plan-activation-bonus').value) || 0,
     badgeText: document.getElementById('plan-badge-text').value,
     isSoldOut: document.getElementById('plan-is-soldout').checked
   };
@@ -272,11 +278,10 @@ function loadPlansAdmin() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div>
             <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
-            <small style="color:#05b381">[Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%, Bonus: ৳${p.activeBonus || 0}]</small>
-            ${p.badgeText ? `<span style="color:#ef4444; font-weight:bold;">[${p.badgeText}]</span>` : ''}
+            <small style="color:#05b381">[Bonus: ৳${p.activationBonus || 0}, Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
           </div>
           <div>
-            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, '${p.badgeText || ''}', ${p.isSoldOut === true}, ${p.activeBonus || 0})">Edit</button>
+            <button class="btn-action-sm btn-secondary" onclick="editPlan('${key}', '${p.name}', ${p.price}, ${p.dailyTasks}, ${p.dailyProfit}, ${p.durationDays}, ${p.vipLevel}, ${p.refCommissionPercent || 10}, ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}, ${p.activationBonus || 0}, '${p.badgeText || ''}', ${p.isSoldOut === true})">Edit</button>
             <button class="btn-action-sm btn-danger" onclick="db.ref('plans/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -285,7 +290,7 @@ function loadPlansAdmin() {
   });
 }
 
-window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, badgeText, isSoldOut, activeBonus) {
+window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, vip, refComm, witCharge, actBonus, badgeText, isSoldOut) {
   document.getElementById('edit-plan-key').value = key;
   document.getElementById('plan-name').value = name;
   document.getElementById('plan-price').value = price;
@@ -295,7 +300,7 @@ window.editPlan = function(key, name, price, dailyTasks, dailyProfit, duration, 
   document.getElementById('plan-vip-level').value = vip;
   document.getElementById('plan-ref-commission').value = refComm;
   document.getElementById('plan-withdraw-charge').value = witCharge;
-  document.getElementById('plan-active-bonus').value = activeBonus || 0;
+  document.getElementById('plan-activation-bonus').value = actBonus;
   document.getElementById('plan-badge-text').value = badgeText;
   document.getElementById('plan-is-soldout').checked = isSoldOut;
 
@@ -314,7 +319,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH BATCH QUANTITY SUPPORT
+// 4. TASK CREATION
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -352,7 +357,7 @@ document.getElementById('admin-add-task-form').addEventListener('submit', async 
     }
 
     db.ref().update(updates).then(() => {
-      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি ও সেভ করা হয়েছে!`);
+      alert(`সফলভাবে VIP Level ${minVipVal}-এর জন্য ${qty}টি টাস্ক তৈরি করা হয়েছে!`);
       resetTaskForm();
     }).catch(err => alert('Error: ' + err.message));
   }
@@ -403,7 +408,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT
+// 5. DEPOSITS MANAGEMENT (APPROVAL WITH PLAN BONUS CREDIT)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -450,11 +455,11 @@ window.approveDeposit = async function(depId, uid, amount) {
     await ensureAdminFirebaseAuth();
 
     const depSnap = await db.ref('deposits/' + depId).once('value');
-    if (!depSnap.exists()) return;
+    if (!depSnap.exists()) return alert('ডিপোজিট রেকর্ড পাওয়া যায়নি!');
     const depData = depSnap.val();
 
     const userSnap = await db.ref('users/' + uid).once('value');
-    if (!userSnap.exists()) return;
+    if (!userSnap.exists()) return alert('ইউজার ডাটা পাওয়া যায়নি!');
     const user = userSnap.val();
 
     const updates = {};
@@ -471,7 +476,21 @@ window.approveDeposit = async function(depId, uid, amount) {
       const planSnap = await db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value');
       if (planSnap.exists()) {
         planSnap.forEach(p => {
-          updates[`users/${uid}/withdrawChargePercent`] = p.val().withdrawChargePercent || 5;
+          const planVal = p.val();
+          updates[`users/${uid}/withdrawChargePercent`] = planVal.withdrawChargePercent || 5;
+          
+          if (planVal.activationBonus && planVal.activationBonus > 0) {
+            updates[`users/${uid}/incomeBalance`] = (user.incomeBalance || 0) + planVal.activationBonus;
+            
+            db.ref('history').push().set({
+              uid: uid,
+              type: 'Plan Bonus',
+              amount: planVal.activationBonus,
+              title: `Activation Bonus for ${target.planName}`,
+              status: 'approved',
+              timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
         });
       }
     } else {
@@ -522,8 +541,7 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
           refUpdates[`users/${referrerUid}/incomeBalance`] = (referrerData.incomeBalance || 0) + commBonus;
 
           db.ref().update(refUpdates).then(() => {
-            const histRef = db.ref('history').push();
-            histRef.set({
+            db.ref('history').push().set({
               uid: referrerUid,
               type: 'Referral Bonus',
               amount: commBonus,
@@ -532,8 +550,7 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
               timestamp: firebase.database.ServerValue.TIMESTAMP
             });
 
-            const refCommRef = db.ref('referral_commissions/' + referrerUid).push();
-            refCommRef.set({
+            db.ref('referral_commissions/' + referrerUid).push().set({
               buyerName: buyerName || 'User',
               buyerRefCode: buyerRefCode || 'N/A',
               planName: planName,
@@ -594,7 +611,7 @@ window.approveWithdraw = async function(witId) {
   try {
     await ensureAdminFirebaseAuth();
     await db.ref('withdraws/' + witId + '/status').set('approved');
-    alert('উত্তোলন রিকোয়েস্ট সফলভাবে অনুমোদন করা হয়েছে!');
+    alert('উত্তোলনের রিকোয়েস্ট সফলভাবে অনুমোদন করা হয়েছে!');
   } catch (err) {
     alert('অনুমোদন ব্যর্থ: ' + err.message);
   }
@@ -618,7 +635,7 @@ window.rejectWithdraw = async function(witId, uid, amount) {
 };
 
 // ----------------------------------------------------
-// 7. UNLIMITED DYNAMIC PAYMENT GATEWAYS
+// 7. GATEWAYS, SOCIAL, SLIDERS, NOTICES
 // ----------------------------------------------------
 document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -634,7 +651,7 @@ document.getElementById('admin-gateway-form').addEventListener('submit', async (
 
   if (editKey) {
     db.ref('payment_gateways/' + editKey).update(gatewayData).then(() => {
-      alert('পেমেন্ট মেথড সফলভাবে আপডেট হয়েছে!');
+      alert('পেমেন্ট মেথড আপডেট হয়েছে!');
       resetGatewayForm();
     });
   } else {
@@ -686,9 +703,6 @@ window.resetGatewayForm = function() {
   document.getElementById('admin-gateway-form').reset();
 };
 
-// ----------------------------------------------------
-// 8. SOCIAL MEDIA SUPPORT FAB
-// ----------------------------------------------------
 document.getElementById('admin-social-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
@@ -728,9 +742,7 @@ function loadSocialSupportAdmin() {
       list.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
           <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
-          <div>
-            <button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button>
-          </div>
+          <div><button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button></div>
         </div>
       `;
     });
@@ -742,9 +754,6 @@ function resetSocialForm() {
   document.getElementById('admin-social-form').reset();
 }
 
-// ----------------------------------------------------
-// 9. SLIDER, WELCOME NOTICE & BROADCAST
-// ----------------------------------------------------
 window.addSliderBannerImage = async function() {
   await ensureAdminFirebaseAuth();
   const url = document.getElementById('admin-slider-url-input').value;
@@ -818,4 +827,3 @@ window.sendBroadcastNotification = async function() {
     document.getElementById('notif-broadcast-desc').value = '';
   });
 };
-
