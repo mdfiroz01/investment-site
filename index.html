@@ -6,10 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EarnerApp - Premium Platform</title>
 
-  <!-- FAVICON ICON -->
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
 
-  <!-- OPEN GRAPH META TAGS -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
   <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
@@ -19,7 +17,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -61,7 +58,7 @@
         </div>
         <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         
-        <!-- REGISTRATION BONUS BANNER -->
+        <!-- REGISTRATION BONUS NOTICE BANNER -->
         <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
           🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
         </div>
@@ -258,7 +255,9 @@
 
     <!-- FIXED NOTICE BOARD WITH MEGAPHONE OVERLAP FIX -->
     <div class="notice-board">
-      <i class="fa-solid fa-bullhorn notice-icon-fixed"></i>
+      <div class="notice-icon-box">
+        <i class="fa-solid fa-bullhorn"></i>
+      </div>
       <div class="notice-marquee-wrapper">
         <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
       </div>
@@ -390,6 +389,10 @@
         <h2>দৈনিক টাস্কসমূহ</h2>
         <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
       </div>
+
+      <!-- DYNAMIC ACTIVE PLAN BONUS BANNER ON TASK PAGE -->
+      <div id="task-plan-bonus-banner" style="margin: 0 15px 15px 15px;"></div>
+
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
