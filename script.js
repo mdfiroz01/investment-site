@@ -251,7 +251,7 @@ window.addEventListener('hashchange', () => {
   handleInitialPathRouting();
 });
 
-// AUTO REGISTRATION OPEN ON REFERRAL LINK CLICK
+// AUTO REGISTRATION PAGE OPEN ON REFERRAL LINK CLICK (`domain/register?ref=...`)
 function handleInitialPathRouting() {
   const urlParams = new URLSearchParams(window.location.search);
   let refCode = urlParams.get('ref') || urlParams.get('refCode');
@@ -267,11 +267,12 @@ function handleInitialPathRouting() {
     if (refInput) refInput.value = refCode;
   }
 
+  const path = window.location.pathname.toLowerCase();
   const hash = window.location.hash.toLowerCase();
 
   if (!currentUser) {
-    // IF USER IS NOT LOGGED IN & HAS REFERRAL CODE IN LINK -> OPEN REGISTER FORM DIRECTLY!
-    if (refCode || hash === '#register') {
+    // IF VISITING /register OR HAS REFERRAL CODE -> SHOW REGISTER FORM DIRECTLY!
+    if (path.includes('/register') || refCode || hash === '#register') {
       showRegisterForm();
     } else {
       showLoginForm();
@@ -340,7 +341,9 @@ function loadUserData() {
 
     document.getElementById('prof-name').value = userData.name || '';
     document.getElementById('prof-phone').value = userData.phone || '';
-    document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
+    
+    // FORMATTED REFERRAL LINK: `domain/register?ref=CODE`
+    document.getElementById('ref-link-input').value = window.location.origin + '/register?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
     renderTaskPagePlanBonusBanner();
