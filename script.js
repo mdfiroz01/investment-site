@@ -1,7 +1,4 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
-let systemSiteLogo = DEFAULT_AVATAR;
-let planCountdownTimer = null;
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
 window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি", iconType = "success") {
@@ -120,6 +117,7 @@ let incomeChartInstance = null;
 let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
 let systemRegBonus = 0;
+let activePlanTimerInterval = null;
 
 // FIREBASE AUTH OBSERVER
 auth.onAuthStateChanged((user) => {
@@ -212,7 +210,7 @@ function loadSocialSupportLinks() {
   });
 }
 
-// TAB SWITCHER & HASH ROUTING (PREVENTS 404 REFRESH ERROR)
+// TAB SWITCHER & HASH ROUTING (PREVENTS 404 ERROR)
 window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
@@ -253,41 +251,44 @@ window.addEventListener('hashchange', () => {
   handleInitialPathRouting();
 });
 
-// DIRECT REGISTER PAGE OPEN WHEN REFERRAL LINK IS CLICKED
+// AUTO REGISTRATION OPEN ON REFERRAL LINK CLICK
 function handleInitialPathRouting() {
   const urlParams = new URLSearchParams(window.location.search);
   let refCode = urlParams.get('ref') || urlParams.get('refCode');
-  if (refCode) localStorage.setItem('pendingRefCode', refCode);
-  else refCode = localStorage.getItem('pendingRefCode');
+  
+  if (refCode) {
+    localStorage.setItem('pendingRefCode', refCode);
+  } else {
+    refCode = localStorage.getItem('pendingRefCode');
+  }
 
   if (refCode) {
     const refInput = document.getElementById('reg-ref');
     if (refInput) refInput.value = refCode;
   }
 
-  // IF USER NOT LOGGED IN & CAME VIA REFERRAL LINK -> DIRECT OPEN REGISTER FORM
+  const hash = window.location.hash.toLowerCase();
+
   if (!currentUser) {
-    if (refCode || window.location.hash === '#register') {
+    // IF USER IS NOT LOGGED IN & HAS REFERRAL CODE IN LINK -> OPEN REGISTER FORM DIRECTLY!
+    if (refCode || hash === '#register') {
       showRegisterForm();
     } else {
       showLoginForm();
     }
-    return;
+  } else {
+    const hashToTabMap = {
+      '#tasks': 'tab-tasks',
+      '#vip': 'tab-vip',
+      '#wallet': 'tab-wallet',
+      '#deposit': 'tab-deposit',
+      '#withdraw': 'tab-withdraw',
+      '#profile': 'tab-profile',
+      '#home': 'tab-home'
+    };
+    const targetTab = hashToTabMap[hash] || 'tab-home';
+    switchTab(targetTab, null, false);
   }
-
-  const hash = window.location.hash.toLowerCase();
-  const hashToTabMap = {
-    '#tasks': 'tab-tasks',
-    '#vip': 'tab-vip',
-    '#wallet': 'tab-wallet',
-    '#deposit': 'tab-deposit',
-    '#withdraw': 'tab-withdraw',
-    '#profile': 'tab-profile',
-    '#home': 'tab-home'
-  };
-
-  const targetTab = hashToTabMap[hash] || 'tab-home';
-  switchTab(targetTab, null, false);
 }
 
 function resetDepositToGeneralWallet() {
@@ -310,8 +311,7 @@ function loadUserData() {
       return;
     }
 
-    // AUTOMATIC LOGO AS AVATAR (NO MANUAL AVATAR INPUT NEEDED)
-    const userAvatar = systemSiteLogo || DEFAULT_AVATAR;
+    const userAvatar = userData.avatar || DEFAULT_AVATAR;
     document.getElementById('usr-name').innerText = userData.name || 'User';
     document.getElementById('usr-id').innerText = 'ID: ' + (userData.refCode || currentUser.uid.substring(0,6).toUpperCase());
     
@@ -350,12 +350,15 @@ function loadUserData() {
   });
 }
 
-// DASHBOARD ACTIVE PLAN BANNER WITH LIVE COUNTDOWN TIMER (DAYS, HOURS, MINS, SECS)
+// LIVE COUNTDOWN TIMER FOR ACTIVE VIP PLAN & EXPIRATION POPUP
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
 
-  if (planCountdownTimer) clearInterval(planCountdownTimer);
+  if (activePlanTimerInterval) {
+    clearInterval(activePlanTimerInterval);
+    activePlanTimerInterval = null;
+  }
 
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     container.innerHTML = `
@@ -372,49 +375,26 @@ function renderActivePlanDashboardBanner() {
     return;
   }
 
-  const expiresAt = userData.planExpiresAt || 0;
-
-  container.innerHTML = `
-    <div class="active-plan-banner" style="padding:15px; border-radius:14px;">
-      <div class="active-plan-header">
-        <h4><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
-        <span class="plan-live-tag">ACTIVE</span>
-      </div>
-      <div class="active-plan-metrics">
-        <div><p>দৈনিক টাস্ক</p><strong>${userData.maxDailyTasks || 0} টি</strong></div>
-        <div><p>দৈনিক আয়</p><strong>৳${userData.vipDailyProfit || 0}</strong></div>
-      </div>
-      <div class="countdown-box-pill" id="live-plan-countdown-text">
-        <i class="fa-solid fa-clock"></i> মেয়াদ বাকি: গণনামূলক...
-      </div>
-    </div>
-  `;
-
-  startLivePlanCountdown(expiresAt);
-}
-
-// LIVE COUNTDOWN TIMER (DAYS, HOURS, MINS, SECS) & EXPIRATION POP-UP
-function startLivePlanCountdown(expiresAt) {
-  const countEl = document.getElementById('live-plan-countdown-text');
-  if (!countEl || !expiresAt) return;
+  // CHECK EXPIRATION
+  const expireTime = userData.vipExpireAt || 0;
 
   function updateTimer() {
     const now = Date.now();
-    const diff = expiresAt - now;
+    const diff = expireTime - now;
 
     if (diff <= 0) {
-      clearInterval(planCountdownTimer);
-      countEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> প্ল্যানের মেয়াদ শেষ!';
-      
-      // AUTO RESET EXPIRED PLAN IN FIREBASE
+      clearInterval(activePlanTimerInterval);
+      activePlanTimerInterval = null;
+
+      // EXPIRE PLAN IN DATABASE
       db.ref('users/' + currentUser.uid).update({
         vipLevel: 0,
         vipPlanName: 'নো প্ল্যান',
         maxDailyTasks: 0,
         vipDailyProfit: 0,
-        planExpiresAt: 0
+        vipExpireAt: null
       }).then(() => {
-        showCustomAlert("আপনার প্রিমিয়াম প্ল্যানের মেয়ার শেষ হয়ে গেছে! সার্ভিস চালু রাখতে অনুগ্রহ করে নতুন প্ল্যান এক্টিভ করুন।", "মেয়াদ শেষ ⚠️", "warning");
+        showCustomAlert("আপনার প্রিমিয়াম প্ল্যানের মেয়াদ শেষ হয়ে গেছে! নতুন প্ল্যান এক্টিভ করুন।", "মেয়াদ শেষ ⚠️", "warning");
       });
       return;
     }
@@ -424,11 +404,32 @@ function startLivePlanCountdown(expiresAt) {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    countEl.innerHTML = `<i class="fa-solid fa-clock"></i> মেয়াদ বাকি: <b>${days}দিন ${hours}ঘন্টা ${minutes}মিনিট ${seconds}সেকেন্ড</b>`;
+    const timerHtml = `
+      <div class="active-plan-banner" style="padding:15px; border-radius:14px;">
+        <div class="active-plan-header">
+          <h4><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
+          <span class="plan-live-tag">ACTIVE</span>
+        </div>
+        <div class="active-plan-metrics">
+          <div><p>দৈনিক টাস্ক</p><strong>${userData.maxDailyTasks || 0} টি</strong></div>
+          <div><p>দৈনিক আয়</p><strong>৳${userData.vipDailyProfit || 0}</strong></div>
+        </div>
+
+        <div style="margin-top:10px; font-size:11px; opacity:0.9; text-align:center;">মেয়াদ শেষের অবশিষ্ট সময়:</div>
+        <div class="plan-countdown-grid">
+          <div class="plan-countdown-box"><span>${days}</span><small>দিন</small></div>
+          <div class="plan-countdown-box"><span>${hours}</span><small>ঘণ্টা</small></div>
+          <div class="plan-countdown-box"><span>${minutes}</span><small>মি</small></div>
+          <div class="plan-countdown-box"><span>${seconds}</span><small>সে</small></div>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = timerHtml;
   }
 
   updateTimer();
-  planCountdownTimer = setInterval(updateTimer, 1000);
+  activePlanTimerInterval = setInterval(updateTimer, 1000);
 }
 
 // RENDER PLAN ACTIVATION BONUS ON TASK PAGE
@@ -440,9 +441,7 @@ function renderTaskPagePlanBonusBanner() {
     db.ref('plans').orderByChild('vipLevel').equalTo(userData.vipLevel).once('value', snap => {
       let bonusVal = 0;
       if (snap.exists()) {
-        snap.forEach(p => {
-          bonusVal = p.val().activationBonus || 0;
-        });
+        snap.forEach(p => { bonusVal = p.val().activationBonus || 0; });
       }
 
       container.innerHTML = `
@@ -453,7 +452,7 @@ function renderTaskPagePlanBonusBanner() {
           </div>
           <div style="text-align:right;">
             <span style="font-size:11px; opacity:0.9; display:block;">প্ল্যান বোনাস পরিমাণ</span>
-            <strong style="font-size:16px; color:#ffeaa7;">৳${bonusVal}</strong>
+            <strong style="font-size:16px; color:#ffeaa7;">🎁 ৳${bonusVal}</strong>
           </div>
         </div>
       `;
@@ -463,7 +462,7 @@ function renderTaskPagePlanBonusBanner() {
   }
 }
 
-// SLIDER & WELCOME NOTICE
+// SLIDER & WELCOME NOTICE WITH BEAUTIFUL BUTTONS
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
@@ -513,7 +512,7 @@ function checkAndShowWelcomeNotice() {
 
       const btnBox = document.getElementById('welcome-btn-container');
       if (notice.btnText && notice.btnUrl) {
-        btnBox.innerHTML = `<a href="${notice.btnUrl}" target="_blank" class="welcome-btn-primary">${notice.btnText}</a>`;
+        btnBox.innerHTML = `<a href="${notice.btnUrl}" target="_blank" class="btn-welcome-action">${notice.btnText} 🚀</a>`;
       } else btnBox.innerHTML = '';
 
       document.getElementById('welcome-modal').classList.remove('hidden');
@@ -533,7 +532,6 @@ function loadGatewaysAndNotices() {
     if (snap.exists()) {
       const cfg = snap.val();
       if (cfg.logoUrl) {
-        systemSiteLogo = cfg.logoUrl;
         document.querySelectorAll('.header-logo-img').forEach(i => i.src = cfg.logoUrl);
         const loginLogo = document.getElementById('login-app-logo');
         if (loginLogo) loginLogo.src = cfg.logoUrl;
@@ -608,7 +606,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (CORNER BONUS BADGE DISPLAY)
+// VIP PLANS LOAD & PURCHASE (PLAN ACTIVATION BONUS IN CORNER BADGE)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -647,8 +645,9 @@ function renderPlanCardHTML(plan) {
 
   return `
     <div class="plan-card-item">
-      ${actBonus > 0 ? `<div class="plan-card-bonus-tag"><i class="fa-solid fa-gift"></i> বোনাস: ৳${actBonus}</div>` : ''}
+      ${actBonus > 0 ? `<div class="plan-bonus-badge">🎁 ৳${actBonus} বোনাস</div>` : ''}
       ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
+      
       <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
         <h3>${planName}</h3>
         <h2>৳${planPrice} <small>/মাস</small></h2>
@@ -681,8 +680,9 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   }
 
   showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান?`, function() {
-    const expiresAt = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
-    
+    const durationMs = Number(durationDays || 30) * 24 * 60 * 60 * 1000;
+    const expireTimestamp = Date.now() + durationMs;
+
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
     updates['users/' + currentUser.uid + '/vipLevel'] = vipLevel;
@@ -690,7 +690,8 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     updates['users/' + currentUser.uid + '/maxDailyTasks'] = dailyTasks;
     updates['users/' + currentUser.uid + '/vipDailyProfit'] = dailyProfit;
     updates['users/' + currentUser.uid + '/withdrawChargePercent'] = withdrawChargePercent;
-    updates['users/' + currentUser.uid + '/planExpiresAt'] = expiresAt;
+    updates['users/' + currentUser.uid + '/vipActivatedAt'] = Date.now();
+    updates['users/' + currentUser.uid + '/vipExpireAt'] = expireTimestamp;
 
     if (activationBonus > 0) {
       updates['users/' + currentUser.uid + '/incomeBalance'] = (userData.incomeBalance || 0) + activationBonus;
@@ -791,7 +792,7 @@ function loadTasks(completedTaskIds = {}) {
     // EXPLICITLY FILTER OUT AND HIDE COMPLETED TASKS
     const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
 
-    // CHECK IF ALL TASKS COMPLETED
+    // CHECK IF ALL TASKS COMPLETED OR DAILY LIMIT REACHED
     if ((userVipTasks.length > 0 && remainingTasks.length === 0) || (userVip > 0 && userTodayCompletedCount >= userMaxDailyTasks)) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:35px 20px;">
@@ -817,7 +818,7 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    // RENDER ONLY UNCOMPLETED TASKS
+    // RENDER ONLY UNCOMPLETED REMAINING TASKS
     remainingTasks.forEach(task => {
       const taskId = task.id;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
@@ -1251,12 +1252,13 @@ function loadReferralCommissionHistory() {
   });
 }
 
+// PROFILE UPDATE (AUTOMATICALLY USES SITE LOGO / DEFAULT AVATAR)
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
   const phone = document.getElementById('prof-phone').value;
 
-  db.ref('users/' + currentUser.uid).update({ name, phone }).then(() => {
+  db.ref('users/' + currentUser.uid).update({ name, phone, avatar: DEFAULT_AVATAR }).then(() => {
     showCustomAlert('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!', 'আপডেট সফল', 'success');
   });
 };
@@ -1383,6 +1385,7 @@ document.addEventListener('DOMContentLoaded', () => {
           db.ref('users/' + cred.user.uid).set({
             uid: cred.user.uid,
             name, email, phone, country,
+            avatar: DEFAULT_AVATAR,
             depositBalance: 0,
             incomeBalance: bonusAmt,
             todayIncome: 0, 
