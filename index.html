@@ -8,23 +8,16 @@
   <!-- FAVICON ICON -->
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
 
-  <!-- OPEN GRAPH / SOCIAL MEDIA LINK SHARE PREVIEW META TAGS -->
+  <!-- OPEN GRAPH META TAGS -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
-  <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন। বিকাশ, নগদ ও রকেটে দ্রুত পেমেন্ট গ্রহণ করুন।">
+  <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
   <meta property="og:image" content="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  <!-- TWITTER CARD META TAGS -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
-  <meta name="twitter:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
-  <meta name="twitter:image" content="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -65,10 +58,13 @@
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
-        <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">নতুন একাউন্ট</h2>
-        <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:12px; border-radius:12px; text-align:center; font-weight:800; font-size:13px; margin-bottom:16px; border:1px dashed var(--primary-color);">
-          🎉 নতুন রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳০</span> বোনাস!
+        <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
+        
+        <!-- REGISTRATION BONUS NOTICE BANNER -->
+        <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
+          🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
         </div>
+
         <div class="form-group">
           <label>সম্পূর্ণ নাম</label>
           <input type="text" id="reg-name" class="form-control" required placeholder="আপনার নাম">
@@ -143,6 +139,43 @@
         <button class="btn-action" style="background:#64748b;" onclick="closeCustomConfirm()">বাতিল</button>
         <button class="btn-action" onclick="executeCustomConfirm()">হ্যাঁ, নিশ্চিত 👍</button>
       </div>
+    </div>
+  </div>
+
+  <!-- E-WALLET SETUP MODAL -->
+  <div id="wallet-setup-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> E-Wallet সেটআপ করুন</h3>
+        <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeWalletSetupModal()"></i>
+      </div>
+      
+      <form id="ewallet-setup-form" onsubmit="saveEWalletSetup(event)">
+        <div class="form-group">
+          <label>অ্যাকাউন্ট টাইপ সিলেক্ট করুন</label>
+          <select id="ewallet-type" class="form-control" required>
+            <option value="bKash">bKash (বিকাশ)</option>
+            <option value="Nagad">Nagad (নগদ)</option>
+            <option value="Rocket">Rocket (রকেট)</option>
+            <option value="USDT">USDT (TRC20)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>আপনার সম্পূর্ণ নাম</label>
+          <input type="text" id="ewallet-fullname" class="form-control" required placeholder="আপনার সঠিক নাম">
+        </div>
+        <div class="form-group">
+          <label>ওয়ালেট / অ্যাকাউন্ট নম্বর</label>
+          <input type="text" id="ewallet-number" class="form-control" required placeholder="01700000000">
+        </div>
+        <div class="form-group">
+          <label>উইথড্র পিন (৫ সংখ্যার গোপন পিন)</label>
+          <input type="password" id="ewallet-pin" class="form-control" required maxlength="5" pattern="\d{5}" placeholder="৫ সংখ্যার পিন দিন (e.g. 12345)">
+        </div>
+
+        <p style="font-size:11px; color:var(--danger); margin-bottom:12px;">* এক ওয়ালেট নম্বর একাধিক একাউন্টে সেট করা যাবে না।</p>
+        <button type="submit" class="btn-action">ওয়ালেট সেভ করুন 👍</button>
+      </form>
     </div>
   </div>
 
@@ -253,7 +286,7 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-home" class="tab-content active">
 
-      <!-- HOMEPAGE CAROUSEL BANNER SLIDER (HIDDEN IF NO ADMIN SLIDER) -->
+      <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
       <div class="slider-container-card hidden" id="homepage-slider-card">
         <div class="slider-wrapper">
           <img id="slider-img" src="" alt="Banner Slider" class="slider-img">
@@ -265,7 +298,7 @@
         <div class="menu-card" onclick="switchTab('tab-tasks')"><i class="fa-solid fa-list-check"></i><span>টাস্ক</span></div>
         <div class="menu-card" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i><span>প্ল্যান</span></div>
         <div class="menu-card" onclick="switchTab('tab-wallet')"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
-        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলন</span></div>
+        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলনে</span></div>
       </div>
 
       <!-- ACTIVE VIP PLAN BANNER CARD -->
@@ -485,35 +518,57 @@
 
     </div>
 
-    <!-- TAB 6: WITHDRAW PAGE -->
+    <!-- TAB 6: WITHDRAW PAGE (E-WALLET BOUND SYSTEM) -->
     <div id="tab-withdraw" class="tab-content">
       <div class="plan-page-header">
         <h2>টাকা উত্তোলন করুন</h2>
         <p id="withdraw-rules-summary">সর্বনিম্ন উত্তোলন ও প্রসেসিং চার্জ প্রযোজ্য</p>
       </div>
 
-      <div class="content-card">
-        <label style="font-size:13px; font-weight:700; color:var(--text-main); display:block; margin-bottom:12px;">উত্তোলনের পেমেন্ট মেথড সিলেক্ট করুন</label>
+      <!-- VIEW A: WALLET NOT SET -->
+      <div id="withdraw-wallet-not-set-card" class="content-card hidden" style="text-align:center; padding:30px 15px;">
+        <i class="fa-solid fa-wallet" style="font-size:42px; color:var(--primary-color); margin-bottom:12px;"></i>
+        <h3 style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:6px;">আপনি এখনো কোনো উইথড্র ওয়ালেট যুক্ত করেননি!</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">টাকা তোলার আগে আপনার বিকাশ, নগদ বা রকেট ওয়ালেট যুক্ত করুন।</p>
+        <button class="btn-action" onclick="openWalletSetupModal()"><i class="fa-solid fa-plus"></i> ওয়ালেট যুক্ত করুন</button>
+      </div>
+
+      <!-- VIEW B: WALLET SET (E-WALLET CARD & WITHDRAW FORM) -->
+      <div id="withdraw-wallet-set-view" class="hidden">
         
-        <div id="withdraw-methods-grid" class="payment-grid" style="margin-bottom:15px;"></div>
-
-        <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
-          <div class="form-group">
-            <label>অ্যাকাউন্ট / ওয়ালেট নম্বর</label>
-            <input type="text" id="wit-number" class="form-control" required placeholder="01700000000">
+        <!-- SAVED WALLET DISPLAY CARD -->
+        <div class="content-card" style="background: linear-gradient(135deg, #05b381 0%, #038d65 100%); color: white; border:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <p style="font-size:11px; opacity:0.85;">আপনার নিবন্ধিত E-Wallet</p>
+              <h3 id="saved-wallet-type-num" style="font-size:18px; font-weight:800; color:#fff; margin:2px 0;">bKash - 01700000000</h3>
+              <span id="saved-wallet-name" style="font-size:12px; opacity:0.9;">নাম: User Name</span>
+            </div>
+            <button class="btn-action-sm" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid #fff;" onclick="openWalletSetupModal()"><i class="fa-solid fa-pen"></i> পরিবর্তন</button>
           </div>
-          <div class="form-group">
-            <label>উত্তোলনের পরিমাণ (৳)</label>
-            <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()">
-          </div>
+        </div>
 
-          <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
-            <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
-            <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
-          </div>
+        <div class="content-card">
+          <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
+            <div class="form-group">
+              <label>উত্তোলনের পরিমাণ (৳)</label>
+              <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()">
+            </div>
 
-          <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন</button>
-        </form>
+            <div class="form-group">
+              <label>৫ সংখ্যার উইথড্র পিন (Withdraw PIN)</label>
+              <input type="password" id="wit-pin-input" class="form-control" required maxlength="5" pattern="\d{5}" placeholder="৫ সংখ্যার পিন লিখুন">
+            </div>
+
+            <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
+              <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
+              <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
+            </div>
+
+            <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন</button>
+          </form>
+        </div>
+
       </div>
 
       <div class="content-card">
@@ -561,11 +616,9 @@
 
   </div>
 
-  <!-- FLOATING 90-DEGREE SUPPORT FAB WHEEL BUTTON -->
+  <!-- FLOATING SUPPORT FAB BUTTON -->
   <div class="fab-support-container" id="fab-support-container">
-    <div class="fab-support-menu" id="fab-support-menu">
-      <!-- Dynamic Social Media Icons loaded from Admin Panel -->
-    </div>
+    <div class="fab-support-menu" id="fab-support-menu"></div>
     <button class="fab-main-btn" onclick="toggleSupportFab()" title="সাপোর্ট ও সোশ্যাল মিডিয়া">
       <i class="fa-solid fa-headset fab-icon"></i>
     </button>
@@ -574,7 +627,6 @@
   <!-- REWARD CELEBRATION MODAL -->
   <div id="task-modal" class="modal-overlay hidden">
     <div class="modal-content reward-pop-card">
-      
       <div id="task-processing-view">
         <div class="reward-icon-circle">
           <i class="fa-solid fa-trophy gold-coin-glow"></i>
@@ -607,7 +659,6 @@
         </p>
         <button class="btn-action" style="margin-top:10px;" onclick="closeTaskModal()">ঠিক আছে 👍</button>
       </div>
-
     </div>
   </div>
 
