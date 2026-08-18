@@ -12,16 +12,14 @@ window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি"
   titleEl.innerText = title;
   msgEl.innerText = message;
 
-  if (iconEl) {
-    if (iconType === 'success') {
-      iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981;"></i>';
-    } else if (iconType === 'error' || iconType === 'warning') {
-      iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:42px; color:#ef4444;"></i>';
-    } else if (iconType === 'lock') {
-      iconEl.innerHTML = '<i class="fa-solid fa-lock" style="font-size:42px; color:#f59e0b;"></i>';
-    } else {
-      iconEl.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:42px; color:#05b381;"></i>';
-    }
+  if (iconType === 'success') {
+    iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981;"></i>';
+  } else if (iconType === 'error' || iconType === 'warning') {
+    iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:42px; color:#ef4444;"></i>';
+  } else if (iconType === 'lock') {
+    iconEl.innerHTML = '<i class="fa-solid fa-lock" style="font-size:42px; color:#f59e0b;"></i>';
+  } else {
+    iconEl.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:42px; color:#05b381;"></i>';
   }
 
   modal.classList.remove('hidden');
@@ -92,9 +90,9 @@ initAppTheme();
 // AUTH FORM SWITCHERS WITH CLEAN URL ROUTING
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
-  if (document.getElementById('login-form')) document.getElementById('login-form').classList.add('hidden');
-  if (document.getElementById('forgot-password-form')) document.getElementById('forgot-password-form').classList.add('hidden');
-  if (document.getElementById('register-form')) document.getElementById('register-form').classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
 
   const pendingRef = localStorage.getItem('pendingRefCode') || '';
   const newUrl = '/register' + (pendingRef ? '?ref=' + pendingRef : '');
@@ -105,9 +103,9 @@ window.showRegisterForm = function(e) {
 
 window.showLoginForm = function(e) {
   if (e) e.preventDefault();
-  if (document.getElementById('register-form')) document.getElementById('register-form').classList.add('hidden');
-  if (document.getElementById('forgot-password-form')) document.getElementById('forgot-password-form').classList.add('hidden');
-  if (document.getElementById('login-form')) document.getElementById('login-form').classList.remove('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
 
   if (window.location.pathname !== '/login') {
     window.history.pushState({}, '', '/login');
@@ -116,9 +114,9 @@ window.showLoginForm = function(e) {
 
 window.showForgotForm = function(e) {
   if (e) e.preventDefault();
-  if (document.getElementById('login-form')) document.getElementById('login-form').classList.add('hidden');
-  if (document.getElementById('register-form')) document.getElementById('register-form').classList.add('hidden');
-  if (document.getElementById('forgot-password-form')) document.getElementById('forgot-password-form').classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.remove('hidden');
 
   if (window.location.pathname !== '/forgot') {
     window.history.pushState({}, '', '/forgot');
@@ -130,6 +128,7 @@ let userData = null;
 let isBalanceShown = false;
 let selectedDepositMethodName = 'bKash';
 let selectedDepositAmountVal = 500;
+let selectedWithdrawMethodName = 'bKash';
 let activeTaskObj = null;
 let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
@@ -142,67 +141,63 @@ let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
 
 // Auth Observer
-if (typeof auth !== 'undefined') {
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      currentUser = user;
-      if (document.getElementById('auth-container')) document.getElementById('auth-container').classList.add('hidden');
-      if (document.getElementById('app-container')) document.getElementById('app-container').classList.remove('hidden');
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('auth-container').classList.add('hidden');
+    document.getElementById('app-container').classList.remove('hidden');
 
-      loadUserData();
-      loadVIPPlans();
-      loadDepositHistory();
-      loadWithdrawHistory();
-      loadReferralCommissionHistory();
-      loadGatewaysAndNotices();
-      loadHomepageSliders();
-      renderLiveWithdrawsInfinite();
-      listenLiveBroadcastNotifications();
-      checkAndShowWelcomeNotice();
-      handleInitialPathRouting();
-    } else {
-      currentUser = null;
-      if (document.getElementById('auth-container')) document.getElementById('auth-container').classList.remove('hidden');
-      if (document.getElementById('app-container')) document.getElementById('app-container').classList.add('hidden');
-      handleInitialPathRouting();
-    }
-  });
-}
+    loadUserData();
+    loadVIPPlans();
+    loadDepositHistory();
+    loadWithdrawHistory();
+    loadReferralCommissionHistory();
+    loadGatewaysAndNotices();
+    loadHomepageSliders();
+    renderLiveWithdrawsInfinite();
+    listenLiveBroadcastNotifications();
+    checkAndShowWelcomeNotice();
+    handleInitialPathRouting();
+  } else {
+    currentUser = null;
+    document.getElementById('auth-container').classList.remove('hidden');
+    document.getElementById('app-container').classList.add('hidden');
+    handleInitialPathRouting();
+  }
+});
 
 // GLOBAL UI FUNCTIONS
 window.openSidebar = function() {
-  if (document.getElementById('sidebar-drawer')) document.getElementById('sidebar-drawer').classList.add('open');
-  if (document.getElementById('sidebar-overlay')) document.getElementById('sidebar-overlay').classList.add('open');
+  document.getElementById('sidebar-drawer').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
 };
 
 window.closeSidebar = function() {
-  if (document.getElementById('sidebar-drawer')) document.getElementById('sidebar-drawer').classList.remove('open');
-  if (document.getElementById('sidebar-overlay')) document.getElementById('sidebar-overlay').classList.remove('open');
+  document.getElementById('sidebar-drawer').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
 };
 
 window.openNotifModal = function() {
-  if (document.getElementById('notif-modal')) document.getElementById('notif-modal').classList.remove('hidden');
+  document.getElementById('notif-modal').classList.remove('hidden');
 };
 
 window.closeNotifModal = function() {
-  if (document.getElementById('notif-modal')) document.getElementById('notif-modal').classList.add('hidden');
+  document.getElementById('notif-modal').classList.add('hidden');
 };
 
 window.closeWelcomeModal = function() {
-  if (document.getElementById('welcome-modal')) document.getElementById('welcome-modal').classList.add('hidden');
+  document.getElementById('welcome-modal').classList.add('hidden');
 };
 
 window.closeTaskModal = function() {
-  if (document.getElementById('task-modal')) document.getElementById('task-modal').classList.add('hidden');
-  if (document.getElementById('task-processing-view')) document.getElementById('task-processing-view').classList.remove('hidden');
-  if (document.getElementById('task-success-view')) document.getElementById('task-success-view').classList.add('hidden');
+  document.getElementById('task-modal').classList.add('hidden');
+  document.getElementById('task-processing-view').classList.remove('hidden');
+  document.getElementById('task-success-view').classList.add('hidden');
 };
 
 window.toggleBkashBalance = function() {
   if (!userData) return;
   const btnText = document.getElementById('bkash-balance-text');
-  if (!btnText) return;
-
   if (!isBalanceShown) {
     isBalanceShown = true;
     btnText.innerText = '৳ ' + (userData.balance || 0).toFixed(2);
@@ -221,8 +216,7 @@ window.toggleSupportFab = function() {
 };
 
 window.openWalletSetupModal = function() {
-  const modal = document.getElementById('wallet-setup-modal');
-  if (modal) modal.classList.remove('hidden');
+  document.getElementById('wallet-setup-modal').classList.remove('hidden');
   if (userData && userData.walletSetup) {
     const ws = userData.walletSetup;
     if (document.getElementById('setup-wallet-method')) document.getElementById('setup-wallet-method').value = ws.method || 'bKash';
@@ -232,8 +226,7 @@ window.openWalletSetupModal = function() {
 };
 
 window.closeWalletSetupModal = function() {
-  const modal = document.getElementById('wallet-setup-modal');
-  if (modal) modal.classList.add('hidden');
+  document.getElementById('wallet-setup-modal').classList.add('hidden');
 };
 
 function loadSocialSupportLinks() {
@@ -305,7 +298,7 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = 
   }
 };
 
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', (e) => {
   handleInitialPathRouting();
 });
 
@@ -364,7 +357,6 @@ function resetDepositToGeneralWallet() {
 
 // USER DATA REALTIME LOAD WITH AUTO PLAN EXPIRY CHECK
 function loadUserData() {
-  if (!currentUser) return;
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
 
@@ -388,8 +380,8 @@ function loadUserData() {
     }
 
     const userAvatar = userData.avatar || DEFAULT_AVATAR;
-    if (document.getElementById('usr-name')) document.getElementById('usr-name').innerText = userData.name || 'User';
-    if (document.getElementById('usr-id')) document.getElementById('usr-id').innerText = 'ID: ' + (userData.refCode || currentUser.uid.substring(0,6).toUpperCase());
+    document.getElementById('usr-name').innerText = userData.name || 'User';
+    document.getElementById('usr-id').innerText = 'ID: ' + (userData.refCode || currentUser.uid.substring(0,6).toUpperCase());
     
     const avatarEl = document.getElementById('usr-avatar');
     if (avatarEl) {
@@ -397,11 +389,9 @@ function loadUserData() {
       avatarEl.onerror = function() { this.src = DEFAULT_AVATAR; };
     }
 
-    if (document.getElementById('usr-vip')) {
-      document.getElementById('usr-vip').innerText = (userData.vipLevel && userData.vipLevel > 0)
-        ? `এক্টিভ প্ল্যান: ${userData.vipPlanName || 'VIP ' + userData.vipLevel}` 
-        : 'এক্টিভ প্ল্যান: নো প্ল্যান';
-    }
+    document.getElementById('usr-vip').innerText = (userData.vipLevel && userData.vipLevel > 0)
+      ? `এক্টিভ প্ল্যান: ${userData.vipPlanName || 'VIP ' + userData.vipLevel}` 
+      : 'এক্টিভ প্ল্যান: নো প্ল্যান';
 
     const depBal = (userData.depositBalance || 0);
     const incBal = (userData.incomeBalance || 0);
@@ -409,17 +399,17 @@ function loadUserData() {
     userData.balance = totalBal;
 
     const balVal = '৳' + totalBal.toFixed(2);
-    if (document.getElementById('bal-today')) document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
-    if (document.getElementById('bal-total-inc')) document.getElementById('bal-total-inc').innerText = '৳' + (userData.totalIncome || 0).toFixed(2);
-    if (document.getElementById('dep-total-bal')) document.getElementById('dep-total-bal').innerText = '৳' + depBal.toFixed(2);
-    if (document.getElementById('wallet-balance-display')) document.getElementById('wallet-balance-display').innerText = balVal;
+    document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
+    document.getElementById('bal-total-inc').innerText = '৳' + (userData.totalIncome || 0).toFixed(2);
+    document.getElementById('dep-total-bal').innerText = '৳' + depBal.toFixed(2);
+    document.getElementById('wallet-balance-display').innerText = balVal;
     
-    if (document.getElementById('wallet-dep-bal')) document.getElementById('wallet-dep-bal').innerText = '৳' + depBal.toFixed(2);
-    if (document.getElementById('wallet-inc-bal')) document.getElementById('wallet-inc-bal').innerText = '৳' + incBal.toFixed(2);
+    document.getElementById('wallet-dep-bal').innerText = '৳' + depBal.toFixed(2);
+    document.getElementById('wallet-inc-bal').innerText = '৳' + incBal.toFixed(2);
 
-    if (document.getElementById('prof-name')) document.getElementById('prof-name').value = userData.name || '';
-    if (document.getElementById('prof-phone')) document.getElementById('prof-phone').value = userData.phone || '';
-    if (document.getElementById('ref-link-input')) document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
+    document.getElementById('prof-name').value = userData.name || '';
+    document.getElementById('prof-phone').value = userData.phone || '';
+    document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
@@ -451,18 +441,18 @@ function renderActivePlanDashboardBanner() {
   }
 
   container.innerHTML = `
-    <div class="active-plan-banner" style="padding:16px; border-radius:16px; background:linear-gradient(135deg, #05b381 0%, #038d65 100%); color:#fff;">
-      <div class="active-plan-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="font-size:16px; font-weight:800;"><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
-        <span class="plan-live-tag" style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-size:10px; font-weight:800;">ACTIVE</span>
+    <div class="active-plan-banner" style="padding:16px; border-radius:16px;">
+      <div class="active-plan-header">
+        <h4><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
+        <span class="plan-live-tag">ACTIVE</span>
       </div>
-      <div class="active-plan-metrics" style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px;">
-        <div><p style="opacity:0.8;">দৈনিক টাস্ক</p><strong>${userData.maxDailyTasks || 0} টি</strong></div>
-        <div><p style="opacity:0.8;">দৈনিক আয়</p><strong>৳${userData.vipDailyProfit || 0}</strong></div>
+      <div class="active-plan-metrics">
+        <div><p>দৈনিক টাস্ক</p><strong>${userData.maxDailyTasks || 0} টি</strong></div>
+        <div><p>দৈনিক আয়</p><strong>৳${userData.vipDailyProfit || 0}</strong></div>
       </div>
-      <div class="plan-validity-box" style="display:flex; justify-content:space-between; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
+      <div class="plan-validity-box">
         <span><i class="fa-solid fa-clock"></i> মেয়াদের সময়সীমা</span>
-        <span id="plan-live-countdown-text" style="color:#ffffff; font-weight:700;">হিসাব করা হচ্ছে...</span>
+        <span id="plan-live-countdown-text" style="color:#ffffff">মেয়ার হিসাব করা হচ্ছে...</span>
       </div>
     </div>
   `;
@@ -541,32 +531,28 @@ function checkAndShowWelcomeNotice() {
     if (snap.exists()) {
       const notice = snap.val();
       if (notice.enabled === true) {
-        if (document.getElementById('welcome-title')) document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
-        if (document.getElementById('welcome-desc')) document.getElementById('welcome-desc').innerText = notice.text || '';
+        document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
+        document.getElementById('welcome-desc').innerText = notice.text || '';
         
         const imgBox = document.getElementById('welcome-img-box');
-        if (imgBox) {
-          if (notice.image) {
-            imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
-          } else {
-            imgBox.innerHTML = '';
-          }
+        if (notice.image) {
+          imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
+        } else {
+          imgBox.innerHTML = '';
         }
 
         const btnBox = document.getElementById('welcome-btn-container');
-        if (btnBox) {
-          if (notice.btnText && notice.btnUrl) {
-            btnBox.innerHTML = `
-              <a href="${notice.btnUrl}" target="_blank" class="btn-action" style="display:block; text-decoration:none; margin-bottom:6px;">
-                ${notice.btnText}
-              </a>
-            `;
-          } else {
-            btnBox.innerHTML = '';
-          }
+        if (notice.btnText && notice.btnUrl) {
+          btnBox.innerHTML = `
+            <a href="${notice.btnUrl}" target="_blank" class="btn-action" style="display:block; text-decoration:none; margin-bottom:6px;">
+              ${notice.btnText}
+            </a>
+          `;
+        } else {
+          btnBox.innerHTML = '';
         }
 
-        if (document.getElementById('welcome-modal')) document.getElementById('welcome-modal').classList.remove('hidden');
+        document.getElementById('welcome-modal').classList.remove('hidden');
       }
     }
   });
@@ -575,7 +561,7 @@ function checkAndShowWelcomeNotice() {
 // GATEWAYS, APP SETTINGS & NOTICES
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
-    if (snap.exists() && snap.val().text && document.getElementById('notice-text')) {
+    if (snap.exists() && snap.val().text) {
       document.getElementById('notice-text').innerText = snap.val().text;
     }
   });
@@ -633,9 +619,9 @@ function renderGatewayCardHTML(g, mode) {
   const logo = g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png';
 
   return `
-    <div class="method-box" onclick="selectDepositMethod('${name}')" style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:12px; text-align:center; cursor:pointer;">
-      <img src="${logo}" class="method-logo-img" alt="${name}" style="width:40px; height:40px; object-fit:contain; margin-bottom:6px;" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-      <h5 style="font-size:13px; margin-bottom:6px; color:var(--text-main);">${name}</h5>
+    <div class="method-box" onclick="selectDepositMethod('${name}')">
+      <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+      <h5 style="font-size:13px;">${name}</h5>
       <button class="btn-continue-sm">Continue ></button>
     </div>
   `;
@@ -657,8 +643,8 @@ function listenLiveBroadcastNotifications() {
   db.ref('notifications/broadcast').on('value', snap => {
     if (snap.exists()) {
       const notif = snap.val();
-      if (document.getElementById('notif-title')) document.getElementById('notif-title').innerText = notif.title || 'নোটিফিকেশন';
-      if (document.getElementById('notif-desc')) document.getElementById('notif-desc').innerText = notif.desc || '';
+      document.getElementById('notif-title').innerText = notif.title || 'নোটিফিকেশন';
+      document.getElementById('notif-desc').innerText = notif.desc || '';
     }
   });
 }
@@ -669,7 +655,7 @@ function loadVIPPlans() {
     const container = document.getElementById('vip-plans-container');
     const depPlanSelect = document.getElementById('dep-target-plan-select');
 
-    if (container) container.innerHTML = '';
+    container.innerHTML = '';
     if (depPlanSelect) {
       depPlanSelect.innerHTML = '<option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>';
     }
@@ -683,7 +669,7 @@ function loadVIPPlans() {
     const planList = snap.exists() ? Object.values(snap.val()) : defaultPlans;
 
     planList.forEach((plan) => {
-      if (container) container.innerHTML += renderPlanCardHTML(plan);
+      container.innerHTML += renderPlanCardHTML(plan);
       if (depPlanSelect && !plan.isSoldOut) {
         depPlanSelect.innerHTML += `<option value="${plan.vipLevel}" data-price="${plan.price}" data-name="${plan.name}" data-tasks="${plan.dailyTasks}" data-profit="${plan.dailyProfit}" data-duration="${plan.durationDays || 30}">${plan.name} - ৳${plan.price}</option>`;
       }
@@ -725,26 +711,29 @@ function renderPlanCardHTML(plan) {
   }
 
   return `
-    <div class="content-card" style="position:relative; margin-bottom:15px; padding:18px;">
+    <div class="plan-card-item">
       ${isCurrentActivePlan 
-        ? '<div style="position:absolute; top:10px; right:10px; background:#10b981; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px;">ACTIVE</div>' 
-        : (isSoldOut ? '<div style="position:absolute; top:10px; right:10px; background:#ef4444; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px;">SOLD OUT</div>' : (badgeText ? `<div style="position:absolute; top:10px; right:10px; background:#0284c7; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px;">${badgeText}</div>` : ''))}
-      <div style="border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:12px;">
-        <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">${planName}</h3>
-        <h2 style="font-size:22px; font-weight:900; color:var(--primary-color);">৳${planPrice} <small style="font-size:12px; color:var(--text-muted);">/${duration} দিন</small></h2>
-        ${actBonus > 0 ? `<div style="font-size:11px; color:#10b981; font-weight:700; margin-top:4px;">🎁 এক্টিভেশন বোনাস ৳${actBonus}</div>` : ''}
+        ? '<div class="plan-ribbon active-plan-ribbon">এক্টিভ (ACTIVE)</div>' 
+        : (isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : ''))}
+      <div class="plan-card-header" style="${isCurrentActivePlan ? 'background:linear-gradient(135deg, #05b381 0%, #038d65 100%)' : (isSoldOut ? 'background:#64748b' : '')}">
+        <h3>${planName}</h3>
+        <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
+        ${actBonus > 0 ? `<div class="plan-bonus-tag">🎁 এক্টিভেশন বোনাস ৳${actBonus}</div>` : ''}
       </div>
-      <ul style="list-style:none; font-size:12px; margin-bottom:15px; display:grid; gap:6px; color:var(--text-main);">
-        <li><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
-        <li><i class="fa-solid fa-coins" style="color:#f59e0b;"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
-        <li><i class="fa-solid fa-percent" style="color:#8b5cf6;"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
-        <li><i class="fa-solid fa-calendar-days" style="color:#0284c7;"></i> মেয়াদের সময়সীমা: <b>${duration} দিন</b></li>
-        <li><i class="fa-solid fa-chart-line" style="color:#10b981;"></i> মোট সম্ভাব্য আয়: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
-      </ul>
-      <button class="btn-action ${btnClass}" ${btnDisabled} 
-        onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${duration}, ${actBonus})">
-        ${btnText}
-      </button>
+      <div class="plan-card-body">
+        <ul class="plan-features-list">
+          <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
+          <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
+          <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
+          <li><i class="fa-solid fa-calendar-days"></i> মেয়াদের সময়সীমা: <b>${duration} দিন</b></li>
+          <li><i class="fa-solid fa-chart-line"></i> মোট সম্ভাব্য আয়: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
+          <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
+        </ul>
+        <button class="${btnClass}" ${btnDisabled} 
+          onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${duration}, ${actBonus})">
+          ${btnText}
+        </button>
+      </div>
     </div>
   `;
 }
@@ -823,7 +812,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING
+// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING (FIXES BUG)
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -860,13 +849,13 @@ function loadTasks(completedTaskIds = {}) {
   if (bonusContainer) {
     if (userData && userData.unclaimedPlanBonus && userData.unclaimedPlanBonus > 0) {
       bonusContainer.innerHTML = `
-        <div class="content-card" style="background:linear-gradient(135deg, #05b381 0%, #0284c7 100%); color:#ffffff; padding:16px; margin-bottom:12px;">
+        <div class="content-card bonus-claim-hero-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-              <span style="background:rgba(255,255,255,0.2); color:#ffffff; font-size:10px; padding:2px 8px; border-radius:10px;"><i class="fa-solid fa-gift"></i> প্ল্যান বোনাস</span>
+              <span class="pill-badge" style="background:rgba(255,255,255,0.2); color:#ffffff;"><i class="fa-solid fa-gift"></i> প্ল্যান বোনাস</span>
               <h3 style="color:#ffffff; font-size:22px; font-weight:900; margin-top:4px;">৳${userData.unclaimedPlanBonus}</h3>
             </div>
-            <button class="btn-action" style="width:auto; padding:8px 16px; background:#ffffff !important; color:var(--primary-color) !important; font-weight:800;" onclick="claimPlanActivationBonus()">ক্লেইম করুন 🚀</button>
+            <button class="btn-action" style="width:auto; padding:10px 18px; background:#ffffff !important; color:var(--primary-color) !important; font-weight:800;" onclick="claimPlanActivationBonus()">ক্লেইম করুন 🚀</button>
           </div>
         </div>
       `;
@@ -909,12 +898,12 @@ function loadTasks(completedTaskIds = {}) {
     if (userVipTasks.length > 0 && uncompletedTasks.length === 0) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:35px 20px;">
-          <div style="width:60px; height:60px; border-radius:50%; background:#d1fae5; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+          <div class="reward-icon-circle" style="background:#d1fae5; margin-bottom:15px;">
             <i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i>
           </div>
           <h3 style="font-size:18px; font-weight:800; color:var(--primary-color); margin-bottom:6px;">আজকের সকল টাস্ক সম্পন্ন! 🎉</h3>
           <p style="font-size:12px; color:var(--text-muted); line-height:1.5;">
-            অভিনন্দন! আজকের দিনের জন্য নির্ধারিত সকল টাস্ক আপনি সফলভাবে সম্পন্ন করেছেন।
+            অভিনন্দন! আজকের দিনের জন্য নির্ধারিত সকল টাস্ক আপনি সফলভাবে সম্পন্ন করেছেন। আগামীকাল নতুন টাস্ক পাওয়ার জন্য অপেক্ষা করুন।
           </p>
         </div>
       `;
@@ -995,87 +984,81 @@ window.claimPlanActivationBonus = function() {
 window.startTask = function(taskId, reward, isFreeTask = false) {
   activeTaskObj = { taskId, reward, isFreeTask };
   
-  if (document.getElementById('task-modal')) document.getElementById('task-modal').classList.remove('hidden');
-  if (document.getElementById('task-processing-view')) document.getElementById('task-processing-view').classList.remove('hidden');
-  if (document.getElementById('task-success-view')) document.getElementById('task-success-view').classList.add('hidden');
-  if (document.getElementById('btn-claim-task')) document.getElementById('btn-claim-task').classList.add('hidden');
-  if (document.getElementById('reward-amount-pop')) document.getElementById('reward-amount-pop').classList.add('hidden');
-  if (document.getElementById('task-modal-title')) document.getElementById('task-modal-title').innerText = 'টাস্ক প্রসেসিং হচ্ছে...';
+  document.getElementById('task-modal').classList.remove('hidden');
+  document.getElementById('task-processing-view').classList.remove('hidden');
+  document.getElementById('task-success-view').classList.add('hidden');
+  document.getElementById('btn-claim-task').classList.add('hidden');
+  document.getElementById('reward-amount-pop').classList.add('hidden');
+  document.getElementById('task-modal-title').innerText = 'টাস্ক প্রসেসিং হচ্ছে...';
 
   let progress = 0;
   const fill = document.getElementById('task-progress');
-  if (fill) fill.style.width = '0%';
+  fill.style.width = '0%';
 
   const interval = setInterval(() => {
     progress += 25;
-    if (fill) fill.style.width = progress + '%';
+    fill.style.width = progress + '%';
     if (progress >= 100) {
       clearInterval(interval);
-      if (document.getElementById('task-modal-title')) document.getElementById('task-modal-title').innerText = '🎉 টাস্ক সফলভাবে সম্পন্ন!';
-      if (document.getElementById('pop-reward-val')) document.getElementById('pop-reward-val').innerText = '+৳' + reward.toFixed(2);
-      if (document.getElementById('reward-amount-pop')) document.getElementById('reward-amount-pop').classList.remove('hidden');
-      if (document.getElementById('btn-claim-task')) document.getElementById('btn-claim-task').classList.remove('hidden');
+      document.getElementById('task-modal-title').innerText = '🎉 টাস্ক সফলভাবে সম্পন্ন!';
+      document.getElementById('pop-reward-val').innerText = '+৳' + reward.toFixed(2);
+      document.getElementById('reward-amount-pop').classList.remove('hidden');
+      document.getElementById('btn-claim-task').classList.remove('hidden');
     }
   }, 500);
 };
 
-// REWARD CLAIM LISTENERS
-document.addEventListener('DOMContentLoaded', () => {
-  const claimBtn = document.getElementById('btn-claim-task');
-  if (claimBtn) {
-    claimBtn.addEventListener('click', () => {
-      if (!activeTaskObj || !userData) return;
+// REWARD CLAIM WITHOUT NATIVE BROWSER ALERT
+document.getElementById('btn-claim-task').addEventListener('click', () => {
+  if (!activeTaskObj || !userData) return;
 
-      const today = new Date().toISOString().split('T')[0];
-      const reward = activeTaskObj.reward;
-      const isFree = activeTaskObj.isFreeTask === true;
+  const today = new Date().toISOString().split('T')[0];
+  const reward = activeTaskObj.reward;
+  const isFree = activeTaskObj.isFreeTask === true;
 
-      const updates = {};
-      updates[`users/${currentUser.uid}/incomeBalance`] = (userData.incomeBalance || 0) + reward;
-      updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
-      updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
-      
-      updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
-        completed: true, 
-        isFreeTask: isFree,
-        timestamp: firebase.database.ServerValue.TIMESTAMP 
-      };
+  const updates = {};
+  updates[`users/${currentUser.uid}/incomeBalance`] = (userData.incomeBalance || 0) + reward;
+  updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
+  updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
+  
+  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
+    completed: true, 
+    isFreeTask: isFree,
+    timestamp: firebase.database.ServerValue.TIMESTAMP 
+  };
 
-      db.ref().update(updates).then(() => {
-        const histRef = db.ref('history').push();
-        histRef.set({
-          uid: currentUser.uid,
-          type: 'Task Reward',
-          amount: reward,
-          title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
-          status: 'approved',
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        if (document.getElementById('task-processing-view')) document.getElementById('task-processing-view').classList.add('hidden');
-        if (document.getElementById('task-success-view')) document.getElementById('task-success-view').classList.remove('hidden');
-        if (document.getElementById('success-reward-val')) document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
-
-        activeTaskObj = null;
-        initIncomeChartRealtime();
-      });
+  db.ref().update(updates).then(() => {
+    const histRef = db.ref('history').push();
+    histRef.set({
+      uid: currentUser.uid,
+      type: 'Task Reward',
+      amount: reward,
+      title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
+      status: 'approved',
+      timestamp: firebase.database.ServerValue.TIMESTAMP
     });
-  }
+
+    document.getElementById('task-processing-view').classList.add('hidden');
+    document.getElementById('task-success-view').classList.remove('hidden');
+    document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
+
+    activeTaskObj = null;
+    initIncomeChartRealtime();
+  });
 });
 
 // MULTI-STEP DEPOSIT
 window.goToDepositStep = function(step) {
-  if (document.getElementById('dep-step-1')) document.getElementById('dep-step-1').classList.add('hidden');
-  if (document.getElementById('dep-step-2')) document.getElementById('dep-step-2').classList.add('hidden');
-  if (document.getElementById('dep-step-3')) document.getElementById('dep-step-3').classList.add('hidden');
+  document.getElementById('dep-step-1').classList.add('hidden');
+  document.getElementById('dep-step-2').classList.add('hidden');
+  document.getElementById('dep-step-3').classList.add('hidden');
 
-  const targetStep = document.getElementById('dep-step-' + step);
-  if (targetStep) targetStep.classList.remove('hidden');
+  document.getElementById('dep-step-' + step).classList.remove('hidden');
 };
 
 window.selectDepositMethod = function(method) {
   selectedDepositMethodName = method;
-  if (document.getElementById('selected-method-title')) document.getElementById('selected-method-title').innerText = method;
+  document.getElementById('selected-method-title').innerText = method;
   goToDepositStep(2);
 };
 
@@ -1083,7 +1066,7 @@ window.onDepositPlanTargetChange = function(selectEl) {
   const opt = selectEl.options[selectEl.selectedIndex];
   if (selectEl.value !== 'wallet') {
     const price = opt.getAttribute('data-price');
-    if (price && document.getElementById('input-dep-amount')) {
+    if (price) {
       document.getElementById('input-dep-amount').value = price;
       selectedDepositAmountVal = parseFloat(price);
     }
@@ -1092,23 +1075,21 @@ window.onDepositPlanTargetChange = function(selectEl) {
 
 window.setQuickAmount = function(amt, el) {
   selectedDepositAmountVal = amt;
-  if (document.getElementById('input-dep-amount')) document.getElementById('input-dep-amount').value = amt;
+  document.getElementById('input-dep-amount').value = amt;
   document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
 };
 
 window.proceedToStep3 = function() {
-  const amtInput = document.getElementById('input-dep-amount');
-  const inputAmt = amtInput ? parseFloat(amtInput.value) : 500;
-
+  const inputAmt = parseFloat(document.getElementById('input-dep-amount').value);
   if (!inputAmt || inputAmt < 500) {
     showCustomAlert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।', 'ডিপোজিট লিমিট', 'warning');
     return;
   }
 
   selectedDepositAmountVal = inputAmt;
-  if (document.getElementById('step3-amount-display')) document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
-  if (document.getElementById('step3-confirm-amount')) document.getElementById('step3-confirm-amount').innerText = '৳ ' + selectedDepositAmountVal;
+  document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
+  document.getElementById('step3-confirm-amount').innerText = '৳ ' + selectedDepositAmountVal;
 
   db.ref('payment_gateways').once('value', snap => {
     let targetNum = '01719856165';
@@ -1119,25 +1100,20 @@ window.proceedToStep3 = function() {
         }
       });
     }
-    if (document.getElementById('target-phone-num')) document.getElementById('target-phone-num').innerText = targetNum;
+    document.getElementById('target-phone-num').innerText = targetNum;
   });
 
   goToDepositStep(3);
 };
 
 window.copyPhoneNum = function() {
-  const numEl = document.getElementById('target-phone-num');
-  const num = numEl ? numEl.innerText : '';
-  if (num) {
-    navigator.clipboard.writeText(num);
-    showCustomAlert('নম্বর কপি করা হয়েছে: ' + num, 'কপি সফল', 'info');
-  }
+  const num = document.getElementById('target-phone-num').innerText;
+  navigator.clipboard.writeText(num);
+  showCustomAlert('নম্বর কপি করা হয়েছে: ' + num, 'কপি সফল', 'info');
 };
 
 window.submitDepositFinal = function() {
-  const trxIdInput = document.getElementById('input-trx-id');
-  const trxId = trxIdInput ? trxIdInput.value.trim() : '';
-
+  const trxId = document.getElementById('input-trx-id').value;
   if (!trxId) {
     showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
     return;
@@ -1172,20 +1148,19 @@ window.submitDepositFinal = function() {
 
   depRef.set(depObj).then(() => {
     showCustomAlert('ডিপোজিট রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'ডিপোজিট রিকোয়েস্ট জমা', 'success');
-    if (trxIdInput) trxIdInput.value = '';
+    document.getElementById('input-trx-id').value = '';
     goToDepositStep(1);
     loadDepositHistory();
   });
 };
 
 function loadDepositHistory() {
-  if (!currentUser) return;
   db.ref('deposits').orderByChild('uid').equalTo(currentUser.uid).on('value', snap => {
     const list = document.getElementById('dep-history-list');
     if (!list) return;
 
     if (!snap.exists()) {
-      list.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">কোনো ডিপোজিট রেকর্ড নেই</div>';
+      list.innerHTML = '<div style="text-align:center;">কোনো ডিপোজিট রেকর্ড নেই</div>';
       return;
     }
 
@@ -1193,7 +1168,7 @@ function loadDepositHistory() {
     snap.forEach(child => {
       const d = child.val();
       list.innerHTML = `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e2e8f0;">
           <div><b>${d.method}</b> (${d.trxId})</div>
           <div>৳${d.amount} - <span style="color:${d.status === 'approved' ? 'var(--primary-color)' : '#f59e0b'}">${d.status}</span></div>
         </div>
@@ -1247,19 +1222,18 @@ window.handleWalletSetupSubmit = function(e) {
   });
 };
 
-// RENDER SAVED SINGLE WALLET WITHDRAWAL FORM
+// RENDER SAVED SINGLE WALLET WITHDRAWAL FORM WITH ALL BUTTON
 function renderWithdrawPageForm() {
   const container = document.getElementById('withdraw-page-container');
   if (!container) return;
 
   if (!userData || !userData.walletSetup) {
     container.innerHTML = `
-      <div class="content-card" style="text-align:center; padding:25px 15px; cursor:pointer;" onclick="openWalletSetupModal()">
-        <i class="fa-solid fa-circle-plus" style="font-size:36px; color:var(--primary-color); margin-bottom:8px;"></i>
-        <h4 style="font-size:14px; color:var(--text-main);">পেমেন্ট ওয়ালেট সেটআপ করুন</h4>
-        <p style="font-size:11px; color:var(--text-muted);">উত্তোলনের জন্য ওয়ালেট ও পিন সেভ করুন</p>
+      <div class="ewallet-empty-card" onclick="openWalletSetupModal()">
+        <div class="dashed-plus-box"><i class="fa-solid fa-plus"></i></div>
+        <span>Add payment method</span>
       </div>
-      <button class="btn-action" style="margin-top:10px;" onclick="openWalletSetupModal()">Add Payment Method ⚙️</button>
+      <button class="btn-action btn-yellow-bottom" onclick="openWalletSetupModal()">Add payment method</button>
     `;
     return;
   }
@@ -1268,7 +1242,7 @@ function renderWithdrawPageForm() {
   const withdrawableTotal = (userData.depositBalance || 0) + (userData.incomeBalance || 0);
 
   container.innerHTML = `
-    <div class="content-card">
+    <div class="saved-wallet-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div style="display:flex; align-items:center; gap:10px;">
           <i class="fa-solid fa-shield-halved" style="color:var(--primary-color); font-size:20px;"></i>
@@ -1288,18 +1262,18 @@ function renderWithdrawPageForm() {
       <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
         <div class="form-group">
           <label>উত্তোলনের পরিমাণ (৳)</label>
-          <div style="display:flex; gap:8px;">
+          <div class="amount-input-group">
             <input type="number" id="wit-amount" class="form-control" required placeholder="সর্বনিম্ন ৳${systemMinWithdraw}" oninput="calculateWithdrawFeePreview()">
-            <button type="button" class="btn-continue-sm" style="width:auto; white-space:nowrap;" onclick="setWithdrawAllBalance(${withdrawableTotal})">ALL</button>
+            <button type="button" class="btn-all-bal" onclick="setWithdrawAllBalance(${withdrawableTotal})">ALL</button>
           </div>
         </div>
 
         <div class="form-group">
-          <label>আপনার ৫ সংখ্যার সিকিউরিটি পিন (PIN)</label>
+          <label>আপনার ৫ সংখ্যার সিকিউরিটি পিন (Security PIN)</label>
           <input type="password" id="wit-pin-input" class="form-control" required maxlength="5" minlength="5" placeholder="৫ সংখ্যার পিন লিখুন">
         </div>
 
-        <div id="wit-fee-preview-box" style="background:var(--primary-light); padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px; border:1px solid var(--border-color);">
+        <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
           <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
           <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
         </div>
@@ -1414,14 +1388,13 @@ window.handleWithdrawSubmit = function(e) {
 };
 
 function loadWithdrawHistory() {
-  if (!currentUser) return;
   db.ref('withdraws').orderByChild('uid').equalTo(currentUser.uid).on('value', snap => {
     const list = document.getElementById('wit-history-list');
     const walletList = document.getElementById('wallet-history-list');
     
     if (!snap.exists()) {
-      if (list) list.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">কোনো উইথড্র রেকর্ড নেই</div>';
-      if (walletList) walletList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">কোনো লেনদেন রেকর্ড নেই</div>';
+      if (list) list.innerHTML = '<div style="text-align:center;">কোনো উইথড্র রেকর্ড নেই</div>';
+      if (walletList) walletList.innerHTML = '<div style="text-align:center;">কোনো লেনদেন রেকর্ড নেই</div>';
       return;
     }
 
@@ -1429,7 +1402,7 @@ function loadWithdrawHistory() {
     snap.forEach(child => {
       const w = child.val();
       html = `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e2e8f0;">
           <div><b>${w.method} Withdrawal</b> (${w.walletNumber})</div>
           <div>৳${w.amount} - <span style="color:${w.status === 'approved' ? 'var(--primary-color)' : '#f59e0b'}">${w.status}</span></div>
         </div>
@@ -1478,11 +1451,8 @@ function loadReferralCommissionHistory() {
 // PROFILE UPDATE
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
-  const nameInput = document.getElementById('prof-name');
-  const phoneInput = document.getElementById('prof-phone');
-
-  const name = nameInput ? nameInput.value : '';
-  const phone = phoneInput ? phoneInput.value : '';
+  const name = document.getElementById('prof-name').value;
+  const phone = document.getElementById('prof-phone').value;
 
   db.ref('users/' + currentUser.uid).update({ name, phone }).then(() => {
     showCustomAlert('প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!', 'আপডেট সফল', 'success');
@@ -1491,16 +1461,14 @@ window.handleProfileUpdate = function(e) {
 
 window.copyRefLink = function() {
   const input = document.getElementById('ref-link-input');
-  if (input && input.value) {
-    navigator.clipboard.writeText(input.value);
-    showCustomAlert('রেফারেল লিংক কপি করা হয়েছে!', 'কপি সফল', 'info');
-  }
+  navigator.clipboard.writeText(input.value);
+  showCustomAlert('রেফারেল লিংক কপি করা হয়েছে!', 'কপি সফল', 'info');
 };
 
 // REALTIME USER INCOME GRAPH CHART
 function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
-  if (!canvas || !currentUser || typeof Chart === 'undefined') return;
+  if (!canvas || !currentUser) return;
   const ctx = canvas.getContext('2d');
 
   db.ref('history').orderByChild('uid').equalTo(currentUser.uid).once('value', snap => {
@@ -1574,9 +1542,13 @@ function renderLiveWithdrawsInfinite() {
   function rotateFeed() {
     const item = mockFeed[feedIndex];
     container.innerHTML = `
-      <div class="live-withdraw-item" style="display:flex; justify-content:space-between; padding:8px 12px; background:var(--primary-light); border-radius:10px; font-size:12px; margin-bottom:6px;">
+      <div class="live-withdraw-item">
         <span><b>${item.num}</b> (${item.method})</span>
         <b style="color:var(--primary-color)">${item.amount} <small style="color:#16a34a">✓ Success</small></b>
+      </div>
+      <div class="live-withdraw-item" style="opacity:0.6;">
+        <span><b>017****${Math.floor(1000+Math.random()*9000)}</b> (bKash)</span>
+        <b style="color:var(--primary-color)">৳${Math.floor(3+Math.random()*20)*100} <small style="color:#16a34a">✓ Success</small></b>
       </div>
     `;
     feedIndex = (feedIndex + 1) % mockFeed.length;
@@ -1586,7 +1558,7 @@ function renderLiveWithdrawsInfinite() {
   setInterval(rotateFeed, 3000);
 }
 
-// AUTH LISTENERS
+// AUTH HANDLERS
 document.addEventListener('DOMContentLoaded', () => {
   loadSocialSupportLinks();
 
