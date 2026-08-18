@@ -79,7 +79,7 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS
+// 1. SYSTEM SETTINGS WITH REGISTRATION BONUS
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
@@ -311,7 +311,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH ATOMIC BATCH UPDATE
+// 4. TASK CREATION WITH ATOMIC MULTI-UPDATE BATCHing
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -400,7 +400,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. SOCIAL MEDIA SUPPORT FAB
+// 5. SOCIAL MEDIA SUPPORT FAB MANAGEMENT
 // ----------------------------------------------------
 document.getElementById('admin-social-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -682,7 +682,9 @@ window.rejectWithdraw = async function(witId, uid, amount) {
   }
 };
 
-// UNLIMITED DYNAMIC PAYMENT GATEWAYS
+// ----------------------------------------------------
+// 8. UNLIMITED DYNAMIC PAYMENT GATEWAYS
+// ----------------------------------------------------
 document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await ensureAdminFirebaseAuth();
@@ -749,7 +751,9 @@ window.resetGatewayForm = function() {
   document.getElementById('admin-gateway-form').reset();
 };
 
-// SLIDER, WELCOME NOTICE & BROADCAST
+// ----------------------------------------------------
+// 9. SLIDER, WELCOME NOTICE & BROADCAST
+// ----------------------------------------------------
 window.addSliderBannerImage = async function() {
   await ensureAdminFirebaseAuth();
   const url = document.getElementById('admin-slider-url-input').value;
