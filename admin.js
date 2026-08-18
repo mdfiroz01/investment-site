@@ -79,7 +79,7 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS WITH REGISTRATION BONUS
+// 1. SYSTEM SETTINGS (REG BONUS, LOGO, WITHDRAW)
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
@@ -311,7 +311,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION WITH ATOMIC MULTI-UPDATE BATCHing
+// 4. TASK CREATION WITH ATOMIC BATCH UPDATE
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
