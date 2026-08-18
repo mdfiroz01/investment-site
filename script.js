@@ -210,6 +210,7 @@ function loadSocialSupportLinks() {
   });
 }
 
+// TAB SWITCHER & HASH ROUTING (PREVENTS 404 REFRESH ERROR)
 window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
@@ -222,8 +223,33 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   if (el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
+  } else {
+    const navMap = { 'tab-home': 0, 'tab-wallet': 1, 'tab-vip': 2, 'tab-withdraw': 3, 'tab-profile': 4 };
+    const idx = navMap[tabId];
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    if (idx !== undefined && navItems[idx]) {
+      navItems.forEach(n => n.classList.remove('active'));
+      navItems[idx].classList.add('active');
+    }
+  }
+
+  const hashRoutes = {
+    'tab-home': '#home',
+    'tab-wallet': '#wallet',
+    'tab-vip': '#vip',
+    'tab-tasks': '#tasks',
+    'tab-deposit': '#deposit',
+    'tab-withdraw': '#withdraw',
+    'tab-profile': '#profile'
+  };
+  if (hashRoutes[tabId]) {
+    window.location.hash = hashRoutes[tabId];
   }
 };
+
+window.addEventListener('hashchange', () => {
+  handleInitialPathRouting();
+});
 
 function handleInitialPathRouting() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -234,6 +260,22 @@ function handleInitialPathRouting() {
   if (refCode) {
     const refInput = document.getElementById('reg-ref');
     if (refInput) refInput.value = refCode;
+  }
+
+  const hash = window.location.hash.toLowerCase();
+  const hashToTabMap = {
+    '#tasks': 'tab-tasks',
+    '#vip': 'tab-vip',
+    '#wallet': 'tab-wallet',
+    '#deposit': 'tab-deposit',
+    '#withdraw': 'tab-withdraw',
+    '#profile': 'tab-profile',
+    '#home': 'tab-home'
+  };
+
+  if (currentUser) {
+    const targetTab = hashToTabMap[hash] || 'tab-home';
+    switchTab(targetTab, null, false);
   }
 }
 
@@ -290,6 +332,7 @@ function loadUserData() {
     document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
+    renderTaskPagePlanBonusBanner();
     checkUserTaskLimitAndLoadTasks();
     initIncomeChartRealtime();
     checkAndRenderEWalletView();
@@ -327,6 +370,38 @@ function renderActivePlanDashboardBanner() {
       </div>
     </div>
   `;
+}
+
+// RENDER PLAN ACTIVATION BONUS ON TASK PAGE
+function renderTaskPagePlanBonusBanner() {
+  const container = document.getElementById('task-plan-bonus-banner');
+  if (!container) return;
+
+  if (userData && userData.vipLevel && userData.vipLevel > 0) {
+    db.ref('plans').orderByChild('vipLevel').equalTo(userData.vipLevel).once('value', snap => {
+      let bonusVal = 0;
+      if (snap.exists()) {
+        snap.forEach(p => {
+          bonusVal = p.val().activationBonus || 0;
+        });
+      }
+
+      container.innerHTML = `
+        <div style="background:linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); color:#ffffff; padding:12px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(108, 92, 231, 0.25);">
+          <div>
+            <span style="font-size:11px; opacity:0.9; display:block;">এক্টিভ প্ল্যান বোনাস</span>
+            <strong style="font-size:15px; color:#fff;">${userData.vipPlanName || 'VIP Plan'}</strong>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px; opacity:0.9; display:block;">প্ল্যান বোনাস পরিমাণ</span>
+            <strong style="font-size:16px; color:#ffeaa7;">৳${bonusVal}</strong>
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    container.innerHTML = '';
+  }
 }
 
 // SLIDER & WELCOME NOTICE
@@ -387,7 +462,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS & CONFIG (REGISTRATION BONUS INCLUDED)
+// GATEWAYS & CONFIG (REGISTRATION BONUS DISPLAY ON REGISTER PAGE)
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -473,7 +548,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE (PLAN ACTIVATION BONUS INCLUDED)
+// VIP PLANS LOAD & PURCHASE (PLAN ACTIVATION BONUS DISPLAY ON PLAN CARDS)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -521,7 +596,7 @@ function renderPlanCardHTML(plan) {
         <ul class="plan-features-list">
           <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
           <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
-          ${actBonus > 0 ? `<li><i class="fa-solid fa-gift" style="color:#f59e0b;"></i> প্ল্যান এক্টিভ বোনাস: <b>৳${actBonus}</b></li>` : ''}
+          ${actBonus > 0 ? `<li style="color:#f59e0b; font-weight:bold;"><i class="fa-solid fa-gift"></i> প্ল্যান এক্টিভ বোনাস: <b>৳${actBonus}</b></li>` : ''}
           <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
           <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
           <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
@@ -649,7 +724,7 @@ function loadTasks(completedTaskIds = {}) {
       });
     }
 
-    // HIDE COMPLETED TASKS
+    // EXPLICITLY FILTER OUT AND HIDE COMPLETED TASKS
     const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
 
     // CHECK IF ALL TASKS COMPLETED
@@ -1287,5 +1362,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
-window.logout = function() { auth.signOut(); };
