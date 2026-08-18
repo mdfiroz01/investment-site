@@ -150,7 +150,6 @@ let sliderIntervalTimer = null;
 let incomeChartInstance = null;
 let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
-let systemRegBonus = 0;
 
 // Auth Observer
 auth.onAuthStateChanged((user) => {
@@ -174,7 +173,6 @@ auth.onAuthStateChanged((user) => {
     currentUser = null;
     document.getElementById('auth-container').classList.remove('hidden');
     document.getElementById('app-container').classList.add('hidden');
-    loadGatewaysAndNotices(); // Load pre-login settings (like reg bonus)
     handleInitialPathRouting();
   }
 });
@@ -398,7 +396,6 @@ function loadUserData() {
     document.getElementById('prof-avatar').value = userAvatar;
     document.getElementById('ref-link-input').value = window.location.origin + '?ref=' + (userData.refCode || '');
 
-    updateWithdrawView();
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
     initIncomeChartRealtime();
@@ -530,17 +527,6 @@ function loadGatewaysAndNotices() {
       }
       systemMinWithdraw = Number(cfg.minWithdraw || 200);
       systemWithdrawChargePercent = Number(cfg.withdrawChargePercent || 5);
-      
-      systemRegBonus = Number(cfg.regBonus || 0);
-      const regMsgEl = document.getElementById('reg-bonus-msg');
-      if (regMsgEl) {
-         if (systemRegBonus > 0) {
-            regMsgEl.innerText = `রেজিস্ট্রেশন করলেই পাচ্ছেন ৳${systemRegBonus} বোনাস!`;
-            regMsgEl.style.display = 'block';
-         } else {
-            regMsgEl.style.display = 'none';
-         }
-      }
 
       const rulesSummary = document.getElementById('withdraw-rules-summary');
       if (rulesSummary) {
@@ -552,17 +538,15 @@ function loadGatewaysAndNotices() {
 
   db.ref('payment_gateways').on('value', snap => {
     const depGrid = document.getElementById('deposit-methods-grid');
-    const walletMethodSelect = document.getElementById('wallet-method');
-    let walletOptionsHTML = '';
+    const witGrid = document.getElementById('withdraw-methods-grid');
 
     if (!snap.exists()) {
-      renderDefaultGateways(depGrid);
-      walletOptionsHTML = `<option value="bKash">bKash</option><option value="Nagad">Nagad</option><option value="Rocket">Rocket</option>`;
-      if (walletMethodSelect) walletMethodSelect.innerHTML = walletOptionsHTML;
+      renderDefaultGateways(depGrid, witGrid);
       return;
     }
 
     if (depGrid) depGrid.innerHTML = '';
+    if (witGrid) witGrid.innerHTML = '';
 
     snap.forEach((child) => {
       const g = child.val();
@@ -572,11 +556,9 @@ function loadGatewaysAndNotices() {
         if (depGrid) depGrid.innerHTML += renderGatewayCardHTML(g, 'deposit');
       }
       if (type === 'withdraw' || type === 'both') {
-        walletOptionsHTML += `<option value="${g.name}">${g.name}</option>`;
+        if (witGrid) witGrid.innerHTML += renderGatewayCardHTML(g, 'withdraw');
       }
     });
-
-    if (walletMethodSelect) walletMethodSelect.innerHTML = walletOptionsHTML;
   });
 }
 
@@ -592,11 +574,17 @@ function renderGatewayCardHTML(g, mode) {
         <button class="btn-continue-sm">Continue ></button>
       </div>
     `;
+  } else {
+    return `
+      <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('${name}', this)">
+        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+        <h5 style="font-size:13px;">${name}</h5>
+      </div>
+    `;
   }
-  return '';
 }
 
-function renderDefaultGateways(depGrid) {
+function renderDefaultGateways(depGrid, witGrid) {
   const defaults = [
     { name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' },
     { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' },
@@ -605,6 +593,9 @@ function renderDefaultGateways(depGrid) {
 
   if (depGrid) {
     depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'deposit')).join('');
+  }
+  if (witGrid) {
+    witGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'withdraw')).join('');
   }
 }
 
@@ -630,9 +621,9 @@ function loadVIPPlans() {
     }
 
     const defaultPlans = [
-      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, withdrawChargePercent: 10, activeBonus: 20, badgeText: '', isSoldOut: false },
-      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, withdrawChargePercent: 5, activeBonus: 50, badgeText: 'POPULAR', isSoldOut: false },
-      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, refCommissionPercent: 15, withdrawChargePercent: 0, activeBonus: 100, badgeText: 'HOT DEAL', isSoldOut: false }
+      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, withdrawChargePercent: 10, badgeText: '', isSoldOut: false },
+      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, withdrawChargePercent: 5, badgeText: 'POPULAR', isSoldOut: false },
+      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, refCommissionPercent: 15, withdrawChargePercent: 0, badgeText: 'HOT DEAL', isSoldOut: false }
     ];
 
     const planList = snap.exists() ? Object.values(snap.val()) : defaultPlans;
@@ -656,7 +647,6 @@ function renderPlanCardHTML(plan) {
   const duration = Number(plan.durationDays || 30);
   const vipLevel = Number(plan.vipLevel || 1);
   const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
-  const activeBonus = Number(plan.activeBonus || 0);
 
   return `
     <div class="plan-card-item">
@@ -669,14 +659,13 @@ function renderPlanCardHTML(plan) {
         <ul class="plan-features-list">
           <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
           <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
-          ${activeBonus > 0 ? `<li><i class="fa-solid fa-gift"></i> এক্টিভ বোনাস: <b style="color:var(--primary-color);">৳${activeBonus}</b></li>` : ''}
           <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
           <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
           <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
           <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
         </ul>
         <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${activeBonus})"`}>
+          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge})"`}>
           ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
         </button>
       </div>
@@ -684,7 +673,7 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5, activeBonus = 0) {
+window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
@@ -696,7 +685,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (ডিপোজিট ব্যালেন্স থেকে কাটা হবে)`, function() {
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
-    updates['users/' + currentUser.uid + '/incomeBalance'] = (userData.incomeBalance || 0) + activeBonus;
     updates['users/' + currentUser.uid + '/vipLevel'] = vipLevel;
     updates['users/' + currentUser.uid + '/vipPlanName'] = planName;
     updates['users/' + currentUser.uid + '/maxDailyTasks'] = dailyTasks;
@@ -705,7 +693,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
 
     db.ref().update(updates).then(() => {
       userData.depositBalance = depBal - price;
-      userData.incomeBalance = (userData.incomeBalance || 0) + activeBonus;
       userData.vipLevel = vipLevel;
       userData.vipPlanName = planName;
       userData.maxDailyTasks = dailyTasks;
@@ -721,18 +708,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
         status: 'approved',
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
-
-      if (activeBonus > 0) {
-         const bonusRef = db.ref('history').push();
-         bonusRef.set({
-           uid: currentUser.uid,
-           type: 'Plan Bonus',
-           amount: activeBonus,
-           title: planName + ' Active Bonus',
-           status: 'approved',
-           timestamp: firebase.database.ServerValue.TIMESTAMP
-         });
-      }
 
       showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে।`, "প্ল্যান আনলকড! 🎉", "success");
       renderActivePlanDashboardBanner();
@@ -791,6 +766,7 @@ function checkUserTaskLimitAndLoadTasks() {
 function loadTasks(completedTaskIds = {}) {
   const container = document.getElementById('tasks-list-container');
   if (!container) return;
+  container.innerHTML = '';
 
   const summaryEl = document.getElementById('task-limit-status-summary');
   const userVip = userData ? Number(userData.vipLevel || 0) : 0;
@@ -807,9 +783,10 @@ function loadTasks(completedTaskIds = {}) {
     const userVipTasks = [];
 
     if (snap.exists()) {
+      // EXPLICIT UNIQUE FIREBASE KEY MAPPING FOR EVERY SINGLE TASK
       snap.forEach(child => {
         const task = child.val();
-        task.id = child.key; 
+        task.id = child.key; // Unique Firebase Key
         
         const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
         
@@ -819,20 +796,6 @@ function loadTasks(completedTaskIds = {}) {
           userVipTasks.push(task);
         }
       });
-    }
-
-    const pendingTasks = userVipTasks.filter(task => !completedTaskIds[task.id]);
-    const isLimitReached = (userVip > 0 && userTodayCompletedCount >= userMaxDailyTasks);
-
-    if (isLimitReached || (userVipTasks.length > 0 && pendingTasks.length === 0)) {
-        container.innerHTML = `
-        <div class="content-card" style="text-align:center; padding:30px 15px;">
-          <i class="fa-solid fa-circle-check" style="font-size:40px; color:#10b981; margin-bottom:12px;"></i>
-          <h3 style="font-size:16px; margin-bottom:6px;">আপনি ইতিমধ্যেই টাস্ক সম্পন্ন করেছেন!</h3>
-          <p style="font-size:12px; color:var(--text-muted);">আগামীকাল আবার নতুন টাস্ক পাবেন।</p>
-        </div>
-        `;
-        return;
     }
 
     if (userVipTasks.length === 0) {
@@ -847,9 +810,25 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    pendingTasks.forEach(task => {
-      const taskId = task.id;
+    userVipTasks.forEach(task => {
+      const taskId = task.id; // Unique Firebase Key
+      const isCompletedToday = completedTaskIds[taskId] === true;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
+      const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
+
+      let btnText = 'টাস্ক শুরু করুন';
+      let btnDisabled = false;
+      let btnStyle = '';
+
+      if (isCompletedToday) {
+        btnText = 'সম্পন্ন হয়েছে ✓';
+        btnDisabled = true;
+        btnStyle = 'background:#10b981; cursor:not-allowed;';
+      } else if (limitReached) {
+        btnText = 'আজকের লিমিট শেষ 🔒';
+        btnDisabled = true;
+        btnStyle = 'background:#ef4444; cursor:not-allowed;';
+      }
 
       container.innerHTML += `
         <div class="content-card" style="margin:0 0 12px 0;">
@@ -861,8 +840,9 @@ function loadTasks(completedTaskIds = {}) {
               </div>
               <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">রিওয়ার্ড: <b style="color:var(--primary-color)">৳${task.reward}</b></p>
             </div>
-            <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px;" onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
-              টাস্ক শুরু করুন
+            <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; ${btnStyle}" 
+              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})"`}>
+              ${btnText}
             </button>
           </div>
         </div>
@@ -1066,68 +1046,11 @@ function loadDepositHistory() {
   });
 }
 
-// WITHDRAW METHOD SELECTOR & SUBMIT (E-WALLET SYSTEM)
-
-function updateWithdrawView() {
-    const hasWallet = userData && userData.wallet && userData.wallet.number;
-    
-    const noWalletEl = document.getElementById('wit-no-wallet');
-    const addFormEl = document.getElementById('wit-add-wallet-form');
-    const readyFormEl = document.getElementById('wit-ready-form');
-
-    if (!noWalletEl || !addFormEl || !readyFormEl) return;
-
-    noWalletEl.classList.add('hidden');
-    addFormEl.classList.add('hidden');
-    readyFormEl.classList.add('hidden');
-
-    if (hasWallet) {
-        readyFormEl.classList.remove('hidden');
-        document.getElementById('saved-wallet-method').innerText = userData.wallet.method;
-        document.getElementById('saved-wallet-number').innerText = userData.wallet.number;
-        document.getElementById('saved-wallet-name').innerText = userData.wallet.name;
-        selectedWithdrawMethodName = userData.wallet.method;
-    } else {
-        noWalletEl.classList.remove('hidden');
-    }
-}
-
-window.showAddWalletForm = function() {
-    document.getElementById('wit-no-wallet').classList.add('hidden');
-    document.getElementById('wit-add-wallet-form').classList.remove('hidden');
-};
-
-window.cancelAddWallet = function() {
-    updateWithdrawView();
-};
-
-window.handleWalletSetup = function(e) {
-    e.preventDefault();
-    const method = document.getElementById('wallet-method').value;
-    const name = document.getElementById('wallet-name').value;
-    const number = document.getElementById('wallet-number').value;
-    const pin = document.getElementById('wallet-pin').value;
-
-    if(pin.length !== 5) {
-        showCustomAlert("উইথড্র পিন অবশ্যই ৫ সংখ্যার হতে হবে!", "ত্রুটি", "warning");
-        return;
-    }
-
-    db.ref('used_wallets/' + number).once('value', snap => {
-        if (snap.exists()) {
-            showCustomAlert("এই ওয়ালেট নম্বরটি ইতিপূর্বে অন্য কেউ ব্যবহার করেছে। অনুগ্রহ করে নতুন নম্বর দিন।", "নম্বরটি ব্যবহৃত", "error");
-        } else {
-            const updates = {};
-            updates['used_wallets/' + number] = currentUser.uid;
-            updates['users/' + currentUser.uid + '/wallet'] = { method, name, number, pin };
-
-            db.ref().update(updates).then(() => {
-                showCustomAlert("ই-ওয়ালেট সফলভাবে সেটআপ করা হয়েছে!", "সফল", "success");
-                userData.wallet = { method, name, number, pin };
-                updateWithdrawView();
-            });
-        }
-    });
+// WITHDRAW METHOD SELECTOR & SUBMIT
+window.selectWithdrawMethod = function(method, el) {
+  selectedWithdrawMethodName = method;
+  document.querySelectorAll('.withdraw-method-box').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
 };
 
 function getActiveWithdrawChargePercent() {
@@ -1156,18 +1079,8 @@ window.handleWithdrawSubmit = function(e) {
     return;
   }
 
-  if (!userData.wallet) {
-    showCustomAlert('উত্তোলন করার জন্য ই-ওয়ালেট সেটআপ করুন।', 'ওয়ালেট প্রয়োজন', 'warning');
-    return;
-  }
-
+  const num = document.getElementById('wit-number').value;
   const amt = parseFloat(document.getElementById('wit-amount').value);
-  const pin = document.getElementById('wit-confirm-pin').value;
-
-  if (pin !== userData.wallet.pin) {
-      showCustomAlert("আপনার দেওয়া উইথড্র পিন ভুল হয়েছে!", "ত্রুটি", "error");
-      return;
-  }
 
   if (!amt || amt < systemMinWithdraw) {
     showCustomAlert(`সর্বনিম্ন ৳${systemMinWithdraw} টাকা উত্তোলন করতে পারবেন।`, 'উত্তোলন লিমিট', 'warning');
@@ -1179,9 +1092,6 @@ window.handleWithdrawSubmit = function(e) {
     showCustomAlert('পর্যাপ্ত ওয়ালেট ব্যালেন্স নেই!', 'ব্যালেন্স অপ্রতুল', 'warning');
     return;
   }
-
-  const num = userData.wallet.number;
-  const method = userData.wallet.method;
 
   let remAmt = amt;
   let newIncBal = userData.incomeBalance || 0;
@@ -1207,7 +1117,7 @@ window.handleWithdrawSubmit = function(e) {
       id: witRef.key,
       uid: currentUser.uid,
       email: currentUser.email,
-      method: method,
+      method: selectedWithdrawMethodName,
       walletNumber: num,
       amount: amt,
       chargePercent: activeCharge,
@@ -1435,24 +1345,13 @@ document.addEventListener('DOMContentLoaded', () => {
           name, email, phone, country,
           avatar: DEFAULT_AVATAR,
           depositBalance: 0,
-          incomeBalance: systemRegBonus || 0,
+          incomeBalance: 0,
           todayIncome: 0, 
-          totalIncome: systemRegBonus || 0, 
+          totalIncome: 0, 
           vipLevel: 0,
           refCode: myRef, 
           referredBy: refCode || '',
           isBlocked: false
-        }).then(() => {
-           if(systemRegBonus > 0){
-               db.ref('history').push({
-                   uid: cred.user.uid,
-                   type: 'Registration Bonus',
-                   amount: systemRegBonus,
-                   title: 'Registration Bonus',
-                   status: 'approved',
-                   timestamp: firebase.database.ServerValue.TIMESTAMP
-               });
-           }
         });
       }).catch(err => {
         let msg = 'ত্রুটি: ' + err.message;
