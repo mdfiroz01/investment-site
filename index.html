@@ -258,10 +258,14 @@
       </div>
     </header>
 
-    <!-- SCROLLING NOTICE -->
+    <!-- SCROLLING NOTICE (FIXED ICON OVERLAP) -->
     <div class="notice-board">
-      <i class="fa-solid fa-bullhorn"></i>
-      <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
+      <div class="notice-icon-box">
+        <i class="fa-solid fa-bullhorn"></i>
+      </div>
+      <div class="notice-text-wrapper">
+        <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
+      </div>
     </div>
 
     <!-- BKASH STYLE USER PROFILE & BALANCE CARD -->
@@ -298,7 +302,7 @@
         <div class="menu-card" onclick="switchTab('tab-tasks')"><i class="fa-solid fa-list-check"></i><span>টাস্ক</span></div>
         <div class="menu-card" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i><span>প্ল্যান</span></div>
         <div class="menu-card" onclick="switchTab('tab-wallet')"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
-        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলনে</span></div>
+        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলন</span></div>
       </div>
 
       <!-- ACTIVE VIP PLAN BANNER CARD -->
