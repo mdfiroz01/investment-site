@@ -147,32 +147,30 @@
   <div id="wallet-setup-modal" class="modal-overlay hidden">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> উইথড্র ওয়ালেট ও পিন সেটআপ</h3>
+        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> E-Wallet Payment method</h3>
         <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeWalletSetupModal()"></i>
       </div>
 
       <form id="wallet-setup-form" onsubmit="handleWalletSetupSubmit(event)">
         <div class="form-group">
-          <label>উত্তোলনের মেথড</label>
+          <label>একাউন্ট টাইপ (Account Type)</label>
           <select id="setup-wallet-method" class="form-control" required>
-            <option value="bKash">bKash (বিকাশ)</option>
-            <option value="Nagad">Nagad (নগদ)</option>
-            <option value="Rocket">Rocket (রকেট)</option>
+            <!-- Dynamic Gateways Loaded from JS -->
           </select>
         </div>
         <div class="form-group">
-          <label>ওয়ালেট হোল্ডার নাম (Account Name)</label>
-          <input type="text" id="setup-account-name" class="form-control" required placeholder="আপনার ওয়ালেট নাম">
+          <label>ফুল নাম (Full Name)</label>
+          <input type="text" id="setup-account-name" class="form-control" required placeholder="আপনার পুরো নাম লিখুন">
         </div>
         <div class="form-group">
-          <label>মোবাইল / ওয়ালেট নম্বর</label>
+          <label>একাউন্ট নম্বর / মোবাইল নম্বর</label>
           <input type="text" id="setup-wallet-number" class="form-control" required placeholder="01700000000">
         </div>
         <div class="form-group">
-          <label>৫ সংখ্যার সিকিউরিটি পিন (5-Digit PIN)</label>
+          <label>৫ সংখ্যার পিন (5-Digit Security PIN)</label>
           <input type="password" id="setup-wallet-pin" class="form-control" required maxlength="5" minlength="5" placeholder="যেমন: 12345">
         </div>
-        <button type="submit" class="btn-action">ওয়ালেট সেভ করুন 🔒</button>
+        <button type="submit" class="btn-action btn-yellow-bottom">সেভ করুন 🔒</button>
       </form>
     </div>
   </div>
@@ -185,6 +183,24 @@
       <p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p>
       <div id="welcome-btn-container" style="margin-bottom:10px;"></div>
       <button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <!-- RULES & PRIVACY POLICY MODAL -->
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-shield-halved" style="color:var(--primary-color)"></i> নিয়মাবলী ও শর্তসমূহ</h3>
+        <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeRulesModal()"></i>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+        <p>১. একজন ইউজার শুধুমাত্র একটি অ্যাকাউন্ট ব্যবহার করতে পারবেন।</p>
+        <p style="margin-top:6px;">২. টাস্কের রিওয়ার্ড পাওয়ার জন্য সঠিক নিয়ম মেনে টাস্ক পূরণ করুন।</p>
+        <p style="margin-top:6px;">৩. টাকা তোলার জন্য একটি প্রিমিয়াম ভিআইপি প্ল্যান এক্টিভ করা বাধ্যতামূলক।</p>
+        <p style="margin-top:6px;">৪. আপনার পেমেন্ট ওয়ালেট নম্বরটি ইউনিক হতে হবে (এক নম্বর অন্য একাউন্টে ব্যবহার করা যাবে না)।</p>
+        <p style="margin-top:6px;">৫. যেকোনো প্রকার প্রতারণা বা অসদুপায় অবলম্বনে একাউন্ট স্থায়ীভাবে ব্লক করা হতে পারে।</p>
+      </div>
+      <button class="btn-action" style="margin-top:18px;" onclick="closeRulesModal()">বুঝতে পেরেছি 👍</button>
     </div>
   </div>
 
@@ -205,6 +221,7 @@
       <li onclick="switchTab('tab-vip'); closeSidebar()"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
       <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
       <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
+      <li onclick="openRulesModal(); closeSidebar()"><i class="fa-solid fa-shield-halved"></i> নিয়মাবলী ও শর্তসমূহ</li>
       <li onclick="switchTab('tab-profile'); closeSidebar()"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
       <li onclick="toggleAppTheme(); closeSidebar()"><i class="fa-solid fa-circle-half-stroke"></i> ডার্ক / লাইট মোড</li>
       <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
@@ -286,7 +303,7 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-home" class="tab-content active">
 
-      <!-- HOMEPAGE CAROUSEL BANNER SLIDER -->
+      <!-- HOMEPAGE CAROUSEL BANNER SLIDER (HIDDEN IF NO ADMIN SLIDER) -->
       <div class="slider-container-card hidden" id="homepage-slider-card">
         <div class="slider-wrapper">
           <img id="slider-img" src="" alt="Banner Slider" class="slider-img">
@@ -391,6 +408,10 @@
         <h2>দৈনিক টাস্কসমূহ</h2>
         <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
       </div>
+
+      <!-- PLAN ACTIVATION BONUS CLAIM CONTAINER -->
+      <div id="plan-bonus-claim-container"></div>
+
       <div id="tasks-list-container" class="plans-wrapper"></div>
     </div>
 
@@ -518,17 +539,15 @@
 
     </div>
 
-    <!-- TAB 6: WITHDRAW PAGE (SIMPLIFIED SINGLE SAVED WALLET WITH 5-DIGIT PIN) -->
+    <!-- TAB 6: WITHDRAW PAGE -->
     <div id="tab-withdraw" class="tab-content">
       <div class="plan-page-header">
-        <h2>টাকা উত্তোলন করুন</h2>
+        <h2>E-WalletPayment method</h2>
         <p id="withdraw-rules-summary">সর্বনিম্ন উত্তোলন ও প্রসেসিং চার্জ প্রযোজ্য</p>
       </div>
 
-      <!-- SAVED WALLET WITHDRAWAL CONTAINER -->
-      <div id="withdraw-page-container">
-        <!-- Rendered Dynamically in JS (Shows Wallet Setup Prompt or Saved Wallet Form) -->
-      </div>
+      <!-- SAVED WALLET OR ADD WALLET CARD CONTAINER -->
+      <div id="withdraw-page-container"></div>
 
       <div class="content-card">
         <h4>উত্তোলন ইতিহাস</h4>
@@ -582,9 +601,7 @@
 
   <!-- FLOATING 90-DEGREE SUPPORT FAB WHEEL BUTTON -->
   <div class="fab-support-container" id="fab-support-container">
-    <div class="fab-support-menu" id="fab-support-menu">
-      <!-- Dynamic Social Media Icons loaded from Admin Panel -->
-    </div>
+    <div class="fab-support-menu" id="fab-support-menu"></div>
     <button class="fab-main-btn" onclick="toggleSupportFab()" title="সাপোর্ট ও সোশ্যাল মিডিয়া">
       <i class="fa-solid fa-headset fab-icon"></i>
     </button>
