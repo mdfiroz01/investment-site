@@ -1,3 +1,4 @@
+
 {
   "rules": {
     "users": {
@@ -51,6 +52,18 @@
     "settings": {
       ".read": true,
       ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+    },
+    "social_support": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+    },
+    "payment_gateways": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'admin@gmail.com'"
+    },
+    "used_wallets": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }
