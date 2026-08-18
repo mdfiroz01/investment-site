@@ -534,7 +534,7 @@
 
     </div>
 
-    <!-- TAB 6: WITHDRAW PAGE (E-WALLET BOUND SYSTEM) -->
+    <!-- TAB 6: WITHDRAW PAGE (WITH ALL BALANCE BUTTON) -->
     <div id="tab-withdraw" class="tab-content">
       <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
@@ -553,7 +553,7 @@
         <button class="btn-action" onclick="openWalletSetupModal()"><i class="fa-solid fa-plus"></i> ওয়ালেট যুক্ত করুন</button>
       </div>
 
-      <!-- VIEW B: WALLET SET (E-WALLET CARD & WITHDRAW FORM) -->
+      <!-- VIEW B: WALLET SET (E-WALLET CARD & WITHDRAW FORM WITH ALL BUTTON) -->
       <div id="withdraw-wallet-set-view" class="hidden">
         
         <!-- SAVED WALLET DISPLAY CARD -->
@@ -572,7 +572,10 @@
           <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
             <div class="form-group">
               <label>উত্তোলনের পরিমাণ (৳)</label>
-              <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()">
+              <div style="position:relative; display:flex; align-items:center;">
+                <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()" style="padding-right: 65px;">
+                <button type="button" class="btn-all-bal" onclick="selectAllBalanceForWithdraw()">ALL</button>
+              </div>
             </div>
 
             <div class="form-group">
