@@ -1,3 +1,4 @@
+
 /* LIGHT & DARK THEME VARIABLES FOR USER PANEL */
 [data-theme="light"] {
   --primary-color: #05b381;
@@ -213,17 +214,17 @@ body.admin-body {
   border-radius: 50%;
 }
 
-/* FIXED NOTICE BOARD & MEGAPHONE ICON OVERLAP FIX */
+/* NOTICE BOARD WITH FIXED ICON ON LEFT (TEXT DOES NOT OVERLAP ICON) */
 .notice-board {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   margin: 12px 15px;
-  padding: 0 15px;
+  padding: 0 12px;
   border-radius: 30px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13.5px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--primary-color);
   box-shadow: var(--shadow-light);
@@ -232,16 +233,20 @@ body.admin-body {
   position: relative;
 }
 
-.notice-board i.notice-icon-fixed {
-  font-size: 16px;
-  color: var(--primary-color);
-  flex-shrink: 0;
-  z-index: 5;
+.notice-icon-box {
+  position: relative;
+  z-index: 10;
   background: var(--card-bg);
-  padding-right: 6px;
-  height: 100%;
+  padding-right: 8px;
   display: flex;
   align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.notice-icon-box i {
+  font-size: 16px;
+  color: var(--primary-color);
 }
 
 .notice-marquee-wrapper {
@@ -257,7 +262,7 @@ body.admin-body {
 .notice-text {
   display: inline-block;
   white-space: nowrap;
-  animation: marquee 28s linear infinite;
+  animation: marquee 25s linear infinite;
   line-height: 20px;
   font-weight: 800;
   padding-left: 100%;
@@ -871,7 +876,7 @@ body.admin-body {
   box-shadow: 0 6px 15px rgba(5, 179, 129, 0.35);
 }
 
-/* FORM CONTROLS & GENERAL UTILITIES */
+/* FORM CONTROLS & UTILITIES */
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
 
