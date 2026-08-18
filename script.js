@@ -1,3 +1,4 @@
+
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -8,7 +9,6 @@ window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি"
   const iconEl = document.getElementById('app-alert-icon');
 
   if (!modal || !titleEl || !msgEl) return;
-
   titleEl.innerText = title;
   msgEl.innerText = message;
 
@@ -32,14 +32,12 @@ window.closeCustomAlert = function() {
 
 // UNIVERSAL CUSTOM CONFIRM SYSTEM
 let onConfirmCallback = null;
-
 window.showCustomConfirm = function(title, message, onConfirm) {
   const modal = document.getElementById('app-confirm-modal');
   const titleEl = document.getElementById('app-confirm-title');
   const msgEl = document.getElementById('app-confirm-msg');
 
   if (!modal || !titleEl || !msgEl) return;
-
   titleEl.innerText = title;
   msgEl.innerText = message;
   onConfirmCallback = onConfirm;
@@ -72,7 +70,6 @@ function initAppTheme() {
 window.toggleAppTheme = function() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('app-theme', newTheme);
   updateThemeToggleIcon(newTheme);
@@ -80,59 +77,30 @@ window.toggleAppTheme = function() {
 
 function updateThemeToggleIcon(theme) {
   const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-  }
+  if (icon) icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
 }
-
 initAppTheme();
 
-// AUTH FORM SWITCHERS WITH CLEAN URL ROUTING
+// AUTH FORM SWITCHERS
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (regForm) regForm.classList.remove('hidden');
-
-  const pendingRef = localStorage.getItem('pendingRefCode') || '';
-  const newUrl = '/register' + (pendingRef ? '?ref=' + pendingRef : '');
-  if (window.location.pathname !== '/register') {
-    window.history.pushState({}, '', newUrl);
-  }
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
 };
 
 window.showLoginForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.add('hidden');
-  if (loginForm) loginForm.classList.remove('hidden');
-
-  if (window.location.pathname !== '/login') {
-    window.history.pushState({}, '', '/login');
-  }
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
 };
 
 window.showForgotForm = function(e) {
   if (e) e.preventDefault();
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const forgotForm = document.getElementById('forgot-password-form');
-
-  if (loginForm) loginForm.classList.add('hidden');
-  if (regForm) regForm.classList.add('hidden');
-  if (forgotForm) forgotForm.classList.remove('hidden');
-
-  if (window.location.pathname !== '/forgot') {
-    window.history.pushState({}, '', '/forgot');
-  }
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('forgot-password-form').classList.remove('hidden');
 };
 
 let currentUser = null;
@@ -140,7 +108,6 @@ let userData = null;
 let isBalanceShown = false;
 let selectedDepositMethodName = 'bKash';
 let selectedDepositAmountVal = 500;
-let selectedWithdrawMethodName = 'bKash';
 let activeTaskObj = null;
 let userTodayCompletedCount = 0;
 let userMaxDailyTasks = 0;
@@ -150,8 +117,9 @@ let sliderIntervalTimer = null;
 let incomeChartInstance = null;
 let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
+let systemRegBonus = 0;
 
-// Auth Observer
+// FIREBASE AUTH OBSERVER
 auth.onAuthStateChanged((user) => {
   if (user) {
     currentUser = user;
@@ -188,17 +156,9 @@ window.closeSidebar = function() {
   document.getElementById('sidebar-overlay').classList.remove('open');
 };
 
-window.openNotifModal = function() {
-  document.getElementById('notif-modal').classList.remove('hidden');
-};
-
-window.closeNotifModal = function() {
-  document.getElementById('notif-modal').classList.add('hidden');
-};
-
-window.closeWelcomeModal = function() {
-  document.getElementById('welcome-modal').classList.add('hidden');
-};
+window.openNotifModal = function() { document.getElementById('notif-modal').classList.remove('hidden'); };
+window.closeNotifModal = function() { document.getElementById('notif-modal').classList.add('hidden'); };
+window.closeWelcomeModal = function() { document.getElementById('welcome-modal').classList.add('hidden'); };
 
 window.closeTaskModal = function() {
   document.getElementById('task-modal').classList.add('hidden');
@@ -221,9 +181,7 @@ window.toggleBkashBalance = function() {
 
 window.toggleSupportFab = function() {
   const container = document.getElementById('fab-support-container');
-  if (container) {
-    container.classList.toggle('open');
-  }
+  if (container) container.classList.toggle('open');
 };
 
 function loadSocialSupportLinks() {
@@ -235,9 +193,6 @@ function loadSocialSupportLinks() {
       menu.innerHTML = `
         <a href="https://t.me/" target="_blank" class="fab-menu-item">
           <span>Telegram Group</span> <i class="fa-brands fa-telegram" style="color:#0088cc"></i>
-        </a>
-        <a href="https://wa.me/" target="_blank" class="fab-menu-item">
-          <span>WhatsApp Support</span> <i class="fa-brands fa-whatsapp" style="color:#25d366"></i>
         </a>
       `;
       return;
@@ -255,7 +210,7 @@ function loadSocialSupportLinks() {
   });
 }
 
-window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = true) {
+window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
@@ -267,87 +222,26 @@ window.switchTab = function(tabId, el, isDirectPlanTrigger = false, pushState = 
   if (el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
-  } else {
-    const navMap = { 'tab-home': 0, 'tab-wallet': 1, 'tab-vip': 2, 'tab-withdraw': 3, 'tab-profile': 4 };
-    const idx = navMap[tabId];
-    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-    if (idx !== undefined && navItems[idx]) {
-      navItems.forEach(n => n.classList.remove('active'));
-      navItems[idx].classList.add('active');
-    }
-  }
-
-  if (pushState) {
-    const routePaths = {
-      'tab-home': '/home',
-      'tab-wallet': '/wallet',
-      'tab-vip': '/vip',
-      'tab-tasks': '/tasks',
-      'tab-deposit': '/deposit',
-      'tab-withdraw': '/withdraw',
-      'tab-profile': '/profile'
-    };
-
-    const newPath = routePaths[tabId] || '/home';
-    if (window.location.pathname !== newPath) {
-      window.history.pushState({ tabId: tabId }, '', newPath);
-    }
   }
 };
-
-window.addEventListener('popstate', (e) => {
-  handleInitialPathRouting();
-});
 
 function handleInitialPathRouting() {
   const urlParams = new URLSearchParams(window.location.search);
   let refCode = urlParams.get('ref') || urlParams.get('refCode');
-
-  if (refCode) {
-    localStorage.setItem('pendingRefCode', refCode);
-  } else {
-    refCode = localStorage.getItem('pendingRefCode');
-  }
+  if (refCode) localStorage.setItem('pendingRefCode', refCode);
+  else refCode = localStorage.getItem('pendingRefCode');
 
   if (refCode) {
     const refInput = document.getElementById('reg-ref');
     if (refInput) refInput.value = refCode;
-  }
-
-  const path = window.location.pathname.toLowerCase();
-
-  if (!currentUser) {
-    if (path === '/register' || refCode) {
-      window.showRegisterForm();
-    } else if (path === '/forgot' || path === '/reset') {
-      window.showForgotForm();
-    } else {
-      window.showLoginForm();
-    }
-  } else {
-    const pathToTabMap = {
-      '/tasks': 'tab-tasks',
-      '/vip': 'tab-vip',
-      '/wallet': 'tab-wallet',
-      '/deposit': 'tab-deposit',
-      '/withdraw': 'tab-withdraw',
-      '/profile': 'tab-profile',
-      '/home': 'tab-home',
-      '/': 'tab-home'
-    };
-
-    const targetTab = pathToTabMap[path] || 'tab-home';
-    switchTab(targetTab, null, false, false);
   }
 }
 
 function resetDepositToGeneralWallet() {
   const selectEl = document.getElementById('dep-target-plan-select');
   if (selectEl) selectEl.value = 'wallet';
-
   const amtInput = document.getElementById('input-dep-amount');
   if (amtInput) amtInput.value = 500;
-
   selectedDepositAmountVal = 500;
   goToDepositStep(1);
 }
@@ -382,11 +276,10 @@ function loadUserData() {
     const totalBal = depBal + incBal;
     userData.balance = totalBal;
 
-    const balVal = '৳' + totalBal.toFixed(2);
     document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
     document.getElementById('bal-total-inc').innerText = '৳' + (userData.totalIncome || 0).toFixed(2);
     document.getElementById('dep-total-bal').innerText = '৳' + depBal.toFixed(2);
-    document.getElementById('wallet-balance-display').innerText = balVal;
+    document.getElementById('wallet-balance-display').innerText = '৳' + totalBal.toFixed(2);
     
     document.getElementById('wallet-dep-bal').innerText = '৳' + depBal.toFixed(2);
     document.getElementById('wallet-inc-bal').innerText = '৳' + incBal.toFixed(2);
@@ -399,6 +292,7 @@ function loadUserData() {
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
     initIncomeChartRealtime();
+    checkAndRenderEWalletView();
   });
 }
 
@@ -435,20 +329,17 @@ function renderActivePlanDashboardBanner() {
   `;
 }
 
-// HOMEPAGE CAROUSEL BANNER SLIDER
+// SLIDER & WELCOME NOTICE
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
     if (snap.exists()) {
       snap.forEach(c => {
-        if (c.val() && c.val().url) {
-          sliderImagesList.push(c.val().url);
-        }
+        if (c.val() && c.val().url) sliderImagesList.push(c.val().url);
       });
     }
 
     const sliderCard = document.getElementById('homepage-slider-card');
-
     if (sliderImagesList.length === 0) {
       if (sliderIntervalTimer) clearInterval(sliderIntervalTimer);
       if (sliderCard) sliderCard.classList.add('hidden');
@@ -464,7 +355,6 @@ function startSliderCarousel() {
   if (!sliderImg || sliderImagesList.length === 0) return;
 
   if (sliderIntervalTimer) clearInterval(sliderIntervalTimer);
-
   sliderIndex = 0;
   sliderImg.src = sliderImagesList[0];
 
@@ -476,40 +366,28 @@ function startSliderCarousel() {
   }
 }
 
-// WELCOME POP-UP NOTICE
 function checkAndShowWelcomeNotice() {
   db.ref('notices/welcome').once('value', snap => {
-    if (snap.exists()) {
+    if (snap.exists() && snap.val().enabled === true) {
       const notice = snap.val();
-      if (notice.enabled === true) {
-        document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
-        document.getElementById('welcome-desc').innerText = notice.text || '';
-        
-        const imgBox = document.getElementById('welcome-img-box');
-        if (notice.image) {
-          imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
-        } else {
-          imgBox.innerHTML = '';
-        }
+      document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
+      document.getElementById('welcome-desc').innerText = notice.text || '';
+      
+      const imgBox = document.getElementById('welcome-img-box');
+      if (notice.image) imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
+      else imgBox.innerHTML = '';
 
-        const btnBox = document.getElementById('welcome-btn-container');
-        if (notice.btnText && notice.btnUrl) {
-          btnBox.innerHTML = `
-            <a href="${notice.btnUrl}" target="_blank" class="btn-action" style="display:block; text-decoration:none; margin-bottom:6px;">
-              ${notice.btnText}
-            </a>
-          `;
-        } else {
-          btnBox.innerHTML = '';
-        }
+      const btnBox = document.getElementById('welcome-btn-container');
+      if (notice.btnText && notice.btnUrl) {
+        btnBox.innerHTML = `<a href="${notice.btnUrl}" target="_blank" class="btn-action" style="display:block; text-decoration:none; margin-bottom:6px;">${notice.btnText}</a>`;
+      } else btnBox.innerHTML = '';
 
-        document.getElementById('welcome-modal').classList.remove('hidden');
-      }
+      document.getElementById('welcome-modal').classList.remove('hidden');
     }
   });
 }
 
-// GATEWAYS, APP SETTINGS & NOTICES
+// GATEWAYS & CONFIG (REGISTRATION BONUS INCLUDED)
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -527,6 +405,15 @@ function loadGatewaysAndNotices() {
       }
       systemMinWithdraw = Number(cfg.minWithdraw || 200);
       systemWithdrawChargePercent = Number(cfg.withdrawChargePercent || 5);
+      systemRegBonus = Number(cfg.regBonus || 0);
+
+      if (systemRegBonus > 0) {
+        const banner = document.getElementById('reg-bonus-banner');
+        if (banner) {
+          document.getElementById('reg-bonus-amount').innerText = '৳' + systemRegBonus;
+          banner.classList.remove('hidden');
+        }
+      }
 
       const rulesSummary = document.getElementById('withdraw-rules-summary');
       if (rulesSummary) {
@@ -538,65 +425,42 @@ function loadGatewaysAndNotices() {
 
   db.ref('payment_gateways').on('value', snap => {
     const depGrid = document.getElementById('deposit-methods-grid');
-    const witGrid = document.getElementById('withdraw-methods-grid');
-
     if (!snap.exists()) {
-      renderDefaultGateways(depGrid, witGrid);
+      renderDefaultGateways(depGrid);
       return;
     }
 
     if (depGrid) depGrid.innerHTML = '';
-    if (witGrid) witGrid.innerHTML = '';
 
     snap.forEach((child) => {
       const g = child.val();
       const type = g.type || 'both';
-
       if (type === 'deposit' || type === 'both') {
-        if (depGrid) depGrid.innerHTML += renderGatewayCardHTML(g, 'deposit');
-      }
-      if (type === 'withdraw' || type === 'both') {
-        if (witGrid) witGrid.innerHTML += renderGatewayCardHTML(g, 'withdraw');
+        if (depGrid) depGrid.innerHTML += renderGatewayCardHTML(g);
       }
     });
   });
 }
 
-function renderGatewayCardHTML(g, mode) {
+function renderGatewayCardHTML(g) {
   const name = g.name || 'Method';
   const logo = g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png';
-
-  if (mode === 'deposit') {
-    return `
-      <div class="method-box" onclick="selectDepositMethod('${name}')">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-        <h5 style="font-size:13px;">${name}</h5>
-        <button class="btn-continue-sm">Continue ></button>
-      </div>
-    `;
-  } else {
-    return `
-      <div class="method-box withdraw-method-box" onclick="selectWithdrawMethod('${name}', this)">
-        <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-        <h5 style="font-size:13px;">${name}</h5>
-      </div>
-    `;
-  }
+  return `
+    <div class="method-box" onclick="selectDepositMethod('${name}')">
+      <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
+      <h5 style="font-size:13px;">${name}</h5>
+      <button class="btn-continue-sm">Continue ></button>
+    </div>
+  `;
 }
 
-function renderDefaultGateways(depGrid, witGrid) {
+function renderDefaultGateways(depGrid) {
   const defaults = [
     { name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' },
     { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' },
     { name: 'Rocket', logoUrl: 'https://i.ibb.co/hK8C7hC/rocket.png' }
   ];
-
-  if (depGrid) {
-    depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'deposit')).join('');
-  }
-  if (witGrid) {
-    witGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g, 'withdraw')).join('');
-  }
+  if (depGrid) depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g)).join('');
 }
 
 function listenLiveBroadcastNotifications() {
@@ -609,21 +473,18 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE
+// VIP PLANS LOAD & PURCHASE (PLAN ACTIVATION BONUS INCLUDED)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
     const depPlanSelect = document.getElementById('dep-target-plan-select');
 
     container.innerHTML = '';
-    if (depPlanSelect) {
-      depPlanSelect.innerHTML = '<option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>';
-    }
+    if (depPlanSelect) depPlanSelect.innerHTML = '<option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>';
 
     const defaultPlans = [
-      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, withdrawChargePercent: 10, badgeText: '', isSoldOut: false },
-      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, withdrawChargePercent: 5, badgeText: 'POPULAR', isSoldOut: false },
-      { id: 'p3', name: 'PRO EARNER', price: 3000, dailyTasks: 10, dailyProfit: 110, durationDays: 30, vipLevel: 3, refCommissionPercent: 15, withdrawChargePercent: 0, badgeText: 'HOT DEAL', isSoldOut: false }
+      { id: 'p1', name: 'MICRO ONLINE', price: 500, dailyTasks: 2, dailyProfit: 15, durationDays: 30, vipLevel: 1, refCommissionPercent: 10, withdrawChargePercent: 10, activationBonus: 0, isSoldOut: false },
+      { id: 'p2', name: 'SUPER VIP', price: 1500, dailyTasks: 5, dailyProfit: 50, durationDays: 30, vipLevel: 2, refCommissionPercent: 12, withdrawChargePercent: 5, activationBonus: 50, badgeText: 'POPULAR', isSoldOut: false }
     ];
 
     const planList = snap.exists() ? Object.values(snap.val()) : defaultPlans;
@@ -639,7 +500,7 @@ function loadVIPPlans() {
 
 function renderPlanCardHTML(plan) {
   const isSoldOut = plan.isSoldOut === true;
-  const badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
+  const badgeText = plan.badgeText || '';
   const planName = plan.name || 'VIP Plan';
   const planPrice = Number(plan.price || 0);
   const dailyTasks = Number(plan.dailyTasks || 1);
@@ -647,6 +508,7 @@ function renderPlanCardHTML(plan) {
   const duration = Number(plan.durationDays || 30);
   const vipLevel = Number(plan.vipLevel || 1);
   const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
+  const actBonus = Number(plan.activationBonus || 0);
 
   return `
     <div class="plan-card-item">
@@ -659,13 +521,13 @@ function renderPlanCardHTML(plan) {
         <ul class="plan-features-list">
           <li><i class="fa-solid fa-circle-check"></i> প্রতিদিন <b>${dailyTasks}টি</b> টাস্ক</li>
           <li><i class="fa-solid fa-coins"></i> দৈনিক আয়: <b>৳${dailyProfit}</b></li>
+          ${actBonus > 0 ? `<li><i class="fa-solid fa-gift" style="color:#f59e0b;"></i> প্ল্যান এক্টিভ বোনাস: <b>৳${actBonus}</b></li>` : ''}
           <li><i class="fa-solid fa-percent"></i> উইথড্র প্রসেসিং ফি: <b>${witCharge}%</b></li>
           <li><i class="fa-solid fa-calendar-days"></i> মেয়াদ: <b>${duration} দিন</b></li>
           <li><i class="fa-solid fa-chart-line"></i> মোট ইনকাম: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
-          <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
         </ul>
         <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge})"`}>
+          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${actBonus})"`}>
           ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
         </button>
       </div>
@@ -673,7 +535,7 @@ function renderPlanCardHTML(plan) {
   `;
 }
 
-window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5) {
+window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5, activationBonus = 0) {
   if (!userData) return;
   const depBal = Number(userData.depositBalance || 0);
 
@@ -682,7 +544,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     return;
   }
 
-  showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (ডিপোজিট ব্যালেন্স থেকে কাটা হবে)`, function() {
+  showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান?`, function() {
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
     updates['users/' + currentUser.uid + '/vipLevel'] = vipLevel;
@@ -691,26 +553,21 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     updates['users/' + currentUser.uid + '/vipDailyProfit'] = dailyProfit;
     updates['users/' + currentUser.uid + '/withdrawChargePercent'] = withdrawChargePercent;
 
-    db.ref().update(updates).then(() => {
-      userData.depositBalance = depBal - price;
-      userData.vipLevel = vipLevel;
-      userData.vipPlanName = planName;
-      userData.maxDailyTasks = dailyTasks;
-      userData.vipDailyProfit = dailyProfit;
-      userData.withdrawChargePercent = withdrawChargePercent;
-
-      const histRef = db.ref('history').push();
-      histRef.set({
+    if (activationBonus > 0) {
+      updates['users/' + currentUser.uid + '/incomeBalance'] = (userData.incomeBalance || 0) + activationBonus;
+      
+      db.ref('history').push().set({
         uid: currentUser.uid,
-        type: 'Plan Purchase',
-        amount: -price,
-        title: 'Purchased ' + planName,
+        type: 'Plan Bonus',
+        amount: activationBonus,
+        title: `Activation Bonus for ${planName}`,
         status: 'approved',
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
+    }
 
-      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে।`, "প্ল্যান আনলকড! 🎉", "success");
-      renderActivePlanDashboardBanner();
+    db.ref().update(updates).then(() => {
+      showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে!${activationBonus > 0 ? ` আপনি ৳${activationBonus} বোনাস পেয়েছেন।` : ''}`, "প্ল্যান আনলকড! 🎉", "success");
       switchTab('tab-tasks');
     }).catch(err => showCustomAlert('Error: ' + err.message, "ত্রুটি", "error"));
   });
@@ -718,7 +575,6 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
 
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
-  
   const amtInput = document.getElementById('input-dep-amount');
   if (amtInput) amtInput.value = price;
 
@@ -736,7 +592,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   goToDepositStep(1);
 }
 
-// TASK SYSTEM WITH EXPLICIT UNIQUE FIREBASE KEY BINDING
+// TASK SYSTEM WITH COMPLETED TASK HIDING & ALL COMPLETED CARD DISPLAY
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -752,9 +608,7 @@ function checkUserTaskLimitAndLoadTasks() {
         const tRec = child.val();
         if (tRec.completed) {
           completedTaskIds[child.key] = true;
-          if (!tRec.isFreeTask) {
-            userTodayCompletedCount++;
-          }
+          if (!tRec.isFreeTask) userTodayCompletedCount++;
         }
       });
     }
@@ -779,15 +633,12 @@ function loadTasks(completedTaskIds = {}) {
 
   db.ref('tasks').on('value', snap => {
     container.innerHTML = '';
-
     const userVipTasks = [];
 
     if (snap.exists()) {
-      // EXPLICIT UNIQUE FIREBASE KEY MAPPING FOR EVERY SINGLE TASK
       snap.forEach(child => {
         const task = child.val();
-        task.id = child.key; // Unique Firebase Key
-        
+        task.id = child.key;
         const isFree = Number(task.minVip || 0) === 0 || task.isFree === true;
         
         if (userVip === 0 && isFree) {
@@ -796,6 +647,23 @@ function loadTasks(completedTaskIds = {}) {
           userVipTasks.push(task);
         }
       });
+    }
+
+    // HIDE COMPLETED TASKS
+    const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
+
+    // CHECK IF ALL TASKS COMPLETED
+    if ((userVipTasks.length > 0 && remainingTasks.length === 0) || (userVip > 0 && userTodayCompletedCount >= userMaxDailyTasks)) {
+      container.innerHTML = `
+        <div class="content-card" style="text-align:center; padding:35px 20px;">
+          <div class="reward-icon-circle" style="background:#d1fae5; margin:0 auto 12px auto;">
+            <i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i>
+          </div>
+          <h3 style="font-size:18px; color:var(--text-main); font-weight:800;">আপনি ইতিমধ্যেই আজকের সকল টাস্ক সম্পন্ন করেছেন!</h3>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">নতুন টাস্কের জন্য আগামীকাল অপেক্ষা করুন।</p>
+        </div>
+      `;
+      return;
     }
 
     if (userVipTasks.length === 0) {
@@ -810,25 +678,10 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    userVipTasks.forEach(task => {
-      const taskId = task.id; // Unique Firebase Key
-      const isCompletedToday = completedTaskIds[taskId] === true;
+    // RENDER ONLY UNCOMPLETED TASKS
+    remainingTasks.forEach(task => {
+      const taskId = task.id;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
-      const limitReached = !isFreeTask && (userTodayCompletedCount >= userMaxDailyTasks);
-
-      let btnText = 'টাস্ক শুরু করুন';
-      let btnDisabled = false;
-      let btnStyle = '';
-
-      if (isCompletedToday) {
-        btnText = 'সম্পন্ন হয়েছে ✓';
-        btnDisabled = true;
-        btnStyle = 'background:#10b981; cursor:not-allowed;';
-      } else if (limitReached) {
-        btnText = 'আজকের লিমিট শেষ 🔒';
-        btnDisabled = true;
-        btnStyle = 'background:#ef4444; cursor:not-allowed;';
-      }
 
       container.innerHTML += `
         <div class="content-card" style="margin:0 0 12px 0;">
@@ -840,9 +693,9 @@ function loadTasks(completedTaskIds = {}) {
               </div>
               <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">রিওয়ার্ড: <b style="color:var(--primary-color)">৳${task.reward}</b></p>
             </div>
-            <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; ${btnStyle}" 
-              ${btnDisabled ? 'disabled' : `onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})"`}>
-              ${btnText}
+            <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px;" 
+              onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
+              টাস্ক শুরু করুন
             </button>
           </div>
         </div>
@@ -878,7 +731,6 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
-// REWARD CLAIM WITHOUT NATIVE BROWSER ALERT
 document.getElementById('btn-claim-task').addEventListener('click', () => {
   if (!activeTaskObj || !userData) return;
 
@@ -898,8 +750,7 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   };
 
   db.ref().update(updates).then(() => {
-    const histRef = db.ref('history').push();
-    histRef.set({
+    db.ref('history').push().set({
       uid: currentUser.uid,
       type: 'Task Reward',
       amount: reward,
@@ -917,12 +768,11 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
   });
 });
 
-// MULTI-STEP DEPOSIT
+// DEPOSIT FLOW
 window.goToDepositStep = function(step) {
   document.getElementById('dep-step-1').classList.add('hidden');
   document.getElementById('dep-step-2').classList.add('hidden');
   document.getElementById('dep-step-3').classList.add('hidden');
-
   document.getElementById('dep-step-' + step).classList.remove('hidden');
 };
 
@@ -933,8 +783,8 @@ window.selectDepositMethod = function(method) {
 };
 
 window.onDepositPlanTargetChange = function(selectEl) {
-  const opt = selectEl.options[selectEl.selectedIndex];
   if (selectEl.value !== 'wallet') {
+    const opt = selectEl.options[selectEl.selectedIndex];
     const price = opt.getAttribute('data-price');
     if (price) {
       document.getElementById('input-dep-amount').value = price;
@@ -952,10 +802,7 @@ window.setQuickAmount = function(amt, el) {
 
 window.proceedToStep3 = function() {
   const inputAmt = parseFloat(document.getElementById('input-dep-amount').value);
-  if (!inputAmt || inputAmt < 500) {
-    showCustomAlert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।', 'ডিপোজিট লিমিট', 'warning');
-    return;
-  }
+  if (!inputAmt || inputAmt < 500) return showCustomAlert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।', 'ডিপোজিট লিমিট', 'warning');
 
   selectedDepositAmountVal = inputAmt;
   document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
@@ -965,9 +812,7 @@ window.proceedToStep3 = function() {
     let targetNum = '01719856165';
     if (snap.exists()) {
       snap.forEach(c => {
-        if (c.val().name === selectedDepositMethodName) {
-          targetNum = c.val().number || targetNum;
-        }
+        if (c.val().name === selectedDepositMethodName) targetNum = c.val().number || targetNum;
       });
     }
     document.getElementById('target-phone-num').innerText = targetNum;
@@ -984,10 +829,7 @@ window.copyPhoneNum = function() {
 
 window.submitDepositFinal = function() {
   const trxId = document.getElementById('input-trx-id').value;
-  if (!trxId) {
-    showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
-    return;
-  }
+  if (!trxId) return showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
 
   const targetPlanSelect = document.getElementById('dep-target-plan-select');
   let targetPlanData = null;
@@ -1003,7 +845,7 @@ window.submitDepositFinal = function() {
   }
 
   const depRef = db.ref('deposits').push();
-  const depObj = {
+  depRef.set({
     id: depRef.key,
     uid: currentUser.uid,
     email: currentUser.email,
@@ -1013,9 +855,7 @@ window.submitDepositFinal = function() {
     targetPlan: targetPlanData || 'wallet',
     status: 'pending',
     timestamp: firebase.database.ServerValue.TIMESTAMP
-  };
-
-  depRef.set(depObj).then(() => {
+  }).then(() => {
     showCustomAlert('ডিপোজিট রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'ডিপোজিট রিকোয়েস্ট জমা', 'success');
     document.getElementById('input-trx-id').value = '';
     goToDepositStep(1);
@@ -1027,7 +867,6 @@ function loadDepositHistory() {
   db.ref('deposits').orderByChild('uid').equalTo(currentUser.uid).on('value', snap => {
     const list = document.getElementById('dep-history-list');
     if (!list) return;
-
     if (!snap.exists()) {
       list.innerHTML = '<div style="text-align:center;">কোনো ডিপোজিট রেকর্ড নেই</div>';
       return;
@@ -1046,17 +885,84 @@ function loadDepositHistory() {
   });
 }
 
-// WITHDRAW METHOD SELECTOR & SUBMIT
-window.selectWithdrawMethod = function(method, el) {
-  selectedWithdrawMethodName = method;
-  document.querySelectorAll('.withdraw-method-box').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
+// E-WALLET SETUP & WITHDRAWAL LOGIC (UNIQUE WALLET CONSTRAINT CHECK)
+function checkAndRenderEWalletView() {
+  const notSetCard = document.getElementById('withdraw-wallet-not-set-card');
+  const setView = document.getElementById('withdraw-wallet-set-view');
+
+  if (!userData || !userData.wallet || !userData.wallet.walletNumber) {
+    if (notSetCard) notSetCard.classList.remove('hidden');
+    if (setView) setView.classList.add('hidden');
+  } else {
+    if (notSetCard) notSetCard.classList.add('hidden');
+    if (setView) setView.classList.remove('hidden');
+
+    const w = userData.wallet;
+    document.getElementById('saved-wallet-type-num').innerText = `${w.accountType} - ${w.walletNumber}`;
+    document.getElementById('saved-wallet-name').innerText = `নাম: ${w.fullName}`;
+  }
+}
+
+window.openWalletSetupModal = function() {
+  if (userData && userData.wallet) {
+    document.getElementById('ewallet-type').value = userData.wallet.accountType || 'bKash';
+    document.getElementById('ewallet-fullname').value = userData.wallet.fullName || '';
+    document.getElementById('ewallet-number').value = userData.wallet.walletNumber || '';
+    document.getElementById('ewallet-pin').value = userData.wallet.withdrawPin || '';
+  }
+  document.getElementById('wallet-setup-modal').classList.remove('hidden');
+};
+
+window.closeWalletSetupModal = function() {
+  document.getElementById('wallet-setup-modal').classList.add('hidden');
+};
+
+window.saveEWalletSetup = async function(e) {
+  e.preventDefault();
+  const accType = document.getElementById('ewallet-type').value;
+  const fullName = document.getElementById('ewallet-fullname').value.trim();
+  const walletNum = document.getElementById('ewallet-number').value.trim();
+  const pin = document.getElementById('ewallet-pin').value.trim();
+
+  if (!fullName || !walletNum || !pin) {
+    showCustomAlert('সকল তথ্য সঠিকভাবে পূরণ করুন!', 'তথ্য অসম্পূর্ণ', 'warning');
+    return;
+  }
+
+  if (pin.length !== 5 || isNaN(pin)) {
+    showCustomAlert('উইথড্র পিন অবশ্যই ৫ সংখ্যার হতে হবে!', 'ভুল পিন', 'warning');
+    return;
+  }
+
+  // CHECK IF WALLET NUMBER IS ALREADY USED BY ANOTHER USER
+  const walletSnap = await db.ref('wallets/' + walletNum).once('value');
+  if (walletSnap.exists() && walletSnap.val() !== currentUser.uid) {
+    showCustomAlert('এই ওয়ালেট নম্বরটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে ব্যবহার করা হয়েছে! আপনি এই নম্বরটি যুক্ত করতে পারবেন না।', 'ওয়ালেট নম্বর ব্যবহৃত', 'error');
+    return;
+  }
+
+  // IF PREVIOUS WALLET WAS DIFFERENT, REMOVE OLD BINDING
+  if (userData && userData.wallet && userData.wallet.walletNumber && userData.wallet.walletNumber !== walletNum) {
+    await db.ref('wallets/' + userData.wallet.walletNumber).remove();
+  }
+
+  const updates = {};
+  updates[`users/${currentUser.uid}/wallet`] = {
+    accountType: accType,
+    fullName: fullName,
+    walletNumber: walletNum,
+    withdrawPin: pin
+  };
+  updates[`wallets/${walletNum}`] = currentUser.uid;
+
+  db.ref().update(updates).then(() => {
+    showCustomAlert('E-Wallet সফলভাবে যুক্ত ও সেভ করা হয়েছে!', 'সেটআপ সম্পন্ন', 'success');
+    closeWalletSetupModal();
+  }).catch(err => showCustomAlert('ত্রুটি: ' + err.message, 'ব্যর্থ', 'error'));
 };
 
 function getActiveWithdrawChargePercent() {
-  if (userData && userData.withdrawChargePercent !== undefined) {
-    return Number(userData.withdrawChargePercent);
-  }
+  if (userData && userData.withdrawChargePercent !== undefined) return Number(userData.withdrawChargePercent);
   return systemWithdrawChargePercent;
 }
 
@@ -1079,8 +985,20 @@ window.handleWithdrawSubmit = function(e) {
     return;
   }
 
-  const num = document.getElementById('wit-number').value;
   const amt = parseFloat(document.getElementById('wit-amount').value);
+  const inputPin = document.getElementById('wit-pin-input').value.trim();
+  const savedWallet = userData.wallet;
+
+  if (!savedWallet || !savedWallet.withdrawPin) {
+    showCustomAlert('দয়া করে প্রথমে আপনার E-Wallet সেটআপ করুন!', 'ওয়ালেট প্রয়োজন', 'warning');
+    openWalletSetupModal();
+    return;
+  }
+
+  if (inputPin !== savedWallet.withdrawPin) {
+    showCustomAlert('ভুল উইথড্র পিন প্রদান করেছেন!', 'পাসওয়ার্ড/পিন ভুল', 'error');
+    return;
+  }
 
   if (!amt || amt < systemMinWithdraw) {
     showCustomAlert(`সর্বনিম্ন ৳${systemMinWithdraw} টাকা উত্তোলন করতে পারবেন।`, 'উত্তোলন লিমিট', 'warning');
@@ -1117,8 +1035,9 @@ window.handleWithdrawSubmit = function(e) {
       id: witRef.key,
       uid: currentUser.uid,
       email: currentUser.email,
-      method: selectedWithdrawMethodName,
-      walletNumber: num,
+      method: savedWallet.accountType,
+      walletNumber: savedWallet.walletNumber,
+      walletName: savedWallet.fullName,
       amount: amt,
       chargePercent: activeCharge,
       netAmount: Math.max(0, amt - (amt * activeCharge / 100)),
@@ -1165,7 +1084,6 @@ function loadReferralCommissionHistory() {
   db.ref('referral_commissions/' + currentUser.uid).on('value', snap => {
     const container = document.getElementById('referral-history-list');
     if (!container) return;
-
     if (!snap.exists()) {
       container.innerHTML = '<div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>';
       return;
@@ -1194,7 +1112,6 @@ function loadReferralCommissionHistory() {
   });
 }
 
-// PROFILE UPDATE
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
@@ -1212,7 +1129,6 @@ window.copyRefLink = function() {
   showCustomAlert('রেফারেল লিংক কপি করা হয়েছে!', 'কপি সফল', 'info');
 };
 
-// REALTIME USER INCOME GRAPH CHART
 function initIncomeChartRealtime() {
   const canvas = document.getElementById('incomeChart');
   if (!canvas || !currentUser) return;
@@ -1229,21 +1145,14 @@ function initIncomeChartRealtime() {
         if (item.amount > 0 && item.type === 'Task Reward' && item.timestamp) {
           hasEarnings = true;
           const dayName = daysArr[new Date(item.timestamp).getDay()];
-          if (dailyIncomeMap[dayName] !== undefined) {
-            dailyIncomeMap[dayName] += item.amount;
-          }
+          if (dailyIncomeMap[dayName] !== undefined) dailyIncomeMap[dayName] += item.amount;
         }
       });
     }
 
     const chartData = hasEarnings ? [
-      dailyIncomeMap['Mon'] || 0,
-      dailyIncomeMap['Tue'] || 0,
-      dailyIncomeMap['Wed'] || 0,
-      dailyIncomeMap['Thu'] || 0,
-      dailyIncomeMap['Fri'] || 0,
-      dailyIncomeMap['Sat'] || 0,
-      dailyIncomeMap['Sun'] || 0
+      dailyIncomeMap['Mon'] || 0, dailyIncomeMap['Tue'] || 0, dailyIncomeMap['Wed'] || 0,
+      dailyIncomeMap['Thu'] || 0, dailyIncomeMap['Fri'] || 0, dailyIncomeMap['Sat'] || 0, dailyIncomeMap['Sun'] || 0
     ] : [0, 0, 0, 0, 0, 0, 0];
 
     if (incomeChartInstance) incomeChartInstance.destroy();
@@ -1271,7 +1180,6 @@ function initIncomeChartRealtime() {
   });
 }
 
-// INFINITE AUTO LIVE WITHDRAW TICKER
 function renderLiveWithdrawsInfinite() {
   const container = document.getElementById('live-withdraw-feed');
   if (!container) return;
@@ -1280,12 +1188,10 @@ function renderLiveWithdrawsInfinite() {
     { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
     { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
     { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
-    { num: '016****9012', method: 'bKash', amount: '৳১৫০০' },
-    { num: '013****3456', method: 'Nagad', amount: '৳২০০০' }
+    { num: '016****9012', method: 'bKash', amount: '৳১৫০০' }
   ];
 
   let feedIndex = 0;
-
   function rotateFeed() {
     const item = mockFeed[feedIndex];
     container.innerHTML = `
@@ -1293,19 +1199,14 @@ function renderLiveWithdrawsInfinite() {
         <span><b>${item.num}</b> (${item.method})</span>
         <b style="color:var(--primary-color)">${item.amount} <small style="color:#16a34a">✓ Success</small></b>
       </div>
-      <div class="live-withdraw-item" style="opacity:0.6;">
-        <span><b>017****${Math.floor(1000+Math.random()*9000)}</b> (bKash)</span>
-        <b style="color:var(--primary-color)">৳${Math.floor(3+Math.random()*20)*100} <small style="color:#16a34a">✓ Success</small></b>
-      </div>
     `;
     feedIndex = (feedIndex + 1) % mockFeed.length;
   }
-
   rotateFeed();
   setInterval(rotateFeed, 3000);
 }
 
-// AUTH HANDLERS
+// AUTHENTICATION WITH REGISTRATION BONUS CREDIT
 document.addEventListener('DOMContentLoaded', () => {
   loadSocialSupportLinks();
 
@@ -1319,10 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
       auth.signInWithEmailAndPassword(email, pass).catch(err => {
-        let msg = 'ত্রুটি: ' + err.message;
-        if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-          msg = 'ভুল ইমেইল অথবা পাসওয়ার্ড প্রদান করেছেন!';
-        }
+        let msg = 'ভুল ইমেইল অথবা পাসওয়ার্ড প্রদান করেছেন!';
         showCustomAlert(msg, "লগইন ব্যর্থ", "error");
       });
     });
@@ -1340,23 +1238,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
       auth.createUserWithEmailAndPassword(email, pass).then(cred => {
         const myRef = Math.random().toString(36).substring(2, 8).toUpperCase();
-        return db.ref('users/' + cred.user.uid).set({
-          uid: cred.user.uid,
-          name, email, phone, country,
-          avatar: DEFAULT_AVATAR,
-          depositBalance: 0,
-          incomeBalance: 0,
-          todayIncome: 0, 
-          totalIncome: 0, 
-          vipLevel: 0,
-          refCode: myRef, 
-          referredBy: refCode || '',
-          isBlocked: false
+        
+        db.ref('settings/config/regBonus').once('value', bSnap => {
+          const bonusAmt = parseFloat(bSnap.val()) || 0;
+          
+          db.ref('users/' + cred.user.uid).set({
+            uid: cred.user.uid,
+            name, email, phone, country,
+            avatar: DEFAULT_AVATAR,
+            depositBalance: 0,
+            incomeBalance: bonusAmt,
+            todayIncome: 0, 
+            totalIncome: bonusAmt, 
+            vipLevel: 0,
+            refCode: myRef, 
+            referredBy: refCode || '',
+            isBlocked: false
+          }).then(() => {
+            if (bonusAmt > 0) {
+              db.ref('history').push().set({
+                uid: cred.user.uid,
+                type: 'Registration Bonus',
+                amount: bonusAmt,
+                title: 'Welcome Registration Bonus',
+                status: 'approved',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+              });
+            }
+          });
         });
       }).catch(err => {
         let msg = 'ত্রুটি: ' + err.message;
         if (err.code === 'auth/email-already-in-use') msg = 'এই ইমেইল দিয়ে ইতিপূর্বে অ্যাকাউন্ট খোলা হয়েছে!';
-        if (err.code === 'auth/weak-password') msg = 'কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন!';
         showCustomAlert(msg, "নিবন্ধন ব্যর্থ", "error");
       });
     });
@@ -1366,21 +1279,11 @@ document.addEventListener('DOMContentLoaded', () => {
     forgotForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('reset-email').value;
-      
-      if (!email) {
-        showCustomAlert('অনুগ্রহ করে আপনার অ্যাকাউন্টের ইমেইল অ্যাড্রেস লিখুন!', "ইমেইল প্রয়োজন", "warning");
-        return;
-      }
-
       auth.sendPasswordResetEmail(email).then(() => {
-        showCustomAlert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইমেইলের Inbox বা Spam ফোল্ডার চেক করুন।', "ইমেইল পাঠানো হয়েছে", "success");
+        showCustomAlert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।', "ইমেইল পাঠানো হয়েছে", "success");
         forgotForm.reset();
         window.showLoginForm();
-      }).catch(err => {
-        let msg = 'ত্রুটি: ' + err.message;
-        if (err.code === 'auth/user-not-found') msg = 'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি!';
-        showCustomAlert(msg, "রিসেট ব্যর্থ", "error");
-      });
+      }).catch(err => showCustomAlert('ত্রুটি: ' + err.message, "রিসেট ব্যর্থ", "error"));
     });
   }
 });
