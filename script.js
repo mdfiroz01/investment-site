@@ -87,7 +87,7 @@ function updateThemeToggleIcon(theme) {
 
 initAppTheme();
 
-// AUTH FORM SWITCHERS WITH CLEAN URL ROUTING
+// AUTH FORM SWITCHERS
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
   const loginForm = document.getElementById('login-form');
@@ -147,6 +147,7 @@ let userMaxDailyTasks = 0;
 let sliderImagesList = [];
 let sliderIndex = 0;
 let sliderIntervalTimer = null;
+let planCountdownTimer = null;
 let incomeChartInstance = null;
 let systemMinWithdraw = 200;
 let systemWithdrawChargePercent = 5;
@@ -352,7 +353,7 @@ function resetDepositToGeneralWallet() {
   goToDepositStep(1);
 }
 
-// USER DATA REALTIME LOAD WITH AUTO PLAN EXPIRY CHECK
+// USER DATA REALTIME LOAD WITH STRICT EXPIRY CHECK & COUNTDOWN
 function loadUserData() {
   db.ref('users/' + currentUser.uid).on('value', (snapshot) => {
     userData = snapshot.val() || {};
@@ -363,8 +364,8 @@ function loadUserData() {
       return;
     }
 
-    // CHECK PLAN EXPIRY AUTOMATICALLY
-    if (userData.vipExpireAt && Date.now() >= userData.vipExpireAt) {
+    // STRICT PLAN EXPIRY CHECK (ONLY IF VIP LEVEL > 0 AND EXPIRATION TIMESTAMP IS REACHED)
+    if (userData.vipLevel > 0 && userData.vipExpireAt && typeof userData.vipExpireAt === 'number' && Date.now() >= userData.vipExpireAt) {
       db.ref('users/' + currentUser.uid).update({
         vipLevel: 0,
         vipPlanName: 'মেয়াদ শেষ (Expired)',
@@ -413,13 +414,16 @@ function loadUserData() {
     renderActivePlanDashboardBanner();
     checkUserTaskLimitAndLoadTasks();
     initIncomeChartRealtime();
+    loadVIPPlans(); // RE-RENDER PLANS TO MARK CURRENT ACTIVE PLAN
   });
 }
 
-// RENDER ACTIVE PLAN HERO CARD WITH DYNAMIC COUNTDOWN
+// RENDER ACTIVE PLAN HERO CARD WITH LIVE TICKING COUNTDOWN (DAYS, HOURS, MIN, SEC)
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
+
+  if (planCountdownTimer) clearInterval(planCountdownTimer);
 
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     container.innerHTML = `
@@ -436,14 +440,6 @@ function renderActivePlanDashboardBanner() {
     return;
   }
 
-  let countdownText = 'মেয়াদ: ৩০ দিন';
-  if (userData.vipExpireAt) {
-    const msLeft = Math.max(0, userData.vipExpireAt - Date.now());
-    const daysLeft = Math.floor(msLeft / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.floor((msLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    countdownText = `মেয়াদের বাকি: ${daysLeft} দিন ${hoursLeft} ঘণ্টা`;
-  }
-
   container.innerHTML = `
     <div class="active-plan-banner" style="padding:16px; border-radius:16px;">
       <div class="active-plan-header">
@@ -456,10 +452,36 @@ function renderActivePlanDashboardBanner() {
       </div>
       <div class="plan-validity-box">
         <span><i class="fa-solid fa-clock"></i> মেয়াদের সময়সীমা</span>
-        <span style="color:#ffffff">${countdownText}</span>
+        <span id="plan-live-countdown-text" style="color:#ffffff">মেয়ার হিসাব করা হচ্ছে...</span>
       </div>
     </div>
   `;
+
+  startLivePlanCountdownTimer();
+}
+
+function startLivePlanCountdownTimer() {
+  const countEl = document.getElementById('plan-live-countdown-text');
+  if (!countEl || !userData || !userData.vipExpireAt || userData.vipLevel <= 0) return;
+
+  function updateTick() {
+    const msLeft = userData.vipExpireAt - Date.now();
+    if (msLeft <= 0) {
+      countEl.innerText = "মেয়াদ শেষ ⏳";
+      if (planCountdownTimer) clearInterval(planCountdownTimer);
+      return;
+    }
+
+    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((msLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((msLeft % (1000 * 60)) / 1000);
+
+    countEl.innerText = `বাকি: ${days}দিন ${hours}ঘণ্টা ${mins}মিঃ ${secs}সে.`;
+  }
+
+  updateTick();
+  planCountdownTimer = setInterval(updateTick, 1000);
 }
 
 // HOMEPAGE CAROUSEL BANNER SLIDER
@@ -636,7 +658,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// VIP PLANS LOAD & PURCHASE WITH VALIDITY TIMESTAMP SETTING
+// VIP PLANS LOAD & PURCHASE (WITH ACTIVE PLAN RIBBON & BUTTON MARKING)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
@@ -666,7 +688,14 @@ function loadVIPPlans() {
 
 function renderPlanCardHTML(plan) {
   const isSoldOut = plan.isSoldOut === true;
-  const badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
+  const userVip = userData ? Number(userData.vipLevel || 0) : 0;
+  const isCurrentActivePlan = userVip > 0 && Number(plan.vipLevel) === userVip;
+
+  let badgeText = plan.badgeText || (plan.isPopular ? 'POPULAR' : '');
+  if (isCurrentActivePlan) {
+    badgeText = 'এক্টিভ প্ল্যান';
+  }
+
   const planName = plan.name || 'VIP Plan';
   const planPrice = Number(plan.price || 0);
   const dailyTasks = Number(plan.dailyTasks || 1);
@@ -675,10 +704,26 @@ function renderPlanCardHTML(plan) {
   const vipLevel = Number(plan.vipLevel || 1);
   const witCharge = Number(plan.withdrawChargePercent !== undefined ? plan.withdrawChargePercent : 5);
 
+  let btnClass = 'btn-buy-plan';
+  let btnText = 'প্ল্যান কিনুন';
+  let btnDisabled = '';
+
+  if (isCurrentActivePlan) {
+    btnClass = 'btn-buy-plan active-plan-btn';
+    btnText = 'এক্টিভ রয়েছে ✓';
+    btnDisabled = 'disabled';
+  } else if (isSoldOut) {
+    btnClass = 'btn-buy-plan sold-out';
+    btnText = 'সোল্ড আউট (Sold Out)';
+    btnDisabled = 'disabled';
+  }
+
   return `
     <div class="plan-card-item">
-      ${isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : '')}
-      <div class="plan-card-header" style="${isSoldOut ? 'background:#64748b' : ''}">
+      ${isCurrentActivePlan 
+        ? '<div class="plan-ribbon active-plan-ribbon">এক্টিভ (ACTIVE)</div>' 
+        : (isSoldOut ? '<div class="plan-ribbon sold-out-ribbon">SOLD OUT</div>' : (badgeText ? `<div class="plan-ribbon">${badgeText}</div>` : ''))}
+      <div class="plan-card-header" style="${isCurrentActivePlan ? 'background:linear-gradient(135deg, #05b381 0%, #038d65 100%)' : (isSoldOut ? 'background:#64748b' : '')}">
         <h3>${planName}</h3>
         <h2>৳${planPrice} <small>/${duration} দিন</small></h2>
       </div>
@@ -691,9 +736,9 @@ function renderPlanCardHTML(plan) {
           <li><i class="fa-solid fa-chart-line"></i> মোট সম্ভাব্য আয়: <b>৳${(dailyProfit * duration).toFixed(0)}</b></li>
           <li><i class="fa-solid fa-headset"></i> ২৪/৭ সাপোর্ট</li>
         </ul>
-        <button class="btn-buy-plan ${isSoldOut ? 'sold-out' : ''}" 
-          ${isSoldOut ? 'disabled' : `onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${duration})"`}>
-          ${isSoldOut ? 'সোল্ড আউট (Sold Out)' : 'প্ল্যান কিনুন'}
+        <button class="${btnClass}" ${btnDisabled} 
+          onclick="buyVIPPlan('${planName}', ${planPrice}, ${vipLevel}, ${dailyTasks}, ${dailyProfit}, ${witCharge}, ${duration})">
+          ${btnText}
         </button>
       </div>
     </div>
@@ -711,7 +756,8 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
 
   showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান? (মেয়াদ: ${durationDays} দিন)`, function() {
     const nowMs = Date.now();
-    const expireMs = nowMs + (durationDays * 24 * 60 * 60 * 1000);
+    const durationMs = Number(durationDays || 30) * 24 * 60 * 60 * 1000;
+    const expireMs = nowMs + durationMs;
 
     const updates = {};
     updates['users/' + currentUser.uid + '/depositBalance'] = depBal - price;
