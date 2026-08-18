@@ -516,7 +516,7 @@ window.approveDeposit = async function(depId, uid, amount) {
 
     if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
       const target = depData.targetPlan;
-      const durationDays = target.durationDays || 30;
+      const durationDays = Number(target.durationDays || 30);
       const nowMs = Date.now();
       const expireMs = nowMs + (durationDays * 24 * 60 * 60 * 1000);
 
