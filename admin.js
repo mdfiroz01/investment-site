@@ -68,6 +68,7 @@ window.showAdminSection = function(secId) {
 };
 
 function loadAdminDashboard() {
+  loadOverviewMetricsAdmin();
   loadUsersAdmin();
   loadDepositsAdmin();
   loadWithdrawsAdmin();
@@ -81,7 +82,123 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS
+// 1. ADVANCED OVERVIEW & METRICS
+// ----------------------------------------------------
+function loadOverviewMetricsAdmin() {
+  // 1. USERS & VIP COUNT
+  db.ref('users').on('value', snap => {
+    let totalUsers = 0;
+    let vipUsers = 0;
+
+    if (snap.exists()) {
+      totalUsers = snap.numChildren();
+      snap.forEach(c => {
+        if (c.val().vipLevel && c.val().vipLevel > 0) vipUsers++;
+      });
+    }
+
+    document.getElementById('stat-users').innerText = totalUsers;
+    document.getElementById('stat-vip-users').innerText = vipUsers;
+  });
+
+  // 2. DEPOSITS METRICS
+  db.ref('deposits').on('value', snap => {
+    let pendingDep = 0;
+    let approvedDepSum = 0;
+
+    if (snap.exists()) {
+      snap.forEach(c => {
+        const d = c.val();
+        if (d.status === 'pending') pendingDep++;
+        if (d.status === 'approved') approvedDepSum += Number(d.amount || 0);
+      });
+    }
+
+    document.getElementById('stat-pending-dep').innerText = pendingDep;
+    document.getElementById('stat-approved-dep-sum').innerText = '৳' + approvedDepSum.toFixed(0);
+  });
+
+  // 3. WITHDRAWALS METRICS
+  db.ref('withdraws').on('value', snap => {
+    let pendingWit = 0;
+    let approvedWitSum = 0;
+
+    if (snap.exists()) {
+      snap.forEach(c => {
+        const w = c.val();
+        if (w.status === 'pending') pendingWit++;
+        if (w.status === 'approved') approvedWitSum += Number(w.amount || 0);
+      });
+    }
+
+    document.getElementById('stat-pending-wit').innerText = pendingWit;
+    document.getElementById('stat-approved-wit-sum').innerText = '৳' + approvedWitSum.toFixed(0);
+  });
+}
+
+// QUICK USER BALANCE ADJUSTMENT TOOL (ADD / DEDUCT FUNDS)
+window.quickAdjustUserBalance = async function(e) {
+  e.preventDefault();
+  await ensureAdminFirebaseAuth();
+
+  const userQuery = document.getElementById('quick-bal-user-id').value.trim();
+  const balType = document.getElementById('quick-bal-type').value; // depositBalance or incomeBalance
+  const actionType = document.getElementById('quick-bal-action').value; // add or deduct
+  const amount = parseFloat(document.getElementById('quick-bal-amount').value) || 0;
+
+  if (!userQuery || amount <= 0) {
+    return alert('ইউজারের তথ্য এবং সঠিক পরিমাণ দিন!');
+  }
+
+  // SEARCH USER BY UID / EMAIL / PHONE
+  const allUsersSnap = await db.ref('users').once('value');
+  let targetUid = null;
+  let targetUser = null;
+
+  if (allUsersSnap.exists()) {
+    allUsersSnap.forEach(c => {
+      const u = c.val();
+      const k = c.key;
+      if (
+        k === userQuery ||
+        u.uid === userQuery ||
+        (u.email && u.email.toLowerCase() === userQuery.toLowerCase()) ||
+        (u.phone && u.phone === userQuery)
+      ) {
+        targetUid = k;
+        targetUser = u;
+      }
+    });
+  }
+
+  if (!targetUser || !targetUid) {
+    return alert('কোনো ইউজার পাওয়া যায়নি! ইমেইল বা ফোন নম্বর পুনরায় চেক করুন।');
+  }
+
+  let currentBal = Number(targetUser[balType] || 0);
+  let newBal = actionType === 'add' ? currentBal + amount : Math.max(0, currentBal - amount);
+
+  const updates = {};
+  updates[`users/${targetUid}/${balType}`] = newBal;
+
+  await db.ref().update(updates);
+
+  // LOG TRANSACTION HISTORY
+  db.ref('history').push().set({
+    uid: targetUid,
+    type: actionType === 'add' ? 'Admin Credit' : 'Admin Debit',
+    amount: actionType === 'add' ? amount : -amount,
+    title: actionType === 'add' ? `Admin Added ৳${amount}` : `Admin Deducted ৳${amount}`,
+    status: 'approved',
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  alert(`সফলভাবে ${targetUser.name || 'User'}-এর ${balType === 'depositBalance' ? 'ডিপোজিট' : 'ইনকাম'} ব্যালেন্স ${actionType === 'add' ? 'যোগ' : 'কর্তন'} করা হয়েছে! নতুন ব্যালেন্স: ৳${newBal.toFixed(2)}`);
+  document.getElementById('admin-quick-balance-form').reset();
+};
+
+// ----------------------------------------------------
+// 2. SYSTEM SETTINGS
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
@@ -118,11 +235,10 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT & REALTIME SEARCH
+// 3. USER MANAGEMENT & ADVANCED SEARCH/FILTERS
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
-    document.getElementById('stat-users').innerText = snap.exists() ? snap.numChildren() : 0;
     const tbody = document.getElementById('admin-users-table');
     tbody.innerHTML = '';
 
@@ -135,8 +251,8 @@ function loadUsersAdmin() {
       const totalBal = (u.depositBalance || 0) + (u.incomeBalance || 0);
 
       tbody.innerHTML += `
-        <tr>
-          <td><b>${u.name || 'User'}</b><br><small>${u.email || ''}</small></td>
+        <tr data-vip="${u.vipLevel || 0}" data-blocked="${isBlocked}">
+          <td><b>${u.name || 'User'}</b><br><small style="color:#94a3b8">${u.email || u.phone || ''}</small></td>
           <td>৳${totalBal.toFixed(2)}</td>
           <td>VIP ${u.vipLevel || 0}</td>
           <td>
@@ -152,14 +268,24 @@ function loadUsersAdmin() {
   });
 }
 
-// REALTIME USER FILTER SEARCH FUNCTION
+// ADVANCED REALTIME USER FILTER SEARCH
 window.filterUsersAdmin = function() {
   const query = document.getElementById('admin-user-search-input').value.toLowerCase().trim();
+  const statusFilter = document.getElementById('admin-user-status-filter').value;
   const rows = document.querySelectorAll('#admin-users-table tr');
 
   rows.forEach(row => {
     const text = row.innerText.toLowerCase();
-    if (text.includes(query)) {
+    const isVip = Number(row.getAttribute('data-vip')) > 0;
+    const isBlocked = row.getAttribute('data-blocked') === 'true';
+
+    let matchesStatus = true;
+    if (statusFilter === 'vip' && !isVip) matchesStatus = false;
+    if (statusFilter === 'blocked' && !isBlocked) matchesStatus = false;
+
+    let matchesQuery = text.includes(query);
+
+    if (matchesStatus && matchesQuery) {
       row.style.display = '';
     } else {
       row.style.display = 'none';
@@ -246,7 +372,7 @@ window.toggleBlockUser = async function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN MANAGEMENT
+// 4. VIP PLAN MANAGEMENT
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -290,7 +416,7 @@ function loadPlansAdmin() {
       const p = child.val();
       const key = child.key;
       container.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155; font-size:12px;">
           <div>
             <b>${p.name}</b> - ৳${p.price} (VIP ${p.vipLevel}) 
             <small style="color:#05b381">[Bonus: ৳${p.activationBonus || 0}, Ref: ${p.refCommissionPercent || 10}%, Wit Fee: ${p.withdrawChargePercent !== undefined ? p.withdrawChargePercent : 5}%]</small>
@@ -334,7 +460,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION (INCLUDES IMAGE URL)
+// 5. TASK CREATION
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -391,7 +517,7 @@ function loadTasksAdmin() {
       const t = child.val();
       const key = child.key;
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #334155; font-size:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <img src="${t.image || 'https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png'}" style="width:28px; height:28px; border-radius:6px; object-fit:cover;">
             <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
@@ -430,7 +556,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT (BULLETPROOF USER LOOKUP & PLAN ACTIVATION)
+// 6. DEPOSITS MANAGEMENT (BULLETPROOF USER LOOKUP & PLAN ACTIVATION)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -492,7 +618,7 @@ window.approveDeposit = async function(depId) {
       }
     }
 
-    // FALLBACK: SEARCH ALL USERS IF DIRECT UID LOOKUP FAILS
+    // FALLBACK SEARCH ALL USERS IF DIRECT UID LOOKUP FAILS
     if (!targetUser) {
       const allUsersSnap = await db.ref('users').once('value');
       if (allUsersSnap.exists()) {
@@ -552,7 +678,7 @@ window.approveDeposit = async function(depId) {
       updates[`users/${uid}/vipDailyProfit`] = Number(target.dailyProfit || 50);
       updates[`users/${uid}/withdrawChargePercent`] = witCharge;
       updates[`users/${uid}/vipActivatedAt`] = Date.now();
-      updates[`users/${uid}/vipExpireAt`] = expireTimestamp; // CRITICAL EXPIRATION TIMESTAMP FIX!
+      updates[`users/${uid}/vipExpireAt`] = expireTimestamp;
       updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
       updates[`users/${uid}/planBonusClaimed`] = false;
 
@@ -631,7 +757,7 @@ function processReferralCommission(referrerRefCode, buyerName, buyerRefCode, pla
 }
 
 // ----------------------------------------------------
-// 6. WITHDRAWALS MANAGEMENT
+// 7. WITHDRAWALS MANAGEMENT
 // ----------------------------------------------------
 function loadWithdrawsAdmin() {
   db.ref('withdraws').on('value', snap => {
@@ -654,7 +780,7 @@ function loadWithdrawsAdmin() {
             <td>${w.email || w.uid || 'User'}</td>
             <td>${w.method}</td>
             <td>${w.walletNumber}</td>
-            <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
+            <td>৳${w.amount} <small style="color:#94a3b8">(Net: ৳${w.netAmount || w.amount})</small></td>
             <td>
               <button class="btn-action-sm btn-success" onclick="approveWithdraw('${child.key}')">Approve</button>
               <button class="btn-action-sm btn-danger" onclick="rejectWithdraw('${child.key}', '${w.uid}', ${w.amount})">Reject</button>
@@ -685,7 +811,6 @@ window.rejectWithdraw = async function(witId, uid, amount) {
   try {
     await ensureAdminFirebaseAuth();
     
-    // SAFE LOOKUP FOR WITHDRAW REJECTION REFUND
     const witSnap = await db.ref('withdraws/' + witId).once('value');
     if (!witSnap.exists()) return;
     const witData = witSnap.val();
@@ -712,7 +837,7 @@ window.rejectWithdraw = async function(witId, uid, amount) {
 };
 
 // ----------------------------------------------------
-// 7. GATEWAYS, SOCIAL, SLIDERS, NOTICES
+// 8. GATEWAYS, SOCIAL, SLIDERS, NOTICES
 // ----------------------------------------------------
 document.getElementById('admin-gateway-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -751,10 +876,10 @@ function loadGatewaysAdmin() {
       const g = child.val();
       const key = child.key;
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155; font-size:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <img src="${g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png'}" style="width:28px; height:28px; object-fit:contain;">
-            <div><b>${g.name}</b> (${g.type})<br><small>${g.number}</small></div>
+            <div><b>${g.name}</b> (${g.type})<br><small style="color:#94a3b8">${g.number}</small></div>
           </div>
           <div>
             <button class="btn-action-sm btn-secondary" onclick="editGateway('${key}', '${g.name}', '${g.type}', '${g.number}', '${g.logoUrl}')">Edit</button>
@@ -817,8 +942,8 @@ function loadSocialSupportAdmin() {
       const s = child.val();
       const key = child.key;
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
-          <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#64748b">${s.url}</small></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155; font-size:12px;">
+          <div><i class="${s.icon}" style="color:#05b381; font-size:16px;"></i> <b>${s.name}</b><br><small style="color:#94a3b8">${s.url}</small></div>
           <div><button class="btn-action-sm btn-danger" onclick="db.ref('social_support/${key}').remove()">Delete</button></div>
         </div>
       `;
@@ -848,7 +973,7 @@ function loadSlidersAdmin() {
     if (!snap.exists()) return;
     snap.forEach(child => {
       list.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155;">
           <img src="${child.val().url}" style="width:60px; height:35px; border-radius:6px; object-fit:cover;">
           <button class="btn-action-sm btn-danger" onclick="db.ref('slider/${child.key}').remove()">Delete</button>
         </div>
