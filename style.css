@@ -51,7 +51,9 @@ body {
   min-height: 100vh;
 }
 
-/* ADMIN PANEL STYLES */
+/* ===================================================
+   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS FIX
+=================================================== */
 body.admin-body {
   background: #e2e8f0 !important;
   color: #0f172a !important;
@@ -78,6 +80,15 @@ body.admin-body {
   width: calc(100% - 24px) !important;
 }
 
+.admin-card h2, .admin-card h3, .admin-card h4, .admin-card h5, 
+.admin-card label, .admin-card strong, .admin-card b {
+  color: #0f172a !important;
+}
+
+.admin-card p, .admin-card small, .admin-card span {
+  color: #475569 !important;
+}
+
 .admin-form-control {
   width: 100% !important;
   padding: 10px 12px !important;
@@ -90,9 +101,14 @@ body.admin-body {
   font-weight: 600 !important;
 }
 
+.admin-form-control:focus {
+  border-color: #05b381 !important;
+}
+
+/* ADMIN BUTTONS SOLID COLOR FIX */
 .btn-action {
   width: 100% !important;
-  padding: 11px !important;
+  padding: 11px 14px !important;
   border: none !important;
   border-radius: 10px !important;
   background: #05b381 !important;
@@ -100,21 +116,53 @@ body.admin-body {
   font-size: 14px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.25) !important;
+  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.3) !important;
   text-align: center !important;
   display: block !important;
 }
 
+.btn-action:hover, .btn-action:active {
+  background: #038d65 !important;
+  color: #ffffff !important;
+}
+
 .btn-action-sm {
   border: none !important;
-  padding: 5px 10px !important;
+  padding: 6px 12px !important;
   border-radius: 6px !important;
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
+  background: #0284c7 !important;
   cursor: pointer !important;
   display: inline-block !important;
   text-decoration: none !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+}
+
+.btn-secondary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.btn-success {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.btn-danger {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.btn-info {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.btn-cancel {
+  background: #64748b !important;
+  color: #ffffff !important;
 }
 
 .admin-table {
@@ -272,7 +320,7 @@ body.admin-body {
   100% { transform: translateX(-100%); }
 }
 
-/* PAGE TITLE HERO CARDS */
+/* BEAUTIFUL GRADIENT PAGE TITLE HERO CARDS */
 .page-title-card {
   background: linear-gradient(135deg, #05b381 0%, #038d65 100%);
   color: #ffffff !important;
