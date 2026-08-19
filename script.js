@@ -1,3 +1,4 @@
+
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -210,13 +211,12 @@ function loadSocialSupportLinks() {
   });
 }
 
-// TAB SWITCHER & HASH ROUTING (PREVENTS 404 ERROR)
+// TAB SWITCHER & HASH ROUTING
 window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
 
-  // ONLY RESET TO GENERAL WALLET IF NOT DIRECTLY TRIGGERED FROM PLAN PURCHASE
   if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
     resetDepositToGeneralWallet();
   }
@@ -761,7 +761,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   }, 50);
 }
 
-// TASK SYSTEM WITH COMPLETED TASK HIDING & SLEEK TASK CARDS
+// TASK SYSTEM WITH COMPLETED TASK HIDING & SCREENSHOT-MATCHING TASK CARDS
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -818,6 +818,19 @@ function loadTasks(completedTaskIds = {}) {
       });
     }
 
+    // UPDATE TASK STATS COUNTERS (MATCHING SCREENSHOT TOP CARDS)
+    const totalCount = userVipTasks.length;
+    const completedCount = userVipTasks.filter(t => completedTaskIds[t.id]).length;
+    const availableCount = Math.max(0, totalCount - completedCount);
+
+    const statTotalEl = document.getElementById('stat-task-total');
+    const statCompletedEl = document.getElementById('stat-task-completed');
+    const statAvailableEl = document.getElementById('stat-task-available');
+
+    if (statTotalEl) statTotalEl.innerText = totalCount;
+    if (statCompletedEl) statCompletedEl.innerText = completedCount;
+    if (statAvailableEl) statAvailableEl.innerText = availableCount;
+
     // EXPLICITLY FILTER OUT AND HIDE COMPLETED TASKS
     const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
 
@@ -847,25 +860,31 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    // RENDER ONLY UNCOMPLETED REMAINING TASKS (PRO CARD LAYOUT)
+    // RENDER UNCOMPLETED TASKS WITH SCREENSHOT-MATCHING DESIGN
     remainingTasks.forEach(task => {
       const taskId = task.id;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
+      const taskImg = task.image || 'https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png';
 
       container.innerHTML += `
-        <div class="task-card-item">
-          <div class="task-info-box">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <h4>${task.title}</h4>
-              ${isFreeTask ? '<span class="task-free-badge">FREE</span>' : ''}
+        <div class="task-screenshot-card">
+          <div class="task-card-top">
+            <div class="task-card-left-info">
+              <img src="${taskImg}" class="task-thumb-img" alt="Task" onerror="this.src='https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png'">
+              <div class="task-title-and-tags">
+                <h4>${task.title}</h4>
+                <div class="task-tags-row">
+                  <span class="task-pill-tag daily">ডেইলি</span>
+                  <span class="task-pill-tag type">${isFreeTask ? 'ফ্রি টাস্ক' : 'এডমিন টাস্ক'}</span>
+                </div>
+              </div>
             </div>
-            <div class="task-reward-tag">
-              <i class="fa-solid fa-coins" style="color:#f59e0b;"></i> রিওয়ার্ড: <b>৳${task.reward}</b>
+            <div class="task-reward-pill">
+              <i class="fa-solid fa-coins" style="color:#ffeaa7;"></i> +৳${task.reward.toFixed(2)}
             </div>
           </div>
-          <button class="btn-action btn-start-task" 
-            onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
-            <i class="fa-solid fa-play"></i> শুরু করুন
+          <button class="btn-task-play-full" onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
+            <i class="fa-solid fa-play"></i> টাস্ক শুরু করুন
           </button>
         </div>
       `;
@@ -1360,30 +1379,55 @@ function initIncomeChartRealtime() {
   });
 }
 
+// PRO LIVE WITHDRAW FEED STYLING
 function renderLiveWithdrawsInfinite() {
   const container = document.getElementById('live-withdraw-feed');
   if (!container) return;
 
   const mockFeed = [
-    { num: '017****1234', method: 'bKash', amount: '৳৫০০' },
-    { num: '018****8890', method: 'Nagad', amount: '৳১২০০' },
-    { num: '019****4567', method: 'Rocket', amount: '৳৭৫০' },
-    { num: '016****9012', method: 'bKash', amount: '৳১৫০০' }
+    { num: '017****1234', method: 'bKash', amount: '৳৫০০', time: '১ মিনিট আগে' },
+    { num: '018****8890', method: 'Nagad', amount: '৳১২০০', time: '৩ মিনিট আগে' },
+    { num: '019****4567', method: 'Rocket', amount: '৳৭৫০', time: '৫ মিনিট আগে' },
+    { num: '016****9012', method: 'bKash', amount: '৳১৫০০', time: '৭ মিনিট আগে' }
   ];
 
   let feedIndex = 0;
   function rotateFeed() {
     const item = mockFeed[feedIndex];
+    const nextItem = mockFeed[(feedIndex + 1) % mockFeed.length];
+
     container.innerHTML = `
-      <div class="live-withdraw-item">
-        <span><b>${item.num}</b> (${item.method})</span>
-        <b style="color:var(--primary-color)">${item.amount} <small style="color:#16a34a">✓ Success</small></b>
+      <div class="live-withdraw-card-pro">
+        <div class="live-withdraw-left">
+          <div class="live-withdraw-avatar"><i class="fa-solid fa-wallet"></i></div>
+          <div class="live-withdraw-info">
+            <h5>${item.num} (${item.method})</h5>
+            <span>${item.time}</span>
+          </div>
+        </div>
+        <div class="live-withdraw-right">
+          <div class="live-withdraw-amount">${item.amount}</div>
+          <span class="live-withdraw-status">✓ Success</span>
+        </div>
+      </div>
+      <div class="live-withdraw-card-pro" style="opacity:0.6;">
+        <div class="live-withdraw-left">
+          <div class="live-withdraw-avatar"><i class="fa-solid fa-wallet"></i></div>
+          <div class="live-withdraw-info">
+            <h5>${nextItem.num} (${nextItem.method})</h5>
+            <span>${nextItem.time}</span>
+          </div>
+        </div>
+        <div class="live-withdraw-right">
+          <div class="live-withdraw-amount">${nextItem.amount}</div>
+          <span class="live-withdraw-status">✓ Success</span>
+        </div>
       </div>
     `;
     feedIndex = (feedIndex + 1) % mockFeed.length;
   }
   rotateFeed();
-  setInterval(rotateFeed, 3000);
+  setInterval(rotateFeed, 3500);
 }
 
 // AUTHENTICATION WITH REGISTRATION BONUS CREDIT
