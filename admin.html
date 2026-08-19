@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Dashboard | Control Panel</title>
   
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
@@ -21,7 +21,7 @@
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
-        <h2 style="text-align: center; margin-bottom: 20px; color: #0f172a;">এডমিন লগইন</h2>
+        <h2 style="text-align: center; margin-bottom: 20px; color: #f8fafc;">এডমিন লগইন</h2>
         <div class="form-group">
           <label>এডমিন ইমেইল</label>
           <input type="email" id="admin-email" class="admin-form-control" required placeholder="admin@gmail.com" value="admin@gmail.com">
@@ -47,13 +47,13 @@
     </div>
     <ul class="sidebar-menu">
       <li onclick="showAdminSection('sec-stats')"><i class="fa-solid fa-chart-pie"></i> ওভারভিউ ড্যাশবোর্ড</li>
-      <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও ফুল ইনফো</li>
-      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান, রেফার, উইথড্র ফি ও বোনাস</li>
+      <li onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল ও সার্চ</li>
+      <li onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i> VIP প্ল্যান, রেফার ও বোনাস</li>
       <li onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i> টাস্ক তৈরি ও ইডিট</li>
       <li onclick="showAdminSection('sec-gateways')"><i class="fa-solid fa-credit-card"></i> আনলিমিটেড পেমেন্ট মেথড</li>
       <li onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</li>
       <li onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন রিকোয়েস্ট</li>
-      <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট সেটিংস ও রেজিস্ট্রেশন বোনাস</li>
+      <li onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i> সাইট সেটিংস ও বোনাস</li>
       <li onclick="showAdminSection('sec-slider')"><i class="fa-solid fa-images"></i> ড্যাশবোর্ড স্লাইডার</li>
       <li onclick="showAdminSection('sec-welcome-notice')"><i class="fa-solid fa-window-restore"></i> পপ-আপ ওয়েলকাম নোটিশ</li>
       <li onclick="showAdminSection('sec-social')"><i class="fa-solid fa-headset"></i> ফ্লোটিং সাপোর্ট লিংক</li>
@@ -65,9 +65,9 @@
   <!-- MAIN ADMIN PANEL -->
   <div id="admin-panel" class="admin-viewport hidden" style="padding:15px 0;">
     
-    <header class="top-header" style="background:#ffffff; border-bottom:1px solid #cbd5e1; margin-bottom:15px; border-radius:12px;">
+    <header class="top-header" style="background:#1e293b; border-bottom:1px solid #334155; margin-bottom:15px; border-radius:12px;">
       <div class="header-left">
-        <i class="fa-solid fa-bars menu-icon" style="color:#0f172a;" onclick="openAdminSidebar()"></i>
+        <i class="fa-solid fa-bars menu-icon" style="color:#ffffff;" onclick="openAdminSidebar()"></i>
         <div style="display:flex; align-items:center; gap:8px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
           <h3 class="app-logo" style="color:#05b381;">AdminPanel</h3>
