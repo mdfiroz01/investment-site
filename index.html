@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn" data-theme="light">
 <head>
@@ -299,7 +300,7 @@
         <div class="menu-card" onclick="switchTab('tab-tasks')"><i class="fa-solid fa-list-check"></i><span>টাস্ক</span></div>
         <div class="menu-card" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i><span>প্ল্যান</span></div>
         <div class="menu-card" onclick="switchTab('tab-wallet')"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
-        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলনে</span></div>
+        <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলন</span></div>
       </div>
 
       <!-- ACTIVE VIP PLAN BANNER CARD WITH LIVE TIMER -->
@@ -401,6 +402,25 @@
         <div>
           <h2>দৈনিক টাস্কসমূহ</h2>
           <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
+        </div>
+      </div>
+
+      <!-- TASK PAGE 3-COLUMN COUNTER STATS GRID (MATCHING SCREENSHOT) -->
+      <div class="task-stats-grid">
+        <div class="task-stat-box">
+          <div class="task-stat-icon total"><i class="fa-solid fa-list-check"></i></div>
+          <div class="task-stat-num" id="stat-task-total">0</div>
+          <div class="task-stat-label">মোট টাস্ক</div>
+        </div>
+        <div class="task-stat-box">
+          <div class="task-stat-icon completed"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="task-stat-num" id="stat-task-completed">0</div>
+          <div class="task-stat-label">সম্পন্ন</div>
+        </div>
+        <div class="task-stat-box">
+          <div class="task-stat-icon available"><i class="fa-solid fa-clock"></i></div>
+          <div class="task-stat-num" id="stat-task-available">0</div>
+          <div class="task-stat-label">উপলব্ধ</div>
         </div>
       </div>
 
