@@ -1,4 +1,3 @@
-
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
 // UNIVERSAL CUSTOM ALERT SYSTEM
@@ -342,7 +341,7 @@ function loadUserData() {
     document.getElementById('prof-name').value = userData.name || '';
     document.getElementById('prof-phone').value = userData.phone || '';
     
-    // FORMATTED REFERRAL LINK: `domain/register?ref=CODE`
+    // FORMATTED REFERRAL LINK
     document.getElementById('ref-link-input').value = window.location.origin + '/register?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
@@ -353,7 +352,7 @@ function loadUserData() {
   });
 }
 
-// LIVE COUNTDOWN TIMER FOR ACTIVE VIP PLAN & EXPIRATION POPUP
+// STUNNING HOMEPAGE "NO ACTIVE PLAN" / ACTIVE COUNTDOWN HERO CARD
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -363,21 +362,28 @@ function renderActivePlanDashboardBanner() {
     activePlanTimerInterval = null;
   }
 
+  // IF USER HAS NO ACTIVE PLAN: SHOW STUNNING HERO BANNER
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     container.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <h4 style="font-size:15px; font-weight:800; color:var(--text-main);">আপনার কোনো প্ল্যান এক্টিভ নেই!</h4>
-          <p style="font-size:11px; color:var(--text-muted); margin-top:3px;">দৈনিক আয় শুরু করতে একটি প্রিমিয়াম প্ল্যান পছন্দ করুন।</p>
+      <div class="no-active-plan-hero-card">
+        <div class="no-plan-card-body">
+          <div class="no-plan-icon-box">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <div class="no-plan-text-content">
+            <h4>আপনার কোনো প্ল্যান এক্টিভ নেই!</h4>
+            <p>দৈনিক সহজ টাস্ক পূরণ করে আয় শুরু করতে আজই প্রিমিয়াম প্ল্যান পছন্দ করুন।</p>
+          </div>
         </div>
-        <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px;" onclick="switchTab('tab-vip')">
-          <i class="fa-solid fa-crown"></i> প্ল্যান দেখুন
+        <button class="btn-no-plan-action" onclick="switchTab('tab-vip')">
+          <i class="fa-solid fa-gem"></i> প্রিমিয়াম প্ল্যান দেখুন 🚀
         </button>
       </div>
     `;
     return;
   }
 
+  // IF USER HAS AN ACTIVE PLAN: SHOW LIVE COUNTDOWN TIMER
   const expireTime = userData.vipExpireAt || 0;
 
   function updateTimer() {
@@ -637,7 +643,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// ULTRA PRO PLAN CARDS RENDERER (EXACTLY MATCHING SCREENSHOT + NO BULLETS)
+// ULTRA PRO PLAN CARDS RENDERER
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
