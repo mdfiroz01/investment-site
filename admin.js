@@ -81,7 +81,7 @@ function loadAdminDashboard() {
 }
 
 // ----------------------------------------------------
-// 1. SYSTEM SETTINGS (INCLUDES REGISTRATION BONUS)
+// 1. SYSTEM SETTINGS
 // ----------------------------------------------------
 window.saveSystemSettings = async function() {
   await ensureAdminFirebaseAuth();
@@ -118,7 +118,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT (SHOWS E-WALLET DETAILS)
+// 2. USER MANAGEMENT
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -231,7 +231,7 @@ window.toggleBlockUser = async function(uid, blockState) {
 };
 
 // ----------------------------------------------------
-// 3. VIP PLAN MANAGEMENT (WITH ACTIVATION BONUS)
+// 3. VIP PLAN MANAGEMENT
 // ----------------------------------------------------
 document.getElementById('admin-add-plan-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -319,7 +319,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION
+// 4. TASK CREATION (INCLUDES IMAGE URL)
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -330,12 +330,14 @@ document.getElementById('admin-add-task-form').addEventListener('submit', async 
   const reward = parseFloat(document.getElementById('task-reward').value) || 0;
   const minVipVal = parseInt(document.getElementById('task-min-vip').value) || 0;
   const qty = parseInt(document.getElementById('task-quantity').value) || 1;
+  const taskImg = document.getElementById('task-image').value || 'https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png';
 
   if (editKey) {
     db.ref('tasks/' + editKey).update({
       title: baseTitle,
       reward: reward,
       minVip: minVipVal,
+      image: taskImg,
       isFree: minVipVal === 0
     }).then(() => {
       alert('টাস্ক সফলভাবে ইডিট করা হয়েছে!');
@@ -351,6 +353,7 @@ document.getElementById('admin-add-task-form').addEventListener('submit', async 
         title: taskTitle,
         reward: reward,
         minVip: minVipVal,
+        image: taskImg,
         isFree: minVipVal === 0,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       };
@@ -374,9 +377,12 @@ function loadTasksAdmin() {
       const key = child.key;
       list.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e2e8f0; font-size:12px;">
-          <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="${t.image || 'https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png'}" style="width:28px; height:28px; border-radius:6px; object-fit:cover;">
+            <div><b>${t.title}</b> - ৳${t.reward} (Level ${t.minVip})</div>
+          </div>
           <div>
-            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip})">Edit</button>
+            <button class="btn-action-sm btn-secondary" onclick="editTask('${key}', '${t.title}', ${t.reward}, ${t.minVip}, '${t.image || ''}')">Edit</button>
             <button class="btn-action-sm btn-danger" onclick="db.ref('tasks/${key}').remove()">Delete</button>
           </div>
         </div>
@@ -385,11 +391,12 @@ function loadTasksAdmin() {
   });
 }
 
-window.editTask = function(key, title, reward, minVip) {
+window.editTask = function(key, title, reward, minVip, image) {
   document.getElementById('edit-task-key').value = key;
   document.getElementById('task-title').value = title;
   document.getElementById('task-reward').value = reward;
   document.getElementById('task-min-vip').value = minVip;
+  document.getElementById('task-image').value = image || '';
   document.getElementById('task-quantity').value = 1;
 
   document.getElementById('task-form-title').innerText = 'টাস্ক ইডিট করুন';
@@ -408,7 +415,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT (APPROVAL WITH PLAN BONUS CREDIT)
+// 5. DEPOSITS MANAGEMENT (APPROVAL WITH ACCURATE EXPIRATION FIX)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -450,6 +457,7 @@ function loadDepositsAdmin() {
   });
 }
 
+// APPROVE DEPOSIT WITH EXACT PLAN ACTIVATION & EXPIRATION DURATION FIX
 window.approveDeposit = async function(depId, uid, amount) {
   try {
     await ensureAdminFirebaseAuth();
@@ -467,32 +475,36 @@ window.approveDeposit = async function(depId, uid, amount) {
 
     if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
       const target = depData.targetPlan;
-      updates[`users/${uid}/vipLevel`] = target.vipLevel;
-      updates[`users/${uid}/vipPlanName`] = target.planName;
-      updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
-      updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
-      activatedPlanName = target.planName;
+
+      // FETCH EXACT PLAN DURATION & BONUS DETAILS FROM DATABASE
+      let durationDays = 30;
+      let actBonus = 0;
+      let witCharge = 5;
 
       const planSnap = await db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value');
       if (planSnap.exists()) {
         planSnap.forEach(p => {
           const planVal = p.val();
-          updates[`users/${uid}/withdrawChargePercent`] = planVal.withdrawChargePercent || 5;
-          
-          if (planVal.activationBonus && planVal.activationBonus > 0) {
-            updates[`users/${uid}/incomeBalance`] = (user.incomeBalance || 0) + planVal.activationBonus;
-            
-            db.ref('history').push().set({
-              uid: uid,
-              type: 'Plan Bonus',
-              amount: planVal.activationBonus,
-              title: `Activation Bonus for ${target.planName}`,
-              status: 'approved',
-              timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-          }
+          durationDays = Number(planVal.durationDays || 30);
+          actBonus = Number(planVal.activationBonus || 0);
+          witCharge = Number(planVal.withdrawChargePercent !== undefined ? planVal.withdrawChargePercent : 5);
         });
       }
+
+      const durationMs = durationDays * 24 * 60 * 60 * 1000;
+      const expireTimestamp = Date.now() + durationMs;
+
+      updates[`users/${uid}/vipLevel`] = target.vipLevel;
+      updates[`users/${uid}/vipPlanName`] = target.planName;
+      updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
+      updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
+      updates[`users/${uid}/withdrawChargePercent`] = witCharge;
+      updates[`users/${uid}/vipActivatedAt`] = Date.now();
+      updates[`users/${uid}/vipExpireAt`] = expireTimestamp; // CRITICAL EXPIRATION TIMESTAMP FIX!
+      updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
+      updates[`users/${uid}/planBonusClaimed`] = false;
+
+      activatedPlanName = target.planName;
     } else {
       updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
     }
