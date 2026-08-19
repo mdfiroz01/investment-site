@@ -319,7 +319,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION (INCLUDES IMAGE URL)
+// 4. TASK CREATION
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -415,7 +415,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT (APPROVAL WITH ACCURATE EXPIRATION FIX)
+// 5. DEPOSITS MANAGEMENT (ROBUST PLAN ACTIVATION FIX)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -457,7 +457,7 @@ function loadDepositsAdmin() {
   });
 }
 
-// APPROVE DEPOSIT WITH EXACT PLAN ACTIVATION & EXPIRATION DURATION FIX
+// APPROVE DEPOSIT WITH SAFE & BULLETPROOF PLAN ACTIVATION
 window.approveDeposit = async function(depId, uid, amount) {
   try {
     await ensureAdminFirebaseAuth();
@@ -473,38 +473,56 @@ window.approveDeposit = async function(depId, uid, amount) {
     const updates = {};
     let activatedPlanName = null;
 
-    if (depData.targetPlan && depData.targetPlan !== 'wallet' && typeof depData.targetPlan === 'object') {
+    if (depData.targetPlan && depData.targetPlan !== 'wallet') {
       const target = depData.targetPlan;
+      const targetVipLevel = typeof target === 'object' ? Number(target.vipLevel) : Number(target);
 
-      // FETCH EXACT PLAN DURATION & BONUS DETAILS FROM DATABASE
-      let durationDays = 30;
-      let actBonus = 0;
-      let witCharge = 5;
+      // FETCH ALL PLANS TO MATCH SAFELY WITHOUT DATABASE INDEX ISSUES
+      const plansSnap = await db.ref('plans').once('value');
+      let foundPlan = null;
 
-      const planSnap = await db.ref('plans').orderByChild('vipLevel').equalTo(target.vipLevel).once('value');
-      if (planSnap.exists()) {
-        planSnap.forEach(p => {
-          const planVal = p.val();
-          durationDays = Number(planVal.durationDays || 30);
-          actBonus = Number(planVal.activationBonus || 0);
-          witCharge = Number(planVal.withdrawChargePercent !== undefined ? planVal.withdrawChargePercent : 5);
+      if (plansSnap.exists()) {
+        plansSnap.forEach(p => {
+          const pVal = p.val();
+          if (Number(pVal.vipLevel) === targetVipLevel || (target.planName && pVal.name === target.planName)) {
+            foundPlan = pVal;
+          }
         });
       }
 
-      const durationMs = durationDays * 24 * 60 * 60 * 1000;
-      const expireTimestamp = Date.now() + durationMs;
+      if (foundPlan) {
+        const durationDays = Number(foundPlan.durationDays || 30);
+        const durationMs = durationDays * 24 * 60 * 60 * 1000;
+        const expireTimestamp = Date.now() + durationMs;
+        const actBonus = Number(foundPlan.activationBonus || 0);
+        const witCharge = Number(foundPlan.withdrawChargePercent !== undefined ? foundPlan.withdrawChargePercent : 5);
 
-      updates[`users/${uid}/vipLevel`] = target.vipLevel;
-      updates[`users/${uid}/vipPlanName`] = target.planName;
-      updates[`users/${uid}/maxDailyTasks`] = target.dailyTasks;
-      updates[`users/${uid}/vipDailyProfit`] = target.dailyProfit;
-      updates[`users/${uid}/withdrawChargePercent`] = witCharge;
-      updates[`users/${uid}/vipActivatedAt`] = Date.now();
-      updates[`users/${uid}/vipExpireAt`] = expireTimestamp; // CRITICAL EXPIRATION TIMESTAMP FIX!
-      updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
-      updates[`users/${uid}/planBonusClaimed`] = false;
+        updates[`users/${uid}/vipLevel`] = Number(foundPlan.vipLevel);
+        updates[`users/${uid}/vipPlanName`] = foundPlan.name;
+        updates[`users/${uid}/maxDailyTasks`] = Number(foundPlan.dailyTasks);
+        updates[`users/${uid}/vipDailyProfit`] = Number(foundPlan.dailyProfit);
+        updates[`users/${uid}/withdrawChargePercent`] = witCharge;
+        updates[`users/${uid}/vipActivatedAt`] = Date.now();
+        updates[`users/${uid}/vipExpireAt`] = expireTimestamp;
+        updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
+        updates[`users/${uid}/planBonusClaimed`] = false;
 
-      activatedPlanName = target.planName;
+        activatedPlanName = foundPlan.name;
+      } else {
+        // FALLBACK DIRECT ACTIVATION
+        const durationDays = 30;
+        const durationMs = durationDays * 24 * 60 * 60 * 1000;
+        const expireTimestamp = Date.now() + durationMs;
+
+        updates[`users/${uid}/vipLevel`] = Number(target.vipLevel || 1);
+        updates[`users/${uid}/vipPlanName`] = target.planName || 'VIP Plan';
+        updates[`users/${uid}/maxDailyTasks`] = Number(target.dailyTasks || 5);
+        updates[`users/${uid}/vipDailyProfit`] = Number(target.dailyProfit || 50);
+        updates[`users/${uid}/vipActivatedAt`] = Date.now();
+        updates[`users/${uid}/vipExpireAt`] = expireTimestamp;
+
+        activatedPlanName = target.planName || 'VIP Plan';
+      }
     } else {
       updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
     }
@@ -517,7 +535,7 @@ window.approveDeposit = async function(depId, uid, amount) {
       processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', amount, activatedPlanName);
     }
 
-    alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে!');
+    alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে এবং প্ল্যান এক্টিভ হয়েছে!');
   } catch (err) {
     alert('অনুমোদন ব্যর্থ: ' + err.message);
   }
