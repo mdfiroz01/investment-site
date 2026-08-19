@@ -118,7 +118,7 @@ function loadSettingsAdmin() {
 }
 
 // ----------------------------------------------------
-// 2. USER MANAGEMENT
+// 2. USER MANAGEMENT & REALTIME SEARCH
 // ----------------------------------------------------
 function loadUsersAdmin() {
   db.ref('users').on('value', snap => {
@@ -151,6 +151,21 @@ function loadUsersAdmin() {
     });
   });
 }
+
+// REALTIME USER FILTER SEARCH FUNCTION
+window.filterUsersAdmin = function() {
+  const query = document.getElementById('admin-user-search-input').value.toLowerCase().trim();
+  const rows = document.querySelectorAll('#admin-users-table tr');
+
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    if (text.includes(query)) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+};
 
 window.viewFullUserInfo = function(uid) {
   db.ref('users/' + uid).once('value', snap => {
@@ -319,7 +334,7 @@ window.resetPlanForm = function() {
 };
 
 // ----------------------------------------------------
-// 4. TASK CREATION
+// 4. TASK CREATION (INCLUDES IMAGE URL)
 // ----------------------------------------------------
 document.getElementById('admin-add-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -415,7 +430,7 @@ window.resetTaskForm = function() {
 };
 
 // ----------------------------------------------------
-// 5. DEPOSITS MANAGEMENT (ROBUST PLAN ACTIVATION FIX)
+// 5. DEPOSITS MANAGEMENT (BULLETPROOF USER LOOKUP & PLAN ACTIVATION)
 // ----------------------------------------------------
 function loadDepositsAdmin() {
   db.ref('deposits').on('value', snap => {
@@ -437,12 +452,12 @@ function loadDepositsAdmin() {
         
         tbody.innerHTML += `
           <tr>
-            <td>${d.email || 'User'}${targetText}</td>
+            <td><b>${d.email || d.uid || 'User'}</b>${targetText}</td>
             <td>${d.method}</td>
             <td>৳${d.amount}</td>
             <td>${d.trxId}</td>
             <td>
-              <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})">Approve</button>
+              <button class="btn-action-sm btn-success" onclick="approveDeposit('${child.key}')">Approve</button>
               <button class="btn-action-sm btn-danger" onclick="rejectDeposit('${child.key}')">Reject</button>
             </td>
           </tr>
@@ -457,8 +472,8 @@ function loadDepositsAdmin() {
   });
 }
 
-// APPROVE DEPOSIT WITH SAFE & BULLETPROOF PLAN ACTIVATION
-window.approveDeposit = async function(depId, uid, amount) {
+// APPROVE DEPOSIT WITH COMPREHENSIVE USER LOOKUP & PLAN ACTIVATION
+window.approveDeposit = async function(depId) {
   try {
     await ensureAdminFirebaseAuth();
 
@@ -466,65 +481,84 @@ window.approveDeposit = async function(depId, uid, amount) {
     if (!depSnap.exists()) return alert('ডিপোজিট রেকর্ড পাওয়া যায়নি!');
     const depData = depSnap.val();
 
-    const userSnap = await db.ref('users/' + uid).once('value');
-    if (!userSnap.exists()) return alert('ইউজার ডাটা পাওয়া যায়নি!');
-    const user = userSnap.val();
+    // 1. COMPREHENSIVE USER SEARCH LOOKUP
+    let targetUser = null;
+    let targetUid = depData.uid || null;
 
+    if (targetUid) {
+      const uSnap = await db.ref('users/' + targetUid).once('value');
+      if (uSnap.exists()) {
+        targetUser = uSnap.val();
+      }
+    }
+
+    // FALLBACK: SEARCH ALL USERS IF DIRECT UID LOOKUP FAILS
+    if (!targetUser) {
+      const allUsersSnap = await db.ref('users').once('value');
+      if (allUsersSnap.exists()) {
+        allUsersSnap.forEach(child => {
+          const uVal = child.val();
+          const uKey = child.key;
+          
+          if (
+            (depData.uid && uKey === depData.uid) ||
+            (depData.uid && uVal.uid === depData.uid) ||
+            (depData.email && uVal.email && uVal.email.toLowerCase() === depData.email.toLowerCase())
+          ) {
+            targetUser = uVal;
+            targetUid = uKey;
+          }
+        });
+      }
+    }
+
+    if (!targetUser || !targetUid) {
+      return alert(`ইউজার ডাটা পাওয়া যায়নি! (UID: ${depData.uid || 'N/A'}, Email: ${depData.email || 'N/A'})`);
+    }
+
+    const user = targetUser;
+    const uid = targetUid;
     const updates = {};
     let activatedPlanName = null;
 
+    // 2. CHECK IF DEPOSIT IS TARGETED FOR A VIP PLAN
     if (depData.targetPlan && depData.targetPlan !== 'wallet') {
       const target = depData.targetPlan;
       const targetVipLevel = typeof target === 'object' ? Number(target.vipLevel) : Number(target);
 
       // FETCH ALL PLANS TO MATCH SAFELY WITHOUT DATABASE INDEX ISSUES
-      const plansSnap = await db.ref('plans').once('value');
-      let foundPlan = null;
+      let durationDays = 30;
+      let actBonus = 0;
+      let witCharge = 5;
 
+      const plansSnap = await db.ref('plans').once('value');
       if (plansSnap.exists()) {
         plansSnap.forEach(p => {
           const pVal = p.val();
           if (Number(pVal.vipLevel) === targetVipLevel || (target.planName && pVal.name === target.planName)) {
-            foundPlan = pVal;
+            durationDays = Number(pVal.durationDays || 30);
+            actBonus = Number(pVal.activationBonus || 0);
+            witCharge = Number(pVal.withdrawChargePercent !== undefined ? pVal.withdrawChargePercent : 5);
           }
         });
       }
 
-      if (foundPlan) {
-        const durationDays = Number(foundPlan.durationDays || 30);
-        const durationMs = durationDays * 24 * 60 * 60 * 1000;
-        const expireTimestamp = Date.now() + durationMs;
-        const actBonus = Number(foundPlan.activationBonus || 0);
-        const witCharge = Number(foundPlan.withdrawChargePercent !== undefined ? foundPlan.withdrawChargePercent : 5);
+      const durationMs = durationDays * 24 * 60 * 60 * 1000;
+      const expireTimestamp = Date.now() + durationMs;
 
-        updates[`users/${uid}/vipLevel`] = Number(foundPlan.vipLevel);
-        updates[`users/${uid}/vipPlanName`] = foundPlan.name;
-        updates[`users/${uid}/maxDailyTasks`] = Number(foundPlan.dailyTasks);
-        updates[`users/${uid}/vipDailyProfit`] = Number(foundPlan.dailyProfit);
-        updates[`users/${uid}/withdrawChargePercent`] = witCharge;
-        updates[`users/${uid}/vipActivatedAt`] = Date.now();
-        updates[`users/${uid}/vipExpireAt`] = expireTimestamp;
-        updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
-        updates[`users/${uid}/planBonusClaimed`] = false;
+      updates[`users/${uid}/vipLevel`] = targetVipLevel;
+      updates[`users/${uid}/vipPlanName`] = target.planName || ('VIP ' + targetVipLevel);
+      updates[`users/${uid}/maxDailyTasks`] = Number(target.dailyTasks || 5);
+      updates[`users/${uid}/vipDailyProfit`] = Number(target.dailyProfit || 50);
+      updates[`users/${uid}/withdrawChargePercent`] = witCharge;
+      updates[`users/${uid}/vipActivatedAt`] = Date.now();
+      updates[`users/${uid}/vipExpireAt`] = expireTimestamp; // CRITICAL EXPIRATION TIMESTAMP FIX!
+      updates[`users/${uid}/eligiblePlanBonus`] = actBonus;
+      updates[`users/${uid}/planBonusClaimed`] = false;
 
-        activatedPlanName = foundPlan.name;
-      } else {
-        // FALLBACK DIRECT ACTIVATION
-        const durationDays = 30;
-        const durationMs = durationDays * 24 * 60 * 60 * 1000;
-        const expireTimestamp = Date.now() + durationMs;
-
-        updates[`users/${uid}/vipLevel`] = Number(target.vipLevel || 1);
-        updates[`users/${uid}/vipPlanName`] = target.planName || 'VIP Plan';
-        updates[`users/${uid}/maxDailyTasks`] = Number(target.dailyTasks || 5);
-        updates[`users/${uid}/vipDailyProfit`] = Number(target.dailyProfit || 50);
-        updates[`users/${uid}/vipActivatedAt`] = Date.now();
-        updates[`users/${uid}/vipExpireAt`] = expireTimestamp;
-
-        activatedPlanName = target.planName || 'VIP Plan';
-      }
+      activatedPlanName = target.planName || ('VIP ' + targetVipLevel);
     } else {
-      updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + amount;
+      updates[`users/${uid}/depositBalance`] = (user.depositBalance || 0) + Number(depData.amount || 0);
     }
 
     updates[`deposits/${depId}/status`] = 'approved';
@@ -532,7 +566,7 @@ window.approveDeposit = async function(depId, uid, amount) {
     await db.ref().update(updates);
 
     if (activatedPlanName && user.referredBy) {
-      processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', amount, activatedPlanName);
+      processReferralCommission(user.referredBy, user.name || 'User', user.refCode || 'N/A', depData.amount, activatedPlanName);
     }
 
     alert('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে এবং প্ল্যান এক্টিভ হয়েছে!');
@@ -617,7 +651,7 @@ function loadWithdrawsAdmin() {
         pendingCount++;
         tbody.innerHTML += `
           <tr>
-            <td>${w.email || 'User'}</td>
+            <td>${w.email || w.uid || 'User'}</td>
             <td>${w.method}</td>
             <td>${w.walletNumber}</td>
             <td>৳${w.amount} <small style="color:#64748b">(Net: ৳${w.netAmount || w.amount})</small></td>
@@ -650,15 +684,28 @@ window.approveWithdraw = async function(witId) {
 window.rejectWithdraw = async function(witId, uid, amount) {
   try {
     await ensureAdminFirebaseAuth();
-    const uSnap = await db.ref('users/' + uid).once('value');
-    const u = uSnap.val() || {};
     
-    const updates = {};
-    updates[`users/${uid}/incomeBalance`] = (u.incomeBalance || 0) + amount;
-    updates[`withdraws/${witId}/status`] = 'rejected';
+    // SAFE LOOKUP FOR WITHDRAW REJECTION REFUND
+    const witSnap = await db.ref('withdraws/' + witId).once('value');
+    if (!witSnap.exists()) return;
+    const witData = witSnap.val();
+    const targetUid = uid || witData.uid;
 
-    await db.ref().update(updates);
-    alert('উত্তোলন বাতিল করা হয়েছে এবং ইউজারের ব্যালেন্স রিফান্ড করা হয়েছে।');
+    if (targetUid) {
+      const uSnap = await db.ref('users/' + targetUid).once('value');
+      if (uSnap.exists()) {
+        const u = uSnap.val();
+        const updates = {};
+        updates[`users/${targetUid}/incomeBalance`] = (u.incomeBalance || 0) + amount;
+        updates[`withdraws/${witId}/status`] = 'rejected';
+        await db.ref().update(updates);
+        alert('উত্তোলন বাতিল করা হয়েছে এবং ইউজারের ব্যালেন্স রিফান্ড করা হয়েছে।');
+        return;
+      }
+    }
+    
+    await db.ref('withdraws/' + witId + '/status').set('rejected');
+    alert('উত্তোলন বাতিল করা হয়েছে।');
   } catch (err) {
     alert('বাতিল ব্যর্থ: ' + err.message);
   }
