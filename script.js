@@ -352,7 +352,7 @@ function loadUserData() {
   });
 }
 
-// STUNNING HOMEPAGE "NO ACTIVE PLAN" / ACTIVE COUNTDOWN HERO CARD
+// STUNNING HOMEPAGE "NO ACTIVE PLAN" HERO BANNER / LIVE COUNTDOWN TIMER
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -750,11 +750,9 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
 
-  // SWITCH TAB FIRST WITH isDirectPlanTrigger = true TO PREVENT RESET
   switchTab('tab-deposit', null, true);
   goToDepositStep(1);
 
-  // EXPLICITLY SET PLAN & PRICE IN DEPOSIT FORM
   setTimeout(() => {
     const amtInput = document.getElementById('input-dep-amount');
     if (amtInput) amtInput.value = price;
@@ -824,7 +822,6 @@ function loadTasks(completedTaskIds = {}) {
       });
     }
 
-    // UPDATE TASK STATS COUNTERS (MATCHING SCREENSHOT TOP CARDS)
     const totalCount = userVipTasks.length;
     const completedCount = userVipTasks.filter(t => completedTaskIds[t.id]).length;
     const availableCount = Math.max(0, totalCount - completedCount);
@@ -837,10 +834,8 @@ function loadTasks(completedTaskIds = {}) {
     if (statCompletedEl) statCompletedEl.innerText = completedCount;
     if (statAvailableEl) statAvailableEl.innerText = availableCount;
 
-    // EXPLICITLY FILTER OUT AND HIDE COMPLETED TASKS
     const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
 
-    // CHECK IF ALL TASKS COMPLETED OR DAILY LIMIT REACHED
     if ((userVipTasks.length > 0 && remainingTasks.length === 0) || (userVip > 0 && userTodayCompletedCount >= userMaxDailyTasks)) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:35px 20px;">
@@ -866,7 +861,6 @@ function loadTasks(completedTaskIds = {}) {
       return;
     }
 
-    // RENDER UNCOMPLETED TASKS WITH SCREENSHOT-MATCHING DESIGN
     remainingTasks.forEach(task => {
       const taskId = task.id;
       const isFreeTask = Number(task.minVip || 0) === 0 || task.isFree === true;
