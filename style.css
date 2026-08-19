@@ -52,71 +52,72 @@ body {
 }
 
 /* ===================================================
-   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS FIX
+   ADMIN PANEL MODERN HIGH-CONTRAST THEME & CARDS
 =================================================== */
 body.admin-body {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
   padding-bottom: 30px !important;
 }
 
 .admin-viewport {
-  max-width: 520px;
+  max-width: 540px;
   margin: 0 auto;
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
   min-height: 100vh;
-  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
 }
 
 .admin-card {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-  margin: 0 12px 12px 12px !important;
-  padding: 14px !important;
-  border-radius: 14px !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  margin: 0 12px 14px 12px !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
   width: calc(100% - 24px) !important;
 }
 
 .admin-card h2, .admin-card h3, .admin-card h4, .admin-card h5, 
 .admin-card label, .admin-card strong, .admin-card b {
-  color: #0f172a !important;
+  color: #f8fafc !important;
 }
 
 .admin-card p, .admin-card small, .admin-card span {
-  color: #475569 !important;
+  color: #94a3b8 !important;
 }
 
 .admin-form-control {
   width: 100% !important;
-  padding: 10px 12px !important;
-  border-radius: 8px !important;
-  border: 1.5px solid #cbd5e1 !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
-  font-size: 13px !important;
+  padding: 11px 13px !important;
+  border-radius: 10px !important;
+  border: 1.5px solid #334155 !important;
+  background: #1e293b !important;
+  color: #ffffff !important;
+  font-size: 13.5px !important;
   outline: none !important;
   font-weight: 600 !important;
 }
 
 .admin-form-control:focus {
   border-color: #05b381 !important;
+  box-shadow: 0 0 0 3px rgba(5, 179, 129, 0.25) !important;
 }
 
-/* ADMIN BUTTONS SOLID COLOR FIX */
+/* SOLID VISIBLE ADMIN BUTTONS FIX */
 .btn-action {
   width: 100% !important;
-  padding: 11px 14px !important;
+  padding: 12px 14px !important;
   border: none !important;
   border-radius: 10px !important;
-  background: #05b381 !important;
+  background: linear-gradient(135deg, #05b381 0%, #038d65 100%) !important;
   color: #ffffff !important;
   font-size: 14px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(5, 179, 129, 0.35) !important;
   text-align: center !important;
   display: block !important;
 }
@@ -129,7 +130,7 @@ body.admin-body {
 .btn-action-sm {
   border: none !important;
   padding: 6px 12px !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   color: #ffffff !important;
@@ -137,56 +138,110 @@ body.admin-body {
   cursor: pointer !important;
   display: inline-block !important;
   text-decoration: none !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
 }
 
-.btn-secondary {
-  background: #2563eb !important;
-  color: #ffffff !important;
-}
-
-.btn-success {
-  background: #10b981 !important;
-  color: #ffffff !important;
-}
-
-.btn-danger {
-  background: #ef4444 !important;
-  color: #ffffff !important;
-}
-
-.btn-info {
-  background: #0284c7 !important;
-  color: #ffffff !important;
-}
-
-.btn-cancel {
-  background: #64748b !important;
-  color: #ffffff !important;
-}
+.btn-secondary { background: #2563eb !important; color: #ffffff !important; }
+.btn-success { background: #10b981 !important; color: #ffffff !important; }
+.btn-danger { background: #ef4444 !important; color: #ffffff !important; }
+.btn-info { background: #0284c7 !important; color: #ffffff !important; }
+.btn-cancel { background: #64748b !important; color: #ffffff !important; }
 
 .admin-table {
   width: 100% !important;
   border-collapse: collapse !important;
   font-size: 12px !important;
-  color: #0f172a !important;
+  color: #f8fafc !important;
 }
 
 .admin-table th {
-  background: #f8fafc !important;
-  color: #0f172a !important;
+  background: #1e293b !important;
+  color: #05b381 !important;
   font-weight: 800 !important;
-  padding: 8px 6px !important;
-  border-bottom: 2px solid #cbd5e1 !important;
+  padding: 10px 8px !important;
+  border-bottom: 2px solid #334155 !important;
   text-align: left !important;
 }
 
 .admin-table td {
-  padding: 8px 6px !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  color: #0f172a !important;
+  padding: 10px 8px !important;
+  border-bottom: 1px solid #334155 !important;
+  color: #f8fafc !important;
 }
 
+/* ADMIN OVERVIEW SHORTCUTS & METRICS */
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.admin-metric-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.admin-metric-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.admin-metric-icon.users { background: rgba(2, 132, 199, 0.2); color: #38bdf8; }
+.admin-metric-icon.vip { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+.admin-metric-icon.dep { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.admin-metric-icon.wit { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.admin-metric-icon.dep-total { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.admin-metric-icon.wit-total { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+
+.admin-metric-data p { font-size: 10.5px; color: #94a3b8; margin: 0; }
+.admin-metric-data h3 { font-size: 16px; font-weight: 900; color: #ffffff; margin-top: 2px; }
+
+.admin-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.admin-shortcut-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.admin-shortcut-btn:hover {
+  border-color: #05b381;
+  transform: translateY(-2px);
+}
+
+.admin-shortcut-btn i {
+  display: block;
+  font-size: 18px;
+  color: #05b381;
+  margin-bottom: 4px;
+}
+
+/* TOP HEADER & SIDEBAR FOR USER PANEL */
 .auth-ring-avatar {
   width: 65px;
   height: 65px;
@@ -204,7 +259,6 @@ body.admin-body {
   border: 1.5px solid var(--primary-color);
 }
 
-/* TOP HEADER */
 .top-header {
   background: var(--card-bg);
   padding: 10px 15px;
@@ -777,9 +831,7 @@ body.admin-body {
   text-transform: uppercase;
 }
 
-/* ===================================================
-   STUNNING GRADIENT HERO CARD FOR "NO ACTIVE PLAN"
-=================================================== */
+/* STUNNING GRADIENT HERO CARD FOR "NO ACTIVE PLAN" */
 #dashboard-active-plan-card {
   background: transparent !important;
   border: none !important;
