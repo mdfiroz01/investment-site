@@ -352,7 +352,7 @@ function loadUserData() {
   });
 }
 
-// STUNNING HOMEPAGE "NO ACTIVE PLAN" / ACTIVE COUNTDOWN HERO CARD
+// STUNNING HOMEPAGE "NO ACTIVE PLAN" HERO BANNER / LIVE COUNTDOWN TIMER
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -643,7 +643,7 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// ULTRA PRO PLAN CARDS RENDERER
+// ULTRA PRO PLAN CARDS RENDERER (BULLET DOTS COMPLETELY REMOVED)
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
