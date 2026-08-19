@@ -76,22 +76,81 @@
       <button class="btn-action-sm btn-cancel" style="padding:6px 12px;" onclick="adminLogout()">Logout</button>
     </header>
 
-    <!-- SECTION 1: STATS -->
+    <!-- SECTION 1: STATS OVERVIEW & QUICK ACTIONS -->
     <div id="sec-stats" class="admin-section">
-      <div class="dashboard-grid">
-        <div class="metric-card" style="background:#ffffff; border:1px solid #cbd5e1;"><div><p style="color:#64748b;">মোট ইউজার</p><h3 id="stat-users" style="color:#0f172a;">0</h3></div></div>
-        <div class="metric-card" style="background:#ffffff; border:1px solid #cbd5e1;"><div><p style="color:#64748b;">পেন্ডিং ডিপোজিট</p><h3 id="stat-pending-dep" style="color:#0f172a;">0</h3></div></div>
-        <div class="metric-card" style="background:#ffffff; border:1px solid #cbd5e1;"><div><p style="color:#64748b;">পেন্ডিং উইথড্র</p><h3 id="stat-pending-wit" style="color:#0f172a;">0</h3></div></div>
+      <!-- 6-GRID METRIC CARDS -->
+      <div class="admin-metrics-grid">
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon users"><i class="fa-solid fa-users"></i></div>
+          <div class="admin-metric-data"><p>মোট ইউজার</p><h3 id="stat-users">0</h3></div>
+        </div>
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon vip"><i class="fa-solid fa-crown"></i></div>
+          <div class="admin-metric-data"><p>এক্টিভ VIP ইউজার</p><h3 id="stat-vip-users">0</h3></div>
+        </div>
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon dep"><i class="fa-solid fa-wallet"></i></div>
+          <div class="admin-metric-data"><p>পেন্ডিং ডিপোজিট</p><h3 id="stat-pending-dep">0</h3></div>
+        </div>
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon wit"><i class="fa-solid fa-money-bill-transfer"></i></div>
+          <div class="admin-metric-data"><p>পেন্ডিং উইথড্র</p><h3 id="stat-pending-wit">0</h3></div>
+        </div>
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon dep-total"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="admin-metric-data"><p>মোট অনুমোদন ডিপোজিট</p><h3 id="stat-approved-dep-sum">৳0</h3></div>
+        </div>
+        <div class="admin-metric-box">
+          <div class="admin-metric-icon wit-total"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+          <div class="admin-metric-data"><p>মোট সম্পন্ন উইথড্র</p><h3 id="stat-approved-wit-sum">৳0</h3></div>
+        </div>
+      </div>
+
+      <!-- QUICK SHORTCUTS GRID -->
+      <div class="admin-shortcuts-grid">
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-users')"><i class="fa-solid fa-users"></i>ইউজার কন্ট্রোল</div>
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-plans')"><i class="fa-solid fa-crown"></i>VIP প্ল্যানসমূহ</div>
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-tasks')"><i class="fa-solid fa-list-check"></i>টাস্ক তৈরি</div>
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-deposits')"><i class="fa-solid fa-wallet"></i>ডিপোজিট লিস্ট</div>
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-withdraws')"><i class="fa-solid fa-money-bill-transfer"></i>উইথড্র লিস্ট</div>
+        <div class="admin-shortcut-btn" onclick="showAdminSection('sec-settings')"><i class="fa-solid fa-gears"></i>সাইট সেটিংস</div>
+      </div>
+
+      <!-- NEW TOOL: QUICK USER BALANCE ADJUSTMENT CARD -->
+      <div class="admin-card" style="margin-left:0; margin-right:0; width:100%;">
+        <h3><i class="fa-solid fa-sliders" style="color:#05b381"></i> কুইক ইউজার ব্যালেন্স এডজাস্টমেন্ট টুল</h3>
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:12px;">ইউজারের ইমেইল/ফোন দিয়ে ব্যালেন্সে টাকা যোগ (+) বা কর্তন (-) করুন</p>
+
+        <form id="admin-quick-balance-form" style="display:grid; gap:10px;" onsubmit="quickAdjustUserBalance(event)">
+          <input type="text" id="quick-bal-user-id" class="admin-form-control" placeholder="ইউজার ইমেইল, ফোন নম্বর বা UID দিন" required>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <select id="quick-bal-type" class="admin-form-control" required>
+              <option value="depositBalance">ডিপোজিট ব্যালেন্স (Deposit Bal)</option>
+              <option value="incomeBalance">ইনকাম ব্যালেন্স (Income Bal)</option>
+            </select>
+            <select id="quick-bal-action" class="admin-form-control" required>
+              <option value="add">টাকা যোগ করুন (+)</option>
+              <option value="deduct">টাকা বিয়োগ/কর্তন করুন (-)</option>
+            </select>
+          </div>
+          <input type="number" step="0.01" id="quick-bal-amount" class="admin-form-control" placeholder="পরিমাণ (৳)" required>
+          <button type="submit" class="btn-action">ব্যালেন্স আপডেট করুন 🚀</button>
+        </form>
       </div>
     </div>
 
-    <!-- SECTION 2: USERS (WITH REAL-TIME USER SEARCH) -->
+    <!-- SECTION 2: USERS (WITH REAL-TIME USER SEARCH & STATUS FILTERS) -->
     <div id="sec-users" class="admin-section hidden admin-card">
       <h3><i class="fa-solid fa-users" style="color:#05b381"></i> ইউজার ম্যানেজমেন্ট ও সার্চ</h3>
       
-      <!-- REAL-TIME USER SEARCH INPUT -->
-      <div class="form-group" style="margin-top:12px;">
-        <input type="text" id="admin-user-search-input" class="admin-form-control" placeholder="🔍 নাম, ইমেইল, ফোন নম্বর বা আইডি দিয়ে সার্চ করুন..." oninput="filterUsersAdmin()">
+      <!-- REAL-TIME USER SEARCH INPUT & STATUS FILTER -->
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-top:12px;">
+        <input type="text" id="admin-user-search-input" class="admin-form-control" placeholder="🔍 নাম, ইমেইল, ফোন বা আইডি..." oninput="filterUsersAdmin()">
+        <select id="admin-user-status-filter" class="admin-form-control" onchange="filterUsersAdmin()">
+          <option value="all">সব ইউজার</option>
+          <option value="vip">এক্টিভ VIP</option>
+          <option value="blocked">ব্লকড ইউজার</option>
+        </select>
       </div>
 
       <div class="table-responsive" style="margin-top:10px;">
@@ -123,7 +182,7 @@
 
         <input type="text" id="plan-badge-text" placeholder="কাস্টম রিবন ব্যাজ (e.g. POPULAR, HOT)" class="admin-form-control" style="grid-column: span 2;">
 
-        <div style="grid-column: span 2; display:flex; gap:20px; font-size:13px; color:#0f172a;">
+        <div style="grid-column: span 2; display:flex; gap:20px; font-size:13px; color:#f8fafc;">
           <label><input type="checkbox" id="plan-is-soldout"> Sold Out মার্ক করুন</label>
         </div>
 
@@ -147,11 +206,11 @@
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
           <div>
-            <label style="font-size:12px; color:#475569;">VIP লেভেল</label>
+            <label style="font-size:12px; color:#94a3b8;">VIP লেভেল</label>
             <input type="number" id="task-min-vip" placeholder="লেভেল (0=ফ্রি, 1=VIP 1...)" class="admin-form-control" required value="0">
           </div>
           <div id="quantity-input-wrapper">
-            <label style="font-size:12px; color:#475569;">টাস্কের সংখ্যা / পরিমাণ</label>
+            <label style="font-size:12px; color:#94a3b8;">টাস্কের সংখ্যা / পরিমাণ</label>
             <input type="number" id="task-quantity" placeholder="টাস্ক সংখ্যা" class="admin-form-control" required value="1" min="1">
           </div>
         </div>
@@ -248,12 +307,12 @@
       <div class="form-group" style="margin-top:10px;"><label>টাইটেল</label><input type="text" id="welcome-title-input" class="admin-form-control"></div>
       <div class="form-group"><label>বিবরণ</label><textarea id="welcome-text-input" class="admin-form-control" rows="3"></textarea></div>
       <div class="form-group"><label>ছবি URL</label><input type="url" id="welcome-image-input" class="admin-form-control"></div>
-      <div class="form-group" style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #cbd5e1;">
+      <div class="form-group" style="background:#1e293b; padding:10px; border-radius:10px; border:1px solid #334155;">
         <label><b>ইনলাইন বাটন সেটিংস</b></label>
         <input type="text" id="welcome-btn-text-input" class="admin-form-control" placeholder="বাটনের নাম" style="margin-bottom:6px;">
         <input type="url" id="welcome-btn-url-input" class="admin-form-control" placeholder="বাটনের লিংক/URL">
       </div>
-      <div style="margin-bottom:15px; font-size:13px; color:#0f172a;"><label><input type="checkbox" id="welcome-enable-toggle" checked> অন রাখুন</label></div>
+      <div style="margin-bottom:15px; font-size:13px; color:#f8fafc;"><label><input type="checkbox" id="welcome-enable-toggle" checked> অন রাখুন</label></div>
       <button class="btn-action" onclick="saveWelcomePopUpNotice()">সেভ করুন</button>
     </div>
 
@@ -282,7 +341,7 @@
         <button class="btn-action" style="margin-top:8px;" onclick="saveMarqueeNotice()">আপডেট করুন</button>
       </div>
 
-      <div class="form-group" style="margin-top:20px; border-top:1px solid #cbd5e1; padding-top:15px;">
+      <div class="form-group" style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
         <label><b>পুশ নোটিফিকেশন ব্রডকাস্ট</b></label>
         <input type="text" id="notif-broadcast-title" class="admin-form-control" placeholder="টাইটেল" style="margin-bottom:8px;">
         <textarea id="notif-broadcast-desc" class="admin-form-control" placeholder="মেসেজ..." rows="3"></textarea>
@@ -295,11 +354,11 @@
   <!-- FULL USER INFO MODAL -->
   <div id="user-info-modal" class="modal-overlay hidden">
     <div class="modal-content admin-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #cbd5e1; padding-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
         <h3>ইউজারের সম্পূর্ণ তথ্য</h3>
         <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeUserInfoModal()"></i>
       </div>
-      <div id="user-full-details-body" style="font-size:13px; line-height:1.8; color:#0f172a;"></div>
+      <div id="user-full-details-body" style="font-size:13px; line-height:1.8; color:#f8fafc;"></div>
       <button class="btn-action" style="margin-top:15px;" onclick="closeUserInfoModal()">বন্ধ করুন</button>
     </div>
   </div>
