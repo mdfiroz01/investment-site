@@ -85,9 +85,15 @@
       </div>
     </div>
 
-    <!-- SECTION 2: USERS -->
+    <!-- SECTION 2: USERS (WITH REAL-TIME USER SEARCH) -->
     <div id="sec-users" class="admin-section hidden admin-card">
-      <h3><i class="fa-solid fa-users" style="color:#05b381"></i> ইউজার ম্যানেজমেন্ট ও তথ্য</h3>
+      <h3><i class="fa-solid fa-users" style="color:#05b381"></i> ইউজার ম্যানেজমেন্ট ও সার্চ</h3>
+      
+      <!-- REAL-TIME USER SEARCH INPUT -->
+      <div class="form-group" style="margin-top:12px;">
+        <input type="text" id="admin-user-search-input" class="admin-form-control" placeholder="🔍 নাম, ইমেইল, ফোন নম্বর বা আইডি দিয়ে সার্চ করুন..." oninput="filterUsersAdmin()">
+      </div>
+
       <div class="table-responsive" style="margin-top:10px;">
         <table class="admin-table">
           <thead>
@@ -137,6 +143,7 @@
         <input type="hidden" id="edit-task-key" value="">
         <input type="text" id="task-title" placeholder="টাস্ক শিরোনাম (e.g. ভিডিও দেখুন)" class="admin-form-control" required>
         <input type="number" id="task-reward" placeholder="প্রতি টাস্কের রিওয়ার্ড (৳)" class="admin-form-control" required>
+        <input type="url" id="task-image" placeholder="টাস্ক ইমেজ / থাম্বনেইল URL (ঐচ্ছিক)" class="admin-form-control">
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
           <div>
