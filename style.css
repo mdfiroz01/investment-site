@@ -51,7 +51,9 @@ body {
   min-height: 100vh;
 }
 
-/* ADMIN PANEL STYLES */
+/* ===================================================
+   ADMIN PANEL HIGH-CONTRAST SOLID BUTTONS & CARDS FIX
+=================================================== */
 body.admin-body {
   background: #e2e8f0 !important;
   color: #0f172a !important;
@@ -78,6 +80,15 @@ body.admin-body {
   width: calc(100% - 24px) !important;
 }
 
+.admin-card h2, .admin-card h3, .admin-card h4, .admin-card h5, 
+.admin-card label, .admin-card strong, .admin-card b {
+  color: #0f172a !important;
+}
+
+.admin-card p, .admin-card small, .admin-card span {
+  color: #475569 !important;
+}
+
 .admin-form-control {
   width: 100% !important;
   padding: 10px 12px !important;
@@ -90,9 +101,14 @@ body.admin-body {
   font-weight: 600 !important;
 }
 
+.admin-form-control:focus {
+  border-color: #05b381 !important;
+}
+
+/* ADMIN BUTTONS COLOR FIX (SOLID VISIBLE BUTTONS) */
 .btn-action {
   width: 100% !important;
-  padding: 11px !important;
+  padding: 11px 14px !important;
   border: none !important;
   border-radius: 10px !important;
   background: #05b381 !important;
@@ -100,9 +116,39 @@ body.admin-body {
   font-size: 14px !important;
   font-weight: 800 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.25) !important;
+  box-shadow: 0 4px 10px rgba(5, 179, 129, 0.3) !important;
   text-align: center !important;
   display: block !important;
+}
+
+.btn-action:hover, .btn-action:active {
+  background: #038d65 !important;
+  color: #ffffff !important;
+}
+
+.btn-secondary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.btn-success {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.btn-danger {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.btn-info {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.btn-cancel {
+  background: #64748b !important;
+  color: #ffffff !important;
 }
 
 .btn-action-sm {
@@ -498,13 +544,63 @@ body.admin-body {
 
 .badge-live { background: #fee2e2; color: var(--danger); font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 8px; }
 
-.live-withdraw-item {
+/* PRO LIVE WITHDRAW CARD FEED STYLING */
+.live-withdraw-card-pro {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 11.5px;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.live-withdraw-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-withdraw-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.live-withdraw-info h5 {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.live-withdraw-info span {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.live-withdraw-right {
+  text-align: right;
+}
+
+.live-withdraw-amount {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: var(--primary-color);
+}
+
+.live-withdraw-status {
+  font-size: 9.5px;
+  color: #10b981;
+  font-weight: 700;
+  display: block;
 }
 
 /* SIDEBAR DRAWER */
@@ -828,52 +924,143 @@ body.admin-body {
   cursor: not-allowed;
 }
 
-/* SLEEK PROFESSIONAL TASK CARDS */
-.task-card-item {
+/* ===================================================
+   TASK PAGE SCREENSHOT MATCHING DESIGN & STATS GRID
+=================================================== */
+.task-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 12px 14px 12px;
+}
+
+.task-stat-box {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--primary-color);
   border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-light);
+}
+
+.task-stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  transition: transform 0.2s, box-shadow 0.2s;
+  justify-content: center;
+  margin: 0 auto 6px auto;
+  font-size: 14px;
 }
 
-.task-card-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(5, 179, 129, 0.12);
+.task-stat-icon.total { background: rgba(2, 132, 199, 0.12); color: #0284c7; }
+.task-stat-icon.completed { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.task-stat-icon.available { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+
+.task-stat-num {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.2;
 }
 
-.task-free-badge {
-  background: #e0f2fe;
-  color: #0284c7;
-  font-size: 9px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 8px;
-}
-
-.task-reward-tag {
-  font-size: 12px;
-  font-weight: 600;
+.task-stat-label {
+  font-size: 10px;
   color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* SCREENSHOT MATCHING TASK CARD DESIGN */
+.task-screenshot-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-light);
+}
+
+.task-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.task-card-left-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-thumb-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+.task-title-and-tags h4 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.task-tags-row {
+  display: flex;
+  gap: 6px;
+}
+
+.task-pill-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.task-pill-tag.daily {
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--accent-purple);
+}
+
+.task-pill-tag.type {
+  background: rgba(5, 179, 129, 0.15);
+  color: var(--primary-color);
+}
+
+.task-reward-pill {
+  background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 5px 12px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   gap: 5px;
+  box-shadow: 0 3px 10px rgba(255, 71, 87, 0.3);
 }
 
-.btn-start-task {
-  width: auto !important;
-  padding: 8px 14px !important;
-  font-size: 12px !important;
-  border-radius: 10px !important;
+.btn-task-play-full {
+  width: 100% !important;
+  padding: 11px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #05b381 0%, #00f2fe 100%) !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 15px rgba(5, 179, 129, 0.3) !important;
 }
 
 /* WITHDRAW ALL BALANCE BUTTON IN INPUT */
