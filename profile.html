@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EarnerApp - Profile</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119e23c1aae6e24a70.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <header class="top-header">
+    <div class="header-left"><i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i><div style="display:flex; align-items:center; gap:8px;"><img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo"><h3 class="app-logo">EarnerApp</h3></div></div>
+    <div style="display:flex; align-items:center; gap:12px;"><div class="theme-toggle-btn" onclick="toggleAppTheme()"><i id="theme-icon" class="fa-solid fa-moon"></i></div><div class="notif-wrapper" onclick="openNotifModal()"><i class="fa-solid fa-bell notif-icon"></i><span class="notif-badge-dot"></span></div></div>
+  </header>
+
+  <div class="notice-board"><div class="notice-icon-box"><i class="fa-solid fa-bullhorn"></i></div><div class="notice-marquee-wrapper"><div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div></div></div>
+
+  <div class="app-viewport">
+    <div class="page-title-card">
+      <div class="page-title-icon-box"><i class="fa-solid fa-user-gear"></i></div>
+      <div><h2>একাউন্ট সেটিংস</h2><p>আপনার প্রোফাইল তথ্য ও রেফারেল লিঙ্ক দেখুন</p></div>
+    </div>
+
+    <div class="content-card">
+      <h4>প্রোফাইল আপডেট</h4>
+      <form id="profile-update-form" style="margin-top:15px;" onsubmit="handleProfileUpdate(event)">
+        <div class="form-group"><label>নাম</label><input type="text" id="prof-name" class="form-control" required></div>
+        <div class="form-group"><label>ফোন</label><input type="text" id="prof-phone" class="form-control" required></div>
+        <button type="submit" class="btn-action">সেভ করুন</button>
+      </form>
+    </div>
+
+    <div class="content-card">
+      <h4>রেফারেল লিংক</h4>
+      <input type="text" id="ref-link-input" class="form-control" readonly style="margin: 10px 0;">
+      <button class="btn-action" style="background:var(--accent-purple)" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i> লিংক কপি করুন</button>
+    </div>
+
+    <div class="content-card">
+      <h4><i class="fa-solid fa-users-viewfinder" style="color:var(--primary-color)"></i> রেফারেল কমিশন ইতিহাস</h4>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">কোন ইউজার কোন প্ল্যান এক্টিভ করায় কত টাকা কমিশন পেয়েছেন</p>
+      <div id="referral-history-list">
+        <div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>হোম</span></a>
+    <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></a>
+    <a href="plans.html" class="nav-item plan-center-btn"><div class="center-circle"><i class="fa-solid fa-layer-group"></i></div><span>প্ল্যান</span></a>
+    <a href="withdraw.html" class="nav-item"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>উত্তোলন</span></a>
+    <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></a>
+  </nav>
+
+  <div id="common-ui-wrapper"></div>
+  <script src="firebase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
