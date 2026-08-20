@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EarnerApp - Deposit</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <header class="top-header">
+    <div class="header-left"><i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i><div style="display:flex; align-items:center; gap:8px;"><img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo"><h3 class="app-logo">EarnerApp</h3></div></div>
+    <div style="display:flex; align-items:center; gap:12px;"><div class="theme-toggle-btn" onclick="toggleAppTheme()"><i id="theme-icon" class="fa-solid fa-moon"></i></div><div class="notif-wrapper" onclick="openNotifModal()"><i class="fa-solid fa-bell notif-icon"></i><span class="notif-badge-dot"></span></div></div>
+  </header>
+
+  <div class="notice-board"><div class="notice-icon-box"><i class="fa-solid fa-bullhorn"></i></div><div class="notice-marquee-wrapper"><div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div></div></div>
+
+  <div class="app-viewport">
+    <!-- STEP 1 -->
+    <div id="dep-step-1">
+      <div class="deposit-hero-banner">
+        <p>ব্যালেন্স যোগ করুন ✨</p>
+        <h1>Deposit</h1>
+        <sub>পেমেন্ট মেথড সিলেক্ট করে Send Money করে balance add করুন।</sub>
+        <div class="pill-badge"><i class="fa-solid fa-wallet"></i> Dep Balance: <span id="dep-total-bal">৳0.00</span></div>
+      </div>
+
+      <div class="instruction-card">
+        <div class="instruction-title"><i class="fa-solid fa-circle-info"></i><div><h4 style="font-size:15px; color:var(--text-main)">কীভাবে ডিপোজিট করবেন</h4><span style="font-size:11px; color:var(--text-muted)">নিচের ধাপগুলো follow করুন</span></div></div>
+        <div class="instruction-steps">
+          <div class="step-row"><span class="step-num">1</span> নিচ থেকে আপনার পছন্দের payment method সিলেক্ট করুন।</div>
+          <div class="step-row"><span class="step-num">2</span> পরবর্তী পেজ থেকে নম্বর কপি করে Send Money করুন।</div>
+          <div class="step-row"><span class="step-num">3</span> Amount এবং Transaction ID বসিয়ে submit করুন।</div>
+          <div class="step-row"><span class="step-num">4</span> যাচাইয়ের পর এডমিন এপ্রুভ করলে ব্যালেন্স যোগ হবে।</div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <h4 style="margin-bottom:12px; font-size:15px; color:var(--text-main)">পেমেন্ট মেথড সিলেক্ট করুন</h4>
+        <div id="deposit-methods-grid" class="payment-grid"></div>
+      </div>
+
+      <div class="content-card">
+        <h4>ডিপোজিট ইতিহাস</h4>
+        <div id="dep-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো ডিপোজিট রেকর্ড নেই</div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="dep-step-2" class="hidden">
+      <div class="deposit-hero-banner"><p>ডিপোজিট পরিমাণ ও প্ল্যান ✨</p><h1>Amount & Plan</h1><sub>ডাইরেক্ট প্ল্যান এক্টিভ করার জন্য প্ল্যান সিলেক্ট করা যেতে পারে</sub></div>
+      <div class="content-card"><h4 id="selected-method-title">মেথড</h4><span style="font-size:11px; color:var(--text-muted)">ডিপোজিট টাইপ সিলেক্ট করুন</span></div>
+      <div class="content-card">
+        <div class="form-group">
+          <label>ডিপোজিটের উদ্দেশ্য (Target Plan)</label>
+          <select id="dep-target-plan-select" class="form-control" onchange="onDepositPlanTargetChange(this)"><option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option></select>
+        </div>
+        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">পরিমাণ (৳)</label>
+        <input type="number" id="input-dep-amount" class="form-control" placeholder="সর্বনিম্ন 500" value="500">
+        <p style="font-size:12px; margin-top:15px; font-weight:700; color:var(--text-main)">দ্রুত সিলেক্ট</p>
+        <div class="quick-amount-grid">
+          <div class="amount-btn active" onclick="setQuickAmount(500, this)">500</div>
+          <div class="amount-btn" onclick="setQuickAmount(1000, this)">1,000</div>
+          <div class="amount-btn" onclick="setQuickAmount(1500, this)">1,500</div>
+          <div class="amount-btn" onclick="setQuickAmount(2000, this)">2,000</div>
+          <div class="amount-btn" onclick="setQuickAmount(5000, this)">5,000</div>
+          <div class="amount-btn" onclick="setQuickAmount(10000, this)">10,000</div>
+        </div>
+      </div>
+      <div style="margin: 0 12px 12px 12px;"><button class="btn-action" onclick="proceedToStep3()">পরবর্তী ></button></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="dep-step-3" class="hidden">
+      <div class="deposit-hero-banner"><p>ডিপোজিট ভেরিফাই ✨</p><h1>Verify</h1><sub>Send Money করার পর Transaction ID দিয়ে request submit করুন।</sub></div>
+      <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div><span style="font-size:11px; color:var(--text-muted)">পরিমাণ</span><h3 id="step3-amount-display" style="color:var(--primary-color)">৳ 500</h3></div>
+        <button class="btn-continue-sm" style="width:auto; padding:6px 14px;" onclick="goToDepositStep(2)">পরিবর্তন</button>
+      </div>
+      <div class="instruction-card">
+        <div class="form-group"><label style="color:var(--text-main); font-weight:700;">Transaction ID দিন</label><input type="text" id="input-trx-id" class="form-control" placeholder="ট্রানজেকশন আইডি দিন"></div>
+        <div class="instruction-steps">
+          <div class="step-row"><span class="step-num">1</span> আপনার পেমেন্ট মোবাইল অ্যাপ বা ডায়াল কোডে যান।</div>
+          <div class="step-row"><span class="step-num">2</span> Send Money / Cash In অপশন সিলেক্ট করুন।</div>
+          <div class="step-row"><span class="step-num">3</span> প্রাপক নম্বর হিসেবে নিচের নম্বরটি ব্যবহার করুন।</div>
+          <div style="background:var(--primary-light); border:1px dashed var(--primary-color); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+            <strong id="target-phone-num" style="font-size:16px; color:var(--primary-color)">01719856165</strong>
+            <button class="btn-copy" onclick="copyPhoneNum()"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+          <div class="step-row"><span class="step-num">4</span> টাকার পরিমাণ: <b id="step3-confirm-amount" style="color:var(--primary-color)">৳ 500</b></div>
+          <div class="step-row"><span class="step-num">5</span> Payment complete হলে confirmation message থেকে Transaction ID কপি করুন।</div>
+          <div class="step-row"><span class="step-num">6</span> উপরে Transaction ID বসিয়ে VERIFY বাটনে ক্লিক করুন।</div>
+        </div>
+      </div>
+      <div style="margin: 0 12px 12px 12px;"><button class="btn-action" onclick="submitDepositFinal()">VERIFY</button></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>হোম</span></a>
+    <a href="wallet.html" class="nav-item"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></a>
+    <a href="plans.html" class="nav-item plan-center-btn"><div class="center-circle"><i class="fa-solid fa-layer-group"></i></div><span>প্ল্যান</span></a>
+    <a href="withdraw.html" class="nav-item"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>উত্তোলন</span></a>
+    <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></a>
+  </nav>
+
+  <div id="common-ui-wrapper"></div>
+  <script src="firebase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
