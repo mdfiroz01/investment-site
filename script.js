@@ -119,6 +119,13 @@ let systemWithdrawChargePercent = 5;
 let systemRegBonus = 0;
 let activePlanTimerInterval = null;
 
+// PROCESSING FLAGS TO PREVENT RAPID MULTI-CLICK DUPLICATES
+let isTaskClaiming = false;
+let isClaimingBonus = false;
+let isBuyingPlaning = false;
+let isSubmittingDeposit = false;
+let isSubmittingWithdraw = false;
+
 // FIREBASE AUTH OBSERVER
 auth.onAuthStateChanged((user) => {
   if (user) {
@@ -352,7 +359,7 @@ function loadUserData() {
   });
 }
 
-// STUNNING HOMEPAGE "NO ACTIVE PLAN" HERO BANNER / LIVE COUNTDOWN TIMER
+// LIVE COUNTDOWN TIMER FOR ACTIVE VIP PLAN & EXPIRATION POPUP
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -474,17 +481,29 @@ function renderTaskPagePlanBonusBanner() {
   }
 }
 
-// CLAIM PLAN ACTIVATION BONUS
+// CLAIM PLAN ACTIVATION BONUS WITH ATOMIC ATCLUSION
 window.claimActivePlanBonus = function() {
-  if (!userData || !userData.eligiblePlanBonus || userData.planBonusClaimed === true) return;
+  if (!userData || !userData.eligiblePlanBonus || userData.planBonusClaimed === true || isClaimingBonus) return;
 
+  isClaimingBonus = true;
   const bonusAmt = Number(userData.eligiblePlanBonus);
-  const updates = {};
-  updates[`users/${currentUser.uid}/incomeBalance`] = (userData.incomeBalance || 0) + bonusAmt;
-  updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + bonusAmt;
-  updates[`users/${currentUser.uid}/planBonusClaimed`] = true;
 
-  db.ref().update(updates).then(() => {
+  db.ref('users/' + currentUser.uid).transaction((uData) => {
+    if (!uData || uData.planBonusClaimed === true) {
+      return; // ABORT TRANSACTION IF ALREADY CLAIMED
+    }
+    uData.incomeBalance = (uData.incomeBalance || 0) + bonusAmt;
+    uData.totalIncome = (uData.totalIncome || 0) + bonusAmt;
+    uData.planBonusClaimed = true;
+    return uData;
+  }, (err, committed) => {
+    isClaimingBonus = false;
+
+    if (err || !committed) {
+      showCustomAlert("এই বোনাসটি ইতিমধ্যে ক্লেইম করা হয়েছে!", "তথ্য", "info");
+      return;
+    }
+
     db.ref('history').push().set({
       uid: currentUser.uid,
       type: 'Plan Bonus',
@@ -557,7 +576,7 @@ function checkAndShowWelcomeNotice() {
   });
 }
 
-// GATEWAYS & CONFIG (REGISTRATION BONUS DISPLAY ON REGISTER PAGE)
+// GATEWAYS & CONFIG
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
     if (snap.exists() && snap.val().text) {
@@ -715,7 +734,7 @@ function renderPlanCardHTML(plan) {
 }
 
 window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit, withdrawChargePercent = 5, activationBonus = 0, durationDays = 30) {
-  if (!userData) return;
+  if (!userData || isBuyingPlaning) return;
   const depBal = Number(userData.depositBalance || 0);
 
   if (depBal < price) {
@@ -724,6 +743,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
   }
 
   showCustomConfirm("প্ল্যান ক্রয় নিশ্চিতকরণ", `আপনি কি ৳${price} দিয়ে ${planName} ক্রয় করতে চান?`, function() {
+    isBuyingPlaning = true;
     const durationMs = Number(durationDays || 30) * 24 * 60 * 60 * 1000;
     const expireTimestamp = Date.now() + durationMs;
 
@@ -740,13 +760,16 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     updates['users/' + currentUser.uid + '/planBonusClaimed'] = false;
 
     db.ref().update(updates).then(() => {
+      isBuyingPlaning = false;
       showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে!${activationBonus > 0 ? ` আপনার ৳${activationBonus} বোনাস টাস্ক পেজে ক্লেইমের জন্য জমা হয়েছে।` : ''}`, "প্ল্যান আনলকড! 🎉", "success");
       switchTab('tab-tasks');
-    }).catch(err => showCustomAlert('Error: ' + err.message, "ত্রুটি", "error"));
+    }).catch(err => {
+      isBuyingPlaning = false;
+      showCustomAlert('Error: ' + err.message, "ত্রুটি", "error");
+    });
   });
 };
 
-// AUTO SELECT TARGET PLAN AND AMOUNT WHEN DEPOSITING FOR PLAN
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
 
@@ -765,7 +788,7 @@ function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit
   }, 50);
 }
 
-// TASK SYSTEM WITH COMPLETED TASK HIDING & SCREENSHOT-MATCHING TASK CARDS
+// TASK SYSTEM WITH ATOMIC FIREBASE TRANSACTION (PREVENTS MULTI-CLAIM DUPLICATE REWARDS)
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -919,40 +942,65 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
+// ATOMIC TASK REWARD CLAIMING WITH FIREBASE DATABASE TRANSACTION LOCK (PREVENTS DUPES)
 document.getElementById('btn-claim-task').addEventListener('click', () => {
-  if (!activeTaskObj || !userData) return;
+  if (!activeTaskObj || !userData || isTaskClaiming) return;
+
+  isTaskClaiming = true;
+  const claimBtn = document.getElementById('btn-claim-task');
+  if (claimBtn) claimBtn.disabled = true; // DISABLE BUTTON IMMEDIATELY ON CLICK
+
+  const currentTask = activeTaskObj;
+  activeTaskObj = null; // NULLIFY OBJECT IMMEDIATELY ON CLICK TO PREVENT CONCURRENT CLICKS
 
   const today = new Date().toISOString().split('T')[0];
-  const reward = activeTaskObj.reward;
-  const isFree = activeTaskObj.isFreeTask === true;
+  const reward = currentTask.reward;
+  const isFree = currentTask.isFreeTask === true;
 
-  const updates = {};
-  updates[`users/${currentUser.uid}/incomeBalance`] = (userData.incomeBalance || 0) + reward;
-  updates[`users/${currentUser.uid}/todayIncome`] = (userData.todayIncome || 0) + reward;
-  updates[`users/${currentUser.uid}/totalIncome`] = (userData.totalIncome || 0) + reward;
-  
-  updates[`user_tasks/${currentUser.uid}/${today}/${activeTaskObj.taskId}`] = { 
-    completed: true, 
-    isFreeTask: isFree,
-    timestamp: firebase.database.ServerValue.TIMESTAMP 
-  };
+  // ATOMIC DATABASE TRANSACTION ON TASK COMPLETION STATUS
+  const taskRef = db.ref(`user_tasks/${currentUser.uid}/${today}/${currentTask.taskId}/completed`);
 
-  db.ref().update(updates).then(() => {
-    db.ref('history').push().set({
-      uid: currentUser.uid,
-      type: 'Task Reward',
-      amount: reward,
-      title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
-      status: 'approved',
-      timestamp: firebase.database.ServerValue.TIMESTAMP
+  taskRef.transaction((currentStatus) => {
+    if (currentStatus === true) {
+      return; // ABORT TRANSACTION IF ALREADY COMPLETED BY A PREVIOUS CLICK!
+    }
+    return true; // MARK COMPLETED ATOMICALLY IN DB
+  }, (error, committed) => {
+    if (error || !committed) {
+      isTaskClaiming = false;
+      if (claimBtn) claimBtn.disabled = false;
+      showCustomAlert("আপনি এই টাস্কের রিওয়ার্ড ইতিমধ্যেই পেয়ে গেছেন!", "পুনরাবৃত্তি সম্ভব নয়", "warning");
+      closeTaskModal();
+      return;
+    }
+
+    // TASK IS ATOMICALLY MARKED COMPLETED -> NOW CREDIT USER BALANCE ATOMICALLY
+    db.ref('users/' + currentUser.uid).transaction((uData) => {
+      if (!uData) return uData;
+      uData.incomeBalance = (uData.incomeBalance || 0) + reward;
+      uData.todayIncome = (uData.todayIncome || 0) + reward;
+      uData.totalIncome = (uData.totalIncome || 0) + reward;
+      return uData;
+    }, (balErr, balCommitted) => {
+      isTaskClaiming = false;
+      if (claimBtn) claimBtn.disabled = false;
+
+      // RECORD TRANSACTION HISTORY
+      db.ref('history').push().set({
+        uid: currentUser.uid,
+        type: 'Task Reward',
+        amount: reward,
+        title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
+        status: 'approved',
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      document.getElementById('task-processing-view').classList.add('hidden');
+      document.getElementById('task-success-view').classList.remove('hidden');
+      document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
+
+      initIncomeChartRealtime();
     });
-
-    document.getElementById('task-processing-view').classList.add('hidden');
-    document.getElementById('task-success-view').classList.remove('hidden');
-    document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
-
-    activeTaskObj = null;
-    initIncomeChartRealtime();
   });
 });
 
@@ -1016,8 +1064,12 @@ window.copyPhoneNum = function() {
 };
 
 window.submitDepositFinal = function() {
+  if (isSubmittingDeposit) return;
+
   const trxId = document.getElementById('input-trx-id').value;
   if (!trxId) return showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
+
+  isSubmittingDeposit = true;
 
   const targetPlanSelect = document.getElementById('dep-target-plan-select');
   let targetPlanData = null;
@@ -1044,10 +1096,14 @@ window.submitDepositFinal = function() {
     status: 'pending',
     timestamp: firebase.database.ServerValue.TIMESTAMP
   }).then(() => {
+    isSubmittingDeposit = false;
     showCustomAlert('ডিপোজিট রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'ডিপোজিট রিকোয়েস্ট জমা', 'success');
     document.getElementById('input-trx-id').value = '';
     goToDepositStep(1);
     loadDepositHistory();
+  }).catch(err => {
+    isSubmittingDeposit = false;
+    showCustomAlert('Error: ' + err.message, "ত্রুটি", "error");
   });
 };
 
@@ -1073,7 +1129,7 @@ function loadDepositHistory() {
   });
 }
 
-// E-WALLET SETUP & WITHDRAWAL LOGIC (UNIQUE WALLET CONSTRAINT CHECK)
+// E-WALLET SETUP & WITHDRAWAL LOGIC
 function checkAndRenderEWalletView() {
   const notSetCard = document.getElementById('withdraw-wallet-not-set-card');
   const setView = document.getElementById('withdraw-wallet-set-view');
@@ -1177,6 +1233,7 @@ window.selectAllBalanceForWithdraw = function() {
 
 window.handleWithdrawSubmit = function(e) {
   e.preventDefault();
+  if (isSubmittingWithdraw) return;
 
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     showCustomAlert('উত্তোলন করার জন্য আপনাকে অবশ্যই একটি প্রিমিয়াম প্ল্যান এক্টিভ করতে হবে!', 'প্ল্যান প্রয়োজন', 'lock');
@@ -1209,6 +1266,8 @@ window.handleWithdrawSubmit = function(e) {
     showCustomAlert('পর্যাপ্ত ওয়ালেট ব্যালেন্স নেই!', 'ব্যালেন্স অপ্রতুল', 'warning');
     return;
   }
+
+  isSubmittingWithdraw = true;
 
   let remAmt = amt;
   let newIncBal = userData.incomeBalance || 0;
@@ -1244,10 +1303,14 @@ window.handleWithdrawSubmit = function(e) {
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
   }).then(() => {
+    isSubmittingWithdraw = false;
     showCustomAlert('উত্তোলন রিকোয়েস্ট সফলভাবে সাবমিট করা হয়েছে!', 'উত্তোলন সফল', 'success');
     document.getElementById('withdraw-form').reset();
     calculateWithdrawFeePreview();
     loadWithdrawHistory();
+  }).catch(err => {
+    isSubmittingWithdraw = false;
+    showCustomAlert('Error: ' + err.message, "ত্রুটি", "error");
   });
 };
 
@@ -1311,7 +1374,7 @@ function loadReferralCommissionHistory() {
   });
 }
 
-// PROFILE UPDATE (AUTOMATICALLY USES DEFAULT AVATAR)
+// PROFILE UPDATE
 window.handleProfileUpdate = function(e) {
   e.preventDefault();
   const name = document.getElementById('prof-name').value;
@@ -1385,114 +1448,11 @@ function renderLiveWithdrawsInfinite() {
   if (!container) return;
 
   const mockFeed = [
-      { num: '017****1234', method: 'bKash', amount: '৳১৭০০', time: '১ মিনিট আগে' },
-  { num: '018****8890', method: 'Nagad', amount: '৳১২০০', time: '৩ মিনিট আগে' },
-  { num: '019****4567', method: 'Rocket', amount: '৳৭০০০', time: '৫ মিনিট আগে' },
-  { num: '016****9012', method: 'bKash', amount: '৳১৫০০', time: '৭ মিনিট আগে' },
-  { num: '017****3847', method: 'bKash', amount: '৳৪৫০০', time: '১২ মিনিট আগে' },
-  { num: '018****7291', method: 'Nagad', amount: '৳২৮০০', time: '২৫ মিনিট আগে' },
-  { num: '019****5632', method: 'Rocket', amount: '৳৬৩০০', time: '৮ মিনিট আগে' },
-  { num: '013****8912', method: 'bKash', amount: '৳৩২০০', time: '৪৫ মিনিট আগে' },
-  { num: '014****4567', method: 'Nagad', amount: '৳৫৭০০', time: '৩ মিনিট আগে' },
-  { num: '015****2345', method: 'Rocket', amount: '৳৭১০০', time: '১৯ মিনিট আগে' },
-  { num: '017****6789', method: 'bKash', amount: '৳৮২০০', time: '৫২ মিনিট আগে' },
-  { num: '018****3456', method: 'Nagad', amount: '৳৩৯০০', time: '১৪ মিনিট আগে' },
-  { num: '019****7890', method: 'Rocket', amount: '৳৫১০০', time: '৩৬ মিনিট আগে' },
-  { num: '016****2345', method: 'bKash', amount: '৳৬৭০০', time: '৪২ মিনিট আগে' },
-  { num: '013****5678', method: 'Nagad', amount: '৳৪২০০', time: '২৮ মিনিট আগে' },
-  { num: '014****8901', method: 'Rocket', amount: '৳৭৮০০', time: '৯ মিনিট আগে' },
-  { num: '015****1234', method: 'bKash', amount: '৳২৫০০', time: '৫৫ মিনিট আগে' },
-  { num: '017****5678', method: 'Nagad', amount: '৳৯১০০', time: '১৭ মিনিট আগে' },
-  { num: '018****9012', method: 'Rocket', amount: '৳৩৮০০', time: '৩৩ মিনিট আগে' },
-  { num: '019****3456', method: 'bKash', amount: '৳৫৪০০', time: '৬ মিনিট আগে' },
-  { num: '016****7890', method: 'Nagad', amount: '৳৬২০০', time: '৪৯ মিনিট আগে' },
-  { num: '013****1234', method: 'Rocket', amount: '৳৭৩০০', time: '২১ মিনিট আগে' },
-  { num: '014****5678', method: 'bKash', amount: '৳৮৬০০', time: '১১ মিনিট আগে' },
-  { num: '015****9012', method: 'Nagad', amount: '৳৪৯০০', time: '৩৮ মিনিট আগে' },
-  { num: '017****3456', method: 'Rocket', amount: '৳৫৮০০', time: '৫৭ মিনিট আগে' },
-  { num: '018****7890', method: 'bKash', amount: '৳৬৯০০', time: '২ মিনিট আগে' },
-  { num: '019****1234', method: 'Nagad', amount: '৳৭২০০', time: '২৬ মিনিট আগে' },
-  { num: '016****5678', method: 'Rocket', amount: '৳৮৩০০', time: '৪৩ মিনিট আগে' },
-  { num: '013****9012', method: 'bKash', amount: '৳৩৬০০', time: '১৫ মিনিট আগে' },
-  { num: '014****3456', method: 'Nagad', amount: '৳৫৯০০', time: '৩৯ মিনিট আগে' },
-  { num: '015****7890', method: 'Rocket', amount: '৳৬৪০০', time: '২২ মিনিট আগে' },
-  { num: '017****2345', method: 'bKash', amount: '৳৭৫০০', time: '৪৮ মিনিট আগে' },
-  { num: '018****6789', method: 'Nagad', amount: '৳৪৭০০', time: '৩১ মিনিট আগে' },
-  { num: '019****0123', method: 'Rocket', amount: '৳৮৯০০', time: '১৩ মিনিট আগে' },
-  { num: '016****4567', method: 'bKash', amount: '৳৫২০০', time: '৫৯ মিনিট আগে' },
-  { num: '013****8901', method: 'Nagad', amount: '৳৬৫০০', time: '১৮ মিনিট আগে' },
-  { num: '014****2345', method: 'Rocket', amount: '৳৭৪০০', time: '৪১ মিনিট আগে' },
-  { num: '015****6789', method: 'bKash', amount: '৳৩৭০০', time: '৩৫ মিনিট আগে' },
-  { num: '017****0123', method: 'Nagad', amount: '৳৫৬০০', time: '৭ মিনিট আগে' },
-  { num: '018****4567', method: 'Rocket', amount: '৳৮১০০', time: '৫৩ মিনিট আগে' },
-  { num: '019****8901', method: 'bKash', amount: '৳৬৮০০', time: '২৯ মিনিট আগে' },
-  { num: '016****2345', method: 'Nagad', amount: '৳৪৩০০', time: '৪ মিনিট আগে' },
-  { num: '013****6789', method: 'Rocket', amount: '৳৭৯০০', time: '৪৬ মিনিট আগে' },
-  { num: '014****0123', method: 'bKash', amount: '৳৯২০০', time: '২০ মিনিট আগে' },
-  { num: '015****4567', method: 'Nagad', amount: '৳২৯০০', time: '৩৭ মিনিট আগে' },
-  { num: '017****8901', method: 'Rocket', amount: '৳৫৩০০', time: '৫৪ মিনিট আগে' },
-  { num: '018****2345', method: 'bKash', amount: '৳৬৬০০', time: '১০ মিনিট আগে' },
-  { num: '019****6789', method: 'Nagad', amount: '৳৭৮০০', time: '২৭ মিনিট আগে' },
-  { num: '016****0123', method: 'Rocket', amount: '৳৪৬০০', time: '৪৪ মিনিট আগে' },
-  { num: '013****4567', method: 'bKash', amount: '৳৫১৫০', time: '১৬ মিনিট আগে' },
-  { num: '014****8901', method: 'Nagad', amount: '৳৮৪০০', time: '৫০ মিনিট আগে' },
-  { num: '015****2345', method: 'Rocket', amount: '৳৩৫০০', time: '২৩ মিনিট আগে' },
-  { num: '017****6789', method: 'bKash', amount: '৳৫৫০০', time: '৩২ মিনিট আগে' },
-  { num: '018****0123', method: 'Nagad', amount: '৳৭৬০০', time: '৪০ মিনিট আগে' },
-  { num: '019****4567', method: 'Rocket', amount: '৳৯৩০০', time: '৫ মিনিট আগে' },
-  { num: '016****8901', method: 'bKash', amount: '৳২৭০০', time: '৫৮ মিনিট আগে' },
-  { num: '013****2345', method: 'Nagad', amount: '৳৪৮০০', time: '৩৪ মিনিট আগে' },
-  { num: '014****6789', method: 'Rocket', amount: '৳৬১০০', time: '২৪ মিনিট আগে' },
-  { num: '015****0123', method: 'bKash', amount: '৳৭২০০', time: '৪৭ মিনিট আগে' },
-  { num: '017****4567', method: 'Nagad', amount: '৳৮৫০০', time: '১ মিনিট আগে' },
-  { num: '018****8901', method: 'Rocket', amount: '৳৩৯০০', time: '৩০ মিনিট আগে' },
-  { num: '019****2345', method: 'bKash', amount: '৳৫৭০০', time: '৫৬ মিনিট আগে' },
-  { num: '016****6789', method: 'Nagad', amount: '৳৬৩০০', time: '১৯ মিনিট আগে' },
-  { num: '013****0123', method: 'Rocket', amount: '৳৭৫০০', time: '৮ মিনিট আগে' },
-  { num: '014****4567', method: 'bKash', amount: '৳৪১০০', time: '৩ মিনিট আগে' },
-  { num: '015****8901', method: 'Nagad', amount: '৳৬৭০০', time: '৪৩ মিনিট আগে' },
-  { num: '017****2345', method: 'Rocket', amount: '৳৫৪০০', time: '১২ মিনিট আগে' },
-  { num: '018****6789', method: 'bKash', amount: '৳৭৯০০', time: '৩৫ মিনিট আগে' },
-  { num: '019****0123', method: 'Nagad', amount: '৳৪৫০০', time: '২৬ মিনিট আগে' },
-  { num: '016****4567', method: 'Rocket', amount: '৳৬২০০', time: '৫১ মিনিট আগে' },
-  { num: '013****8901', method: 'bKash', amount: '৳৩৮০০', time: '১৪ মিনিট আগে' },
-  { num: '014****2345', method: 'Nagad', amount: '৳৫৯০০', time: '৩৩ মিনিট আগে' },
-  { num: '015****6789', method: 'Rocket', amount: '৳৭১০০', time: '৬ মিনিট আগে' },
-  { num: '017****0123', method: 'bKash', amount: '৳৮২৫০', time: '৪২ মিনিট আগে' },
-  { num: '018****4567', method: 'Nagad', amount: '৳৫৬০০', time: '২২ মিনিট আগে' },
-  { num: '019****8901', method: 'Rocket', amount: '৳৪৩০০', time: '৪৯ মিনিট আগে' },
-  { num: '016****2345', method: 'bKash', amount: '৳৬৪০০', time: '১৭ মিনিট আগে' },
-  { num: '013****6789', method: 'Nagad', amount: '৳৭৭০০', time: '৩৯ মিনিট আগে' },
-  { num: '014****0123', method: 'Rocket', amount: '৳৫২০০', time: '২ মিনিট আগে' },
-  { num: '015****4567', method: 'bKash', amount: '৳৯০৫০', time: '৫৪ মিনিট আগে' },
-  { num: '017****8901', method: 'Nagad', amount: '৳৩৩০০', time: '২৮ মিনিট আগে' },
-  { num: '018****2345', method: 'Rocket', amount: '৳৪৯০০', time: '১০ মিনিট আগে' },
-  { num: '019****6789', method: 'bKash', amount: '৳৬৮০০', time: '৪৬ মিনিট আগে' },
-  { num: '016****0123', method: 'Nagad', amount: '৳৭২৫০', time: '২১ মিনিট আগে' },
-  { num: '013****4567', method: 'Rocket', amount: '৳৫৮০০', time: '১৫ মিনিট আগে' },
-  { num: '014****8901', method: 'bKash', amount: '৳৬৯০০', time: '৪০ মিনিট আগে' },
-  { num: '015****2345', method: 'Nagad', amount: '৳৮৩০০', time: '৩ মিনিট আগে' },
-  { num: '017****6789', method: 'Rocket', amount: '৳৩৭০০', time: '৫৭ মিনিট আগে' },
-  { num: '018****0123', method: 'bKash', amount: '৳৫৩০০', time: '৩২ মিনিট আগে' },
-  { num: '019****4567', method: 'Nagad', amount: '৳৭৪০০', time: '১ মিনিট আগে' },
-  { num: '016****8901', method: 'Rocket', amount: '৳৪২০০', time: '৪৪ মিনিট আগে' },
-  { num: '013****2345', method: 'bKash', amount: '৳৬৫০০', time: '১৮ মিনিট আগে' },
-  { num: '014****6789', method: 'Nagad', amount: '৳৭৮৫০', time: '৩৬ মিনিট আগে' },
-  { num: '015****0123', method: 'Rocket', amount: '৳৫১০০', time: '৯ মিনিট আগে' },
-  { num: '017****4567', method: 'bKash', amount: '৳৯৪০০', time: '৪৮ মিনিট আগে' },
-  { num: '018****8901', method: 'Nagad', amount: '৳২৬০০', time: '২৩ মিনিট আগে' },
-  { num: '019****2345', method: 'Rocket', amount: '৳৪৮০০', time: '৫২ মিনিট আগে' },
-  { num: '016****6789', method: 'bKash', amount: '৳৬৬০০', time: '১৩ মিনিট আগে' },
-  { num: '013****0123', method: 'Nagad', amount: '৳৭৫০০', time: '৩৮ মিনিট আগে' },
-  { num: '014****4567', method: 'Rocket', amount: '৳৮৬৫০', time: '৪ মিনিট আগে' },
-  { num: '015****8901', method: 'bKash', amount: '৳৩৪০০', time: '৪৭ মিনিট আগে' },
-  { num: '017****2345', method: 'Nagad', amount: '৳৫৫০০', time: '২০ মিনিট আগে' },
-  { num: '018****6789', method: 'Rocket', amount: '৳৭০০০', time: '৫৯ মিনিট আগে' },
-  { num: '019****0123', method: 'bKash', amount: '৳৬২৫০', time: '৩১ মিনিট আগে' },
-  { num: '016****4567', method: 'Nagad', amount: '৳৪৪০০', time: '৭ মিনিট আগে' },
-  { num: '013****8901', method: 'Rocket', amount: '৳৮১০০', time: '৪৫ মিনিট আগে' },
-  { num: '014****2345', method: 'bKash', amount: '৳৫৭০০', time: '২৪ মিনিট আগে' }
-];
+    { num: '017****1234', method: 'bKash', amount: '৳৫০০', time: '১ মিনিট আগে' },
+    { num: '018****8890', method: 'Nagad', amount: '৳১২০০', time: '৩ মিনিট আগে' },
+    { num: '019****4567', method: 'Rocket', amount: '৳৭৫০', time: '৫ মিনিট আগে' },
+    { num: '016****9012', method: 'bKash', amount: '৳১৫০০', time: '৭ মিনিট আগে' }
+  ];
 
   let feedIndex = 0;
   function rotateFeed() {
