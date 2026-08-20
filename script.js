@@ -1,6 +1,94 @@
 const DEFAULT_AVATAR = "https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png";
 
-// UNIVERSAL CUSTOM ALERT SYSTEM
+// PREVENT GESTURE PINCH-TO-ZOOM ON IOS & MOBILE
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+document.addEventListener('gestureend', (e) => e.preventDefault());
+
+// INJECT COMMON UI MODALS & SIDEBAR INTO EVERY PAGE AUTOMATICALLY
+function injectCommonUI() {
+  const wrapper = document.getElementById('common-ui-wrapper');
+  if (!wrapper) return;
+
+  wrapper.innerHTML = `
+    <!-- AUTH MODAL CONTAINER -->
+    <div id="auth-container" class="modal-overlay">
+      <div class="modal-content">
+        <form id="login-form">
+          <div style="text-align:center; margin-bottom:15px;"><img src="${DEFAULT_AVATAR}" id="login-app-logo" class="auth-ring-avatar" alt="Logo"></div>
+          <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">লগইন করুন</h2>
+          <div class="form-group"><label>ইমেইল অ্যাড্রেস</label><input type="email" id="login-email" class="form-control" required placeholder="example@mail.com"></div>
+          <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="login-password" class="form-control" required placeholder="পাসওয়ার্ড লিখুন"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 12px;">
+            <label><input type="checkbox" id="remember-me"> মনে রাখুন</label>
+            <a href="javascript:void(0)" onclick="showForgotForm(event)" style="color: var(--primary-color); font-weight: 600;">পাসওয়ার্ড ভুলে গেছেন?</a>
+          </div>
+          <button type="submit" class="btn-action">লগইন</button>
+          <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">একাউন্ট নেই? <a href="javascript:void(0)" onclick="showRegisterForm(event)" style="color: var(--primary-color); font-weight:700;">রেজিস্ট্রেশন করুন</a></p>
+        </form>
+
+        <form id="register-form" class="hidden">
+          <div style="text-align:center; margin-bottom:15px;"><img src="${DEFAULT_AVATAR}" class="auth-ring-avatar" alt="Logo"></div>
+          <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
+          <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!</div>
+          <div class="form-group"><label>সম্পূর্ণ নাম</label><input type="text" id="reg-name" class="form-control" required placeholder="আপনার নাম"></div>
+          <div class="form-group"><label>ইমেইল</label><input type="email" id="reg-email" class="form-control" required placeholder="example@mail.com"></div>
+          <div class="form-group"><label>ফোন নম্বর</label><input type="tel" id="reg-phone" class="form-control" required placeholder="01700000000"></div>
+          <div class="form-group"><label>কান্ট্রি</label><input type="text" id="reg-country" class="form-control" required placeholder="Bangladesh" value="Bangladesh"></div>
+          <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="reg-password" class="form-control" required placeholder="সর্বনিম্ন ৬ অক্ষর"></div>
+          <div class="form-group"><label>রেফারেল কোড (ঐচ্ছিক)</label><input type="text" id="reg-ref" class="form-control" placeholder="রেফার কোড"></div>
+          <button type="submit" class="btn-action">রেজিস্টার করুন</button>
+          <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">একাউন্ট আছে? <a href="javascript:void(0)" onclick="showLoginForm(event)" style="color: var(--primary-color); font-weight:700;">লগইন করুন</a></p>
+        </form>
+
+        <form id="forgot-password-form" class="hidden">
+          <div style="text-align:center; margin-bottom:15px;"><img src="${DEFAULT_AVATAR}" class="auth-ring-avatar" alt="Logo"></div>
+          <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary-color);">পাসওয়ার্ড রিসেট</h2>
+          <div class="form-group"><label>রেজিস্টার্ড ইমেইল অ্যাড্রেস</label><input type="email" id="reset-email" class="form-control" required placeholder="example@mail.com"></div>
+          <button type="submit" class="btn-action">রিসেট লিংক পাঠান ✉️</button>
+          <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">পাসওয়ার্ড মনে পড়েছে? <a href="javascript:void(0)" onclick="showLoginForm(event)" style="color: var(--primary-color); font-weight:700;">লগইন করুন</a></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- ALERT & CONFIRM MODALS -->
+    <div id="app-alert-modal" class="modal-overlay hidden"><div class="modal-content" style="text-align: center; padding: 25px 20px;"><div id="app-alert-icon" style="margin-bottom: 12px;"></div><h3 id="app-alert-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">বিজ্ঞপ্তি</h3><p id="app-alert-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p><button class="btn-action" onclick="closeCustomAlert()">ঠিক আছে 👍</button></div></div>
+    <div id="app-confirm-modal" class="modal-overlay hidden"><div class="modal-content" style="text-align: center; padding: 25px 20px;"><div style="margin-bottom: 12px;"><i class="fa-solid fa-circle-question" style="font-size:42px; color:var(--primary-color);"></i></div><h3 id="app-confirm-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">নিশ্চিতকরণ</h3><p id="app-confirm-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p><div style="display:flex; gap:10px;"><button class="btn-action" style="background:#64748b;" onclick="closeCustomConfirm()">বাতিল</button><button class="btn-action" onclick="executeCustomConfirm()">হ্যাঁ, নিশ্চিত 👍</button></div></div></div>
+
+    <!-- E-WALLET SETUP MODAL -->
+    <div id="wallet-setup-modal" class="modal-overlay hidden"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;"><h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> E-Wallet সেটআপ করুন</h3><i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeWalletSetupModal()"></i></div><form id="ewallet-setup-form" onsubmit="saveEWalletSetup(event)"><div class="form-group"><label>অ্যাকাউন্ট টাইপ সিলেক্ট করুন</label><select id="ewallet-type" class="form-control" required><option value="bKash">bKash (বিকাশ)</option><option value="Nagad">Nagad (নগদ)</option><option value="Rocket">Rocket (রকেট)</option><option value="USDT">USDT (TRC20)</option></select></div><div class="form-group"><label>আপনার সম্পূর্ণ নাম</label><input type="text" id="ewallet-fullname" class="form-control" required placeholder="আপনার সঠিক নাম"></div><div class="form-group"><label>ওয়ালেট / অ্যাকাউন্ট নম্বর</label><input type="text" id="ewallet-number" class="form-control" required placeholder="01700000000"></div><div class="form-group"><label>উইথড্র পিন (৫ সংখ্যার গোপন পিন)</label><input type="password" id="ewallet-pin" class="form-control" required maxlength="5" pattern="\\d{5}" placeholder="৫ সংখ্যার পিন দিন (e.g. 12345)"></div><p style="font-size:11px; color:var(--danger); margin-bottom:12px;">* এক ওয়ালেট নম্বর একাধিক একাউন্টে সেট করা যাবে না।</p><button type="submit" class="btn-action">ওয়ালেট সেভ করুন 👍</button></form></div></div>
+
+    <!-- WELCOME MODAL -->
+    <div id="welcome-modal" class="modal-overlay hidden"><div class="modal-content" style="text-align:center;"><div id="welcome-img-box"></div><h3 id="welcome-title" style="font-size:18px; color:var(--primary-color); margin-bottom:8px;">স্বাগতম!</h3><p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p><div id="welcome-btn-container" style="margin-bottom:10px;"></div><button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button></div></div>
+
+    <!-- SIDEBAR DRAWER OVERLAY -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+    <div id="sidebar-drawer" class="sidebar-drawer">
+      <div class="sidebar-header"><div style="display:flex; align-items:center; gap:8px;"><img src="${DEFAULT_AVATAR}" class="header-logo-img" alt="Logo"><h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3></div><i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeSidebar()"></i></div>
+      <ul class="sidebar-menu">
+        <li onclick="window.location.href='index.html'"><i class="fa-solid fa-house"></i> হোম ড্যাশবোর্ড</li>
+        <li onclick="window.location.href='wallet.html'"><i class="fa-solid fa-wallet"></i> মাই ওয়ালেট</li>
+        <li onclick="window.location.href='tasks.html'"><i class="fa-solid fa-list-check"></i> দৈনিক টাস্ক</li>
+        <li onclick="window.location.href='plans.html'"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
+        <li onclick="window.location.href='spin.html'"><i class="fa-solid fa-arrows-spin" style="color:#f59e0b"></i> স্পিন অ্যান্ড উইন 🎡</li>
+        <li onclick="window.location.href='deposit.html'"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
+        <li onclick="window.location.href='withdraw.html'"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
+        <li onclick="window.location.href='profile.html'"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
+        <li onclick="toggleAppTheme(); closeSidebar()"><i class="fa-solid fa-circle-half-stroke"></i> ডার্ক / লাইট মোড</li>
+        <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
+      </ul>
+    </div>
+
+    <!-- TASK REWARD MODAL -->
+    <div id="task-modal" class="modal-overlay hidden"><div class="modal-content reward-pop-card"><div id="task-processing-view"><div class="reward-icon-circle"><i class="fa-solid fa-trophy gold-coin-glow"></i></div><h3 id="task-modal-title" style="color:var(--primary-color); font-size:18px; margin-bottom:4px;">টাস্ক প্রসেসিং হচ্ছে...</h3><p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">দয়া করে অপেক্ষা করুন...</p><div class="progress-bar-wrap"><div id="task-progress" class="progress-bar-fill"></div></div><div id="reward-amount-pop" class="hidden" style="margin:12px 0;"><span style="font-size:12px; color:var(--text-muted);">আপনার অর্জিত রিওয়ার্ড</span><h1 id="pop-reward-val" style="font-size:32px; font-weight:900; color:var(--primary-color);">+৳০.০০</h1></div><button id="btn-claim-task" class="btn-action hidden" style="margin-top: 10px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);"><i class="fa-solid fa-gift"></i> রিওয়ার্ড দাবি করুন 🚀</button></div><div id="task-success-view" class="hidden"><div class="reward-icon-circle" style="background:#d1fae5;"><i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i></div><h3 style="color:#10b981; font-size:20px; font-weight:800; margin-bottom:6px;">🎉 রিওয়ার্ড জমা হয়েছে!</h3><p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;"><strong id="success-reward-val" style="color:var(--primary-color); font-size:20px;">+৳০.০০</strong><br>সফলভাবে আপনার ইনকাম ওয়ালেটে জমা হয়েছে。</p><button class="btn-action" style="margin-top:10px;" onclick="closeTaskModal()">ঠিক আছে 👍</button></div></div></div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  injectCommonUI();
+});
+
+// UNIVERSAL CUSTOM ALERT
 window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি", iconType = "success") {
   const modal = document.getElementById('app-alert-modal');
   const titleEl = document.getElementById('app-alert-title');
@@ -11,15 +99,10 @@ window.showCustomAlert = function(message, title = "বিজ্ঞপ্তি"
   titleEl.innerText = title;
   msgEl.innerText = message;
 
-  if (iconType === 'success') {
-    iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981;"></i>';
-  } else if (iconType === 'error' || iconType === 'warning') {
-    iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:42px; color:#ef4444;"></i>';
-  } else if (iconType === 'lock') {
-    iconEl.innerHTML = '<i class="fa-solid fa-lock" style="font-size:42px; color:#f59e0b;"></i>';
-  } else {
-    iconEl.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:42px; color:#05b381;"></i>';
-  }
+  if (iconType === 'success') iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981;"></i>';
+  else if (iconType === 'error' || iconType === 'warning') iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:42px; color:#ef4444;"></i>';
+  else if (iconType === 'lock') iconEl.innerHTML = '<i class="fa-solid fa-lock" style="font-size:42px; color:#f59e0b;"></i>';
+  else iconEl.innerHTML = '<i class="fa-solid fa-circle-info" style="font-size:42px; color:#05b381;"></i>';
 
   modal.classList.remove('hidden');
 };
@@ -29,7 +112,6 @@ window.closeCustomAlert = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-// UNIVERSAL CUSTOM CONFIRM SYSTEM
 let onConfirmCallback = null;
 window.showCustomConfirm = function(title, message, onConfirm) {
   const modal = document.getElementById('app-confirm-modal');
@@ -47,10 +129,7 @@ window.showCustomConfirm = function(title, message, onConfirm) {
 window.executeCustomConfirm = function() {
   const modal = document.getElementById('app-confirm-modal');
   if (modal) modal.classList.add('hidden');
-  if (onConfirmCallback) {
-    onConfirmCallback();
-    onConfirmCallback = null;
-  }
+  if (onConfirmCallback) { onConfirmCallback(); onConfirmCallback = null; }
 };
 
 window.closeCustomConfirm = function() {
@@ -59,7 +138,7 @@ window.closeCustomConfirm = function() {
   onConfirmCallback = null;
 };
 
-// THEME TOGGLE LOGIC
+// THEME TOGGLE
 function initAppTheme() {
   const savedTheme = localStorage.getItem('app-theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -80,7 +159,7 @@ function updateThemeToggleIcon(theme) {
 }
 initAppTheme();
 
-// AUTH FORM SWITCHERS
+// AUTH SWITCHERS
 window.showRegisterForm = function(e) {
   if (e) e.preventDefault();
   document.getElementById('login-form').classList.add('hidden');
@@ -119,7 +198,6 @@ let systemWithdrawChargePercent = 5;
 let systemRegBonus = 0;
 let activePlanTimerInterval = null;
 
-// PROCESSING FLAGS TO PREVENT RAPID MULTI-CLICK DUPLICATES
 let isTaskClaiming = false;
 let isClaimingBonus = false;
 let isBuyingPlaning = false;
@@ -130,8 +208,10 @@ let isSubmittingWithdraw = false;
 auth.onAuthStateChanged((user) => {
   if (user) {
     currentUser = user;
-    document.getElementById('auth-container').classList.add('hidden');
-    document.getElementById('app-container').classList.remove('hidden');
+    const authModal = document.getElementById('auth-container');
+    const appComp = document.getElementById('app-container');
+    if (authModal) authModal.classList.add('hidden');
+    if (appComp) appComp.classList.remove('hidden');
 
     loadUserData();
     loadVIPPlans();
@@ -146,13 +226,15 @@ auth.onAuthStateChanged((user) => {
     handleInitialPathRouting();
   } else {
     currentUser = null;
-    document.getElementById('auth-container').classList.remove('hidden');
-    document.getElementById('app-container').classList.add('hidden');
+    const authModal = document.getElementById('auth-container');
+    const appComp = document.getElementById('app-container');
+    if (authModal) authModal.classList.remove('hidden');
+    if (appComp) appComp.classList.add('hidden');
     handleInitialPathRouting();
   }
 });
 
-// GLOBAL UI FUNCTIONS
+// UI HANDLERS
 window.openSidebar = function() {
   document.getElementById('sidebar-drawer').classList.add('open');
   document.getElementById('sidebar-overlay').classList.add('open');
@@ -197,77 +279,24 @@ function loadSocialSupportLinks() {
     if (!menu) return;
 
     if (!snap.exists()) {
-      menu.innerHTML = `
-        <a href="https://t.me/" target="_blank" class="fab-menu-item">
-          <span>Telegram Group</span> <i class="fa-brands fa-telegram" style="color:#0088cc"></i>
-        </a>
-      `;
+      menu.innerHTML = `<a href="https://t.me/" target="_blank" class="fab-menu-item"><span>Telegram Group</span> <i class="fa-brands fa-telegram" style="color:#0088cc"></i></a>`;
       return;
     }
 
     menu.innerHTML = '';
     snap.forEach(child => {
       const s = child.val();
-      menu.innerHTML += `
-        <a href="${s.url}" target="_blank" class="fab-menu-item">
-          <span>${s.name}</span> <i class="${s.icon || 'fa-solid fa-headset'}"></i>
-        </a>
-      `;
+      menu.innerHTML += `<a href="${s.url}" target="_blank" class="fab-menu-item"><span>${s.name}</span> <i class="${s.icon || 'fa-solid fa-headset'}"></i></a>`;
     });
   });
 }
 
-// TAB SWITCHER & HASH ROUTING
-window.switchTab = function(tabId, el, isDirectPlanTrigger = false) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  const targetTab = document.getElementById(tabId);
-  if (targetTab) targetTab.classList.add('active');
-
-  if (tabId === 'tab-deposit' && !isDirectPlanTrigger) {
-    resetDepositToGeneralWallet();
-  }
-
-  if (el) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-  } else {
-    const navMap = { 'tab-home': 0, 'tab-wallet': 1, 'tab-vip': 2, 'tab-withdraw': 3, 'tab-profile': 4 };
-    const idx = navMap[tabId];
-    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-    if (idx !== undefined && navItems[idx]) {
-      navItems.forEach(n => n.classList.remove('active'));
-      navItems[idx].classList.add('active');
-    }
-  }
-
-  const hashRoutes = {
-    'tab-home': '#home',
-    'tab-wallet': '#wallet',
-    'tab-vip': '#vip',
-    'tab-tasks': '#tasks',
-    'tab-deposit': '#deposit',
-    'tab-withdraw': '#withdraw',
-    'tab-profile': '#profile'
-  };
-  if (hashRoutes[tabId]) {
-    window.location.hash = hashRoutes[tabId];
-  }
-};
-
-window.addEventListener('hashchange', () => {
-  handleInitialPathRouting();
-});
-
-// AUTO REGISTRATION PAGE OPEN ON REFERRAL LINK CLICK (`domain/register?ref=...`)
 function handleInitialPathRouting() {
   const urlParams = new URLSearchParams(window.location.search);
   let refCode = urlParams.get('ref') || urlParams.get('refCode');
   
-  if (refCode) {
-    localStorage.setItem('pendingRefCode', refCode);
-  } else {
-    refCode = localStorage.getItem('pendingRefCode');
-  }
+  if (refCode) localStorage.setItem('pendingRefCode', refCode);
+  else refCode = localStorage.getItem('pendingRefCode');
 
   if (refCode) {
     const refInput = document.getElementById('reg-ref');
@@ -275,36 +304,14 @@ function handleInitialPathRouting() {
   }
 
   const path = window.location.pathname.toLowerCase();
-  const hash = window.location.hash.toLowerCase();
 
   if (!currentUser) {
-    if (path.includes('/register') || refCode || hash === '#register') {
+    if (path.includes('/register') || refCode) {
       showRegisterForm();
     } else {
       showLoginForm();
     }
-  } else {
-    const hashToTabMap = {
-      '#tasks': 'tab-tasks',
-      '#vip': 'tab-vip',
-      '#wallet': 'tab-wallet',
-      '#deposit': 'tab-deposit',
-      '#withdraw': 'tab-withdraw',
-      '#profile': 'tab-profile',
-      '#home': 'tab-home'
-    };
-    const targetTab = hashToTabMap[hash] || 'tab-home';
-    switchTab(targetTab, null, false);
   }
-}
-
-function resetDepositToGeneralWallet() {
-  const selectEl = document.getElementById('dep-target-plan-select');
-  if (selectEl) selectEl.value = 'wallet';
-  const amtInput = document.getElementById('input-dep-amount');
-  if (amtInput) amtInput.value = 500;
-  selectedDepositAmountVal = 500;
-  goToDepositStep(1);
 }
 
 // USER DATA REALTIME LOAD
@@ -319,8 +326,11 @@ function loadUserData() {
     }
 
     const userAvatar = userData.avatar || DEFAULT_AVATAR;
-    document.getElementById('usr-name').innerText = userData.name || 'User';
-    document.getElementById('usr-id').innerText = 'ID: ' + (userData.refCode || currentUser.uid.substring(0,6).toUpperCase());
+    const usrNameEl = document.getElementById('usr-name');
+    if (usrNameEl) usrNameEl.innerText = userData.name || 'User';
+
+    const usrIdEl = document.getElementById('usr-id');
+    if (usrIdEl) usrIdEl.innerText = 'ID: ' + (userData.refCode || currentUser.uid.substring(0,6).toUpperCase());
     
     const avatarEl = document.getElementById('usr-avatar');
     if (avatarEl) {
@@ -328,38 +338,41 @@ function loadUserData() {
       avatarEl.onerror = function() { this.src = DEFAULT_AVATAR; };
     }
 
-    document.getElementById('usr-vip').innerText = (userData.vipLevel && userData.vipLevel > 0)
-      ? `এক্টিভ প্ল্যান: ${userData.vipPlanName || 'VIP ' + userData.vipLevel}` 
-      : 'এক্টিভ প্ল্যান: নো প্ল্যান';
+    const usrVipEl = document.getElementById('usr-vip');
+    if (usrVipEl) {
+      usrVipEl.innerText = (userData.vipLevel && userData.vipLevel > 0)
+        ? `এক্টিভ প্ল্যান: ${userData.vipPlanName || 'VIP ' + userData.vipLevel}` 
+        : 'এক্টিভ প্ল্যান: নো প্ল্যান';
+    }
 
     const depBal = (userData.depositBalance || 0);
     const incBal = (userData.incomeBalance || 0);
     const totalBal = depBal + incBal;
     userData.balance = totalBal;
 
-    document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
-    document.getElementById('bal-total-inc').innerText = '৳' + (userData.totalIncome || 0).toFixed(2);
-    document.getElementById('dep-total-bal').innerText = '৳' + depBal.toFixed(2);
-    document.getElementById('wallet-balance-display').innerText = '৳' + totalBal.toFixed(2);
+    if (document.getElementById('bal-today')) document.getElementById('bal-today').innerText = '৳' + (userData.todayIncome || 0).toFixed(2);
+    if (document.getElementById('bal-total-inc')) document.getElementById('bal-total-inc').innerText = '৳' + (userData.totalIncome || 0).toFixed(2);
+    if (document.getElementById('dep-total-bal')) document.getElementById('dep-total-bal').innerText = '৳' + depBal.toFixed(2);
+    if (document.getElementById('wallet-balance-display')) document.getElementById('wallet-balance-display').innerText = '৳' + totalBal.toFixed(2);
     
-    document.getElementById('wallet-dep-bal').innerText = '৳' + depBal.toFixed(2);
-    document.getElementById('wallet-inc-bal').innerText = '৳' + incBal.toFixed(2);
+    if (document.getElementById('wallet-dep-bal')) document.getElementById('wallet-dep-bal').innerText = '৳' + depBal.toFixed(2);
+    if (document.getElementById('wallet-inc-bal')) document.getElementById('wallet-inc-bal').innerText = '৳' + incBal.toFixed(2);
 
-    document.getElementById('prof-name').value = userData.name || '';
-    document.getElementById('prof-phone').value = userData.phone || '';
+    if (document.getElementById('prof-name')) document.getElementById('prof-name').value = userData.name || '';
+    if (document.getElementById('prof-phone')) document.getElementById('prof-phone').value = userData.phone || '';
     
-    // FORMATTED REFERRAL LINK
-    document.getElementById('ref-link-input').value = window.location.origin + '/register?ref=' + (userData.refCode || '');
+    if (document.getElementById('ref-link-input')) document.getElementById('ref-link-input').value = window.location.origin + '/register?ref=' + (userData.refCode || '');
 
     renderActivePlanDashboardBanner();
     renderTaskPagePlanBonusBanner();
     checkUserTaskLimitAndLoadTasks();
     initIncomeChartRealtime();
     checkAndRenderEWalletView();
+    initSpinGame();
   });
 }
 
-// LIVE COUNTDOWN TIMER FOR ACTIVE VIP PLAN & EXPIRATION POPUP
+// HOMEPAGE VIP BANNER / LIVE COUNTDOWN TIMER
 function renderActivePlanDashboardBanner() {
   const container = document.getElementById('dashboard-active-plan-card');
   if (!container) return;
@@ -369,28 +382,22 @@ function renderActivePlanDashboardBanner() {
     activePlanTimerInterval = null;
   }
 
-  // IF USER HAS NO ACTIVE PLAN: SHOW STUNNING HERO BANNER
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     container.innerHTML = `
       <div class="no-active-plan-hero-card">
         <div class="no-plan-card-body">
-          <div class="no-plan-icon-box">
-            <i class="fa-solid fa-crown"></i>
-          </div>
+          <div class="no-plan-icon-box"><i class="fa-solid fa-crown"></i></div>
           <div class="no-plan-text-content">
             <h4>আপনার কোনো প্ল্যান এক্টিভ নেই!</h4>
             <p>দৈনিক সহজ টাস্ক পূরণ করে আয় শুরু করতে আজই প্রিমিয়াম প্ল্যান পছন্দ করুন।</p>
           </div>
         </div>
-        <button class="btn-no-plan-action" onclick="switchTab('tab-vip')">
-          <i class="fa-solid fa-gem"></i> প্রিমিয়াম প্ল্যান দেখুন 🚀
-        </button>
+        <a href="plans.html" class="btn-no-plan-action" style="text-decoration:none;"><i class="fa-solid fa-gem"></i> প্রিমিয়াম প্ল্যান দেখুন 🚀</a>
       </div>
     `;
     return;
   }
 
-  // IF USER HAS AN ACTIVE PLAN: SHOW LIVE COUNTDOWN TIMER
   const expireTime = userData.vipExpireAt || 0;
 
   function updateTimer() {
@@ -402,11 +409,7 @@ function renderActivePlanDashboardBanner() {
       activePlanTimerInterval = null;
 
       db.ref('users/' + currentUser.uid).update({
-        vipLevel: 0,
-        vipPlanName: 'নো প্ল্যান',
-        maxDailyTasks: 0,
-        vipDailyProfit: 0,
-        vipExpireAt: null
+        vipLevel: 0, vipPlanName: 'নো প্ল্যান', maxDailyTasks: 0, vipDailyProfit: 0, vipExpireAt: null
       }).then(() => {
         showCustomAlert("আপনার প্রিমিয়াম প্ল্যানের মেয়াদ শেষ হয়ে গেছে! নতুন প্ল্যান এক্টিভ করুন।", "মেয়াদ শেষ ⚠️", "warning");
       });
@@ -418,7 +421,7 @@ function renderActivePlanDashboardBanner() {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    const timerHtml = `
+    container.innerHTML = `
       <div class="active-plan-banner" style="padding:15px; border-radius:14px;">
         <div class="active-plan-header">
           <h4><i class="fa-solid fa-crown"></i> ${userData.vipPlanName || 'VIP ' + userData.vipLevel}</h4>
@@ -438,15 +441,13 @@ function renderActivePlanDashboardBanner() {
         </div>
       </div>
     `;
-
-    container.innerHTML = timerHtml;
   }
 
   updateTimer();
   activePlanTimerInterval = setInterval(updateTimer, 1000);
 }
 
-// MANUAL CLAIMABLE PLAN BONUS ON TASK PAGE WITH ELIGIBILITY CHECK
+// TASK PAGE PLAN BONUS BANNER
 function renderTaskPagePlanBonusBanner() {
   const container = document.getElementById('task-plan-bonus-banner');
   if (!container) return;
@@ -458,21 +459,12 @@ function renderTaskPagePlanBonusBanner() {
     if (eligibleBonus > 0 && !isClaimed) {
       container.innerHTML = `
         <div style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:#ffffff; padding:14px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(245, 158, 11, 0.35);">
-          <div>
-            <span style="font-size:11px; opacity:0.9; display:block;">এক্টিভ প্ল্যান বোনাস</span>
-            <strong style="font-size:16px; color:#fff;">🎁 ৳${eligibleBonus} বোনাস প্রাপ্তিযোগ্য</strong>
-          </div>
-          <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; background:#ffffff !important; color:#d97706 !important; font-weight:800;" onclick="claimActivePlanBonus()">
-            ক্লেইম করুন 🚀
-          </button>
+          <div><span style="font-size:11px; opacity:0.9; display:block;">এক্টিভ প্ল্যান বোনাস</span><strong style="font-size:16px; color:#fff;">🎁 ৳${eligibleBonus} বোনাস প্রাপ্তিযোগ্য</strong></div>
+          <button class="btn-action" style="width:auto; padding:8px 14px; font-size:12px; background:#ffffff !important; color:#d97706 !important; font-weight:800;" onclick="claimActivePlanBonus()">ক্লেইম করুন 🚀</button>
         </div>
       `;
     } else if (isClaimed && eligibleBonus > 0) {
-      container.innerHTML = `
-        <div style="background:var(--primary-light); color:var(--primary-color); padding:10px 14px; border-radius:12px; font-size:12px; font-weight:800; text-align:center; border:1px dashed var(--primary-color);">
-          ✓ আপনার প্ল্যান এক্টিভেশন বোনাস (৳${eligibleBonus}) ইতিমধ্যে ক্লেইম করা হয়েছে।
-        </div>
-      `;
+      container.innerHTML = `<div style="background:var(--primary-light); color:var(--primary-color); padding:10px 14px; border-radius:12px; font-size:12px; font-weight:800; text-align:center; border:1px dashed var(--primary-color);">✓ আপনার প্ল্যান এক্টিভেশন বোনাস (৳${eligibleBonus}) ইতিমধ্যে ক্লেইম করা হয়েছে।</div>`;
     } else {
       container.innerHTML = '';
     }
@@ -481,7 +473,7 @@ function renderTaskPagePlanBonusBanner() {
   }
 }
 
-// CLAIM PLAN ACTIVATION BONUS WITH ATOMIC ATCLUSION
+// CLAIM PLAN BONUS
 window.claimActivePlanBonus = function() {
   if (!userData || !userData.eligiblePlanBonus || userData.planBonusClaimed === true || isClaimingBonus) return;
 
@@ -489,9 +481,7 @@ window.claimActivePlanBonus = function() {
   const bonusAmt = Number(userData.eligiblePlanBonus);
 
   db.ref('users/' + currentUser.uid).transaction((uData) => {
-    if (!uData || uData.planBonusClaimed === true) {
-      return; // ABORT TRANSACTION IF ALREADY CLAIMED
-    }
+    if (!uData || uData.planBonusClaimed === true) return;
     uData.incomeBalance = (uData.incomeBalance || 0) + bonusAmt;
     uData.totalIncome = (uData.totalIncome || 0) + bonusAmt;
     uData.planBonusClaimed = true;
@@ -505,12 +495,7 @@ window.claimActivePlanBonus = function() {
     }
 
     db.ref('history').push().set({
-      uid: currentUser.uid,
-      type: 'Plan Bonus',
-      amount: bonusAmt,
-      title: `Claimed Plan Activation Bonus`,
-      status: 'approved',
-      timestamp: firebase.database.ServerValue.TIMESTAMP
+      uid: currentUser.uid, type: 'Plan Bonus', amount: bonusAmt, title: `Claimed Plan Activation Bonus`, status: 'approved', timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
     showCustomAlert(`🎉 অভিনন্দন! আপনি সফলভাবে ৳${bonusAmt} প্ল্যান এক্টিভেশন বোনাস পেয়ে গেছেন।`, "বোনাস ক্লেইমড!", "success");
@@ -518,14 +503,12 @@ window.claimActivePlanBonus = function() {
   });
 };
 
-// SLIDER & WELCOME NOTICE WITH BEAUTIFUL BUTTONS
+// SLIDER & WELCOME NOTICE
 function loadHomepageSliders() {
   db.ref('slider').on('value', snap => {
     sliderImagesList = [];
     if (snap.exists()) {
-      snap.forEach(c => {
-        if (c.val() && c.val().url) sliderImagesList.push(c.val().url);
-      });
+      snap.forEach(c => { if (c.val() && c.val().url) sliderImagesList.push(c.val().url); });
     }
 
     const sliderCard = document.getElementById('homepage-slider-card');
@@ -559,19 +542,22 @@ function checkAndShowWelcomeNotice() {
   db.ref('notices/welcome').once('value', snap => {
     if (snap.exists() && snap.val().enabled === true) {
       const notice = snap.val();
-      document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
-      document.getElementById('welcome-desc').innerText = notice.text || '';
+      if (document.getElementById('welcome-title')) document.getElementById('welcome-title').innerText = notice.title || 'স্বাগতম!';
+      if (document.getElementById('welcome-desc')) document.getElementById('welcome-desc').innerText = notice.text || '';
       
       const imgBox = document.getElementById('welcome-img-box');
-      if (notice.image) imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
-      else imgBox.innerHTML = '';
+      if (imgBox) {
+        if (notice.image) imgBox.innerHTML = `<img src="${notice.image}" style="width:100%; max-height:140px; border-radius:12px; object-fit:cover; margin-bottom:12px;">`;
+        else imgBox.innerHTML = '';
+      }
 
       const btnBox = document.getElementById('welcome-btn-container');
-      if (notice.btnText && notice.btnUrl) {
-        btnBox.innerHTML = `<a href="${notice.btnUrl}" target="_blank" class="btn-welcome-action">${notice.btnText} 🚀</a>`;
-      } else btnBox.innerHTML = '';
+      if (btnBox) {
+        if (notice.btnText && notice.btnUrl) btnBox.innerHTML = `<a href="${notice.btnUrl}" target="_blank" class="btn-welcome-action">${notice.btnText} 🚀</a>`;
+        else btnBox.innerHTML = '';
+      }
 
-      document.getElementById('welcome-modal').classList.remove('hidden');
+      if (document.getElementById('welcome-modal')) document.getElementById('welcome-modal').classList.remove('hidden');
     }
   });
 }
@@ -579,7 +565,7 @@ function checkAndShowWelcomeNotice() {
 // GATEWAYS & CONFIG
 function loadGatewaysAndNotices() {
   db.ref('notices/main').on('value', snap => {
-    if (snap.exists() && snap.val().text) {
+    if (snap.exists() && snap.val().text && document.getElementById('notice-text')) {
       document.getElementById('notice-text').innerText = snap.val().text;
     }
   });
@@ -614,11 +600,7 @@ function loadGatewaysAndNotices() {
 
   db.ref('payment_gateways').on('value', snap => {
     const depGrid = document.getElementById('deposit-methods-grid');
-    if (!snap.exists()) {
-      renderDefaultGateways(depGrid);
-      return;
-    }
-
+    if (!snap.exists()) { renderDefaultGateways(depGrid); return; }
     if (depGrid) depGrid.innerHTML = '';
 
     snap.forEach((child) => {
@@ -634,27 +616,17 @@ function loadGatewaysAndNotices() {
 function renderGatewayCardHTML(g) {
   const name = g.name || 'Method';
   const logo = g.logoUrl || 'https://i.ibb.co/3yn9j8p/bkash.png';
-  return `
-    <div class="method-box" onclick="selectDepositMethod('${name}')">
-      <img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'">
-      <h5 style="font-size:13px;">${name}</h5>
-      <button class="btn-continue-sm">Continue ></button>
-    </div>
-  `;
+  return `<div class="method-box" onclick="selectDepositMethod('${name}')"><img src="${logo}" class="method-logo-img" alt="${name}" onerror="this.onerror=null; this.src='https://i.ibb.co/3yn9j8p/bkash.png'"><h5 style="font-size:13px;">${name}</h5><button class="btn-continue-sm">Continue ></button></div>`;
 }
 
 function renderDefaultGateways(depGrid) {
-  const defaults = [
-    { name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' },
-    { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' },
-    { name: 'Rocket', logoUrl: 'https://i.ibb.co/hK8C7hC/rocket.png' }
-  ];
+  const defaults = [{ name: 'bKash', logoUrl: 'https://i.ibb.co/3yn9j8p/bkash.png' }, { name: 'Nagad', logoUrl: 'https://i.ibb.co/6P0zCst/nagad.png' }, { name: 'Rocket', logoUrl: 'https://i.ibb.co/hK8C7hC/rocket.png' }];
   if (depGrid) depGrid.innerHTML = defaults.map(g => renderGatewayCardHTML(g)).join('');
 }
 
 function listenLiveBroadcastNotifications() {
   db.ref('notifications/broadcast').on('value', snap => {
-    if (snap.exists()) {
+    if (snap.exists() && document.getElementById('notif-title')) {
       const notif = snap.val();
       document.getElementById('notif-title').innerText = notif.title || 'নোটিফিকেশন';
       document.getElementById('notif-desc').innerText = notif.desc || '';
@@ -662,12 +634,13 @@ function listenLiveBroadcastNotifications() {
   });
 }
 
-// ULTRA PRO PLAN CARDS RENDERER
+// VIP PLANS LOAD & PURCHASE
 function loadVIPPlans() {
   db.ref('plans').on('value', snap => {
     const container = document.getElementById('vip-plans-container');
     const depPlanSelect = document.getElementById('dep-target-plan-select');
 
+    if (!container) return;
     container.innerHTML = '';
     if (depPlanSelect) depPlanSelect.innerHTML = '<option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>';
 
@@ -762,7 +735,7 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
     db.ref().update(updates).then(() => {
       isBuyingPlaning = false;
       showCustomAlert(`অভিনন্দন! ${planName} সফলভাবে ক্রয় করা হয়েছে!${activationBonus > 0 ? ` আপনার ৳${activationBonus} বোনাস টাস্ক পেজে ক্লেইমের জন্য জমা হয়েছে।` : ''}`, "প্ল্যান আনলকড! 🎉", "success");
-      switchTab('tab-tasks');
+      window.location.href = 'tasks.html';
     }).catch(err => {
       isBuyingPlaning = false;
       showCustomAlert('Error: ' + err.message, "ত্রুটি", "error");
@@ -772,23 +745,10 @@ window.buyVIPPlan = function(planName, price, vipLevel, dailyTasks, dailyProfit,
 
 function directDepositForPlan(planName, price, vipLevel, dailyTasks, dailyProfit) {
   selectedDepositAmountVal = price;
-
-  switchTab('tab-deposit', null, true);
-  goToDepositStep(1);
-
-  setTimeout(() => {
-    const amtInput = document.getElementById('input-dep-amount');
-    if (amtInput) amtInput.value = price;
-
-    const selectEl = document.getElementById('dep-target-plan-select');
-    if (selectEl) {
-      selectEl.value = vipLevel.toString();
-      onDepositPlanTargetChange(selectEl);
-    }
-  }, 50);
+  window.location.href = `deposit.html?plan=${vipLevel}&price=${price}`;
 }
 
-// TASK SYSTEM WITH ATOMIC FIREBASE TRANSACTION (PREVENTS MULTI-CLAIM DUPLICATE REWARDS)
+// TASK SYSTEM WITH ATOMIC FIREBASE TRANSACTION
 function checkUserTaskLimitAndLoadTasks() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -849,22 +809,16 @@ function loadTasks(completedTaskIds = {}) {
     const completedCount = userVipTasks.filter(t => completedTaskIds[t.id]).length;
     const availableCount = Math.max(0, totalCount - completedCount);
 
-    const statTotalEl = document.getElementById('stat-task-total');
-    const statCompletedEl = document.getElementById('stat-task-completed');
-    const statAvailableEl = document.getElementById('stat-task-available');
-
-    if (statTotalEl) statTotalEl.innerText = totalCount;
-    if (statCompletedEl) statCompletedEl.innerText = completedCount;
-    if (statAvailableEl) statAvailableEl.innerText = availableCount;
+    if (document.getElementById('stat-task-total')) document.getElementById('stat-task-total').innerText = totalCount;
+    if (document.getElementById('stat-task-completed')) document.getElementById('stat-task-completed').innerText = completedCount;
+    if (document.getElementById('stat-task-available')) document.getElementById('stat-task-available').innerText = availableCount;
 
     const remainingTasks = userVipTasks.filter(t => !completedTaskIds[t.id]);
 
     if ((userVipTasks.length > 0 && remainingTasks.length === 0) || (userVip > 0 && userTodayCompletedCount >= userMaxDailyTasks)) {
       container.innerHTML = `
         <div class="content-card" style="text-align:center; padding:35px 20px;">
-          <div class="reward-icon-circle" style="background:#d1fae5; margin:0 auto 12px auto;">
-            <i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i>
-          </div>
+          <div class="reward-icon-circle" style="background:#d1fae5; margin:0 auto 12px auto;"><i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i></div>
           <h3 style="font-size:18px; color:var(--text-main); font-weight:800;">আপনি ইতিমধ্যেই আজকের সকল টাস্ক সম্পন্ন করেছেন!</h3>
           <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">নতুন টাস্কের জন্য আগামীকাল অপেক্ষা করুন।</p>
         </div>
@@ -878,7 +832,7 @@ function loadTasks(completedTaskIds = {}) {
           <i class="fa-solid fa-lock" style="font-size:40px; color:var(--text-muted); margin-bottom:12px;"></i>
           <h3 style="font-size:16px; margin-bottom:6px;">VIP Level ${userVip}-এর জন্য কোনো টাস্ক উপলব্ধ নেই!</h3>
           <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">অন্যান্য টাস্ক আনলক করতে আপনার প্ল্যান আপগ্রেড করুন।</p>
-          <button class="btn-action" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i> প্ল্যান দেখুন</button>
+          <a href="plans.html" class="btn-action" style="text-decoration:none;"><i class="fa-solid fa-crown"></i> প্ল্যান দেখুন</a>
         </div>
       `;
       return;
@@ -896,19 +850,12 @@ function loadTasks(completedTaskIds = {}) {
               <img src="${taskImg}" class="task-thumb-img" alt="Task" onerror="this.src='https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png'">
               <div class="task-title-and-tags">
                 <h4>${task.title}</h4>
-                <div class="task-tags-row">
-                  <span class="task-pill-tag daily">ডেইলি</span>
-                  <span class="task-pill-tag type">${isFreeTask ? 'ফ্রি টাস্ক' : 'এডমিন টাস্ক'}</span>
-                </div>
+                <div class="task-tags-row"><span class="task-pill-tag daily">ডেইলি</span><span class="task-pill-tag type">${isFreeTask ? 'ফ্রি টাস্ক' : 'এডমিন টাস্ক'}</span></div>
               </div>
             </div>
-            <div class="task-reward-pill">
-              <i class="fa-solid fa-coins" style="color:#ffeaa7;"></i> +৳${task.reward.toFixed(2)}
-            </div>
+            <div class="task-reward-pill"><i class="fa-solid fa-coins" style="color:#ffeaa7;"></i> +৳${task.reward.toFixed(2)}</div>
           </div>
-          <button class="btn-task-play-full" onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})">
-            <i class="fa-solid fa-play"></i> টাস্ক শুরু করুন
-          </button>
+          <button class="btn-task-play-full" onclick="startTask('${taskId}', ${task.reward}, ${isFreeTask})"><i class="fa-solid fa-play"></i> টাস্ক শুরু করুন</button>
         </div>
       `;
     });
@@ -942,79 +889,229 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
-// ATOMIC TASK REWARD CLAIMING WITH FIREBASE DATABASE TRANSACTION LOCK (PREVENTS DUPES)
-document.getElementById('btn-claim-task').addEventListener('click', () => {
-  if (!activeTaskObj || !userData || isTaskClaiming) return;
+// ATOMIC TASK CLAIMING PREVENTING DUPLICATE REWARDS
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'btn-claim-task') {
+    if (!activeTaskObj || !userData || isTaskClaiming) return;
 
-  isTaskClaiming = true;
-  const claimBtn = document.getElementById('btn-claim-task');
-  if (claimBtn) claimBtn.disabled = true; // DISABLE BUTTON IMMEDIATELY ON CLICK
+    isTaskClaiming = true;
+    const claimBtn = document.getElementById('btn-claim-task');
+    if (claimBtn) claimBtn.disabled = true;
 
-  const currentTask = activeTaskObj;
-  activeTaskObj = null; // NULLIFY OBJECT IMMEDIATELY ON CLICK TO PREVENT CONCURRENT CLICKS
+    const currentTask = activeTaskObj;
+    activeTaskObj = null;
+
+    const today = new Date().toISOString().split('T')[0];
+    const reward = currentTask.reward;
+    const isFree = currentTask.isFreeTask === true;
+
+    const taskRef = db.ref(`user_tasks/${currentUser.uid}/${today}/${currentTask.taskId}/completed`);
+
+    taskRef.transaction((currentStatus) => {
+      if (currentStatus === true) return;
+      return true;
+    }, (error, committed) => {
+      if (error || !committed) {
+        isTaskClaiming = false;
+        if (claimBtn) claimBtn.disabled = false;
+        showCustomAlert("আপনি এই টাস্কের রিওয়ার্ড ইতিমধ্যেই পেয়ে গেছেন!", "পুনরাবৃত্তি সম্ভব নয়", "warning");
+        closeTaskModal();
+        return;
+      }
+
+      db.ref('users/' + currentUser.uid).transaction((uData) => {
+        if (!uData) return uData;
+        uData.incomeBalance = (uData.incomeBalance || 0) + reward;
+        uData.todayIncome = (uData.todayIncome || 0) + reward;
+        uData.totalIncome = (uData.totalIncome || 0) + reward;
+        return uData;
+      }, (balErr, balCommitted) => {
+        isTaskClaiming = false;
+        if (claimBtn) claimBtn.disabled = false;
+
+        db.ref('history').push().set({
+          uid: currentUser.uid, type: 'Task Reward', amount: reward, title: isFree ? 'Completed Free Task' : 'Completed VIP Task', status: 'approved', timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        if (document.getElementById('task-processing-view')) document.getElementById('task-processing-view').classList.add('hidden');
+        if (document.getElementById('task-success-view')) document.getElementById('task-success-view').classList.remove('hidden');
+        if (document.getElementById('success-reward-val')) document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
+
+        initIncomeChartRealtime();
+      });
+    });
+  }
+});
+
+// SPIN & WIN GAME LOGIC (3 SPINS DAILY)
+function initSpinGame() {
+  const canvas = document.getElementById('wheel-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const slices = [
+    { label: '৳1.00', val: 1.0, color: '#05b381' },
+    { label: '৳2.00', val: 2.0, color: '#2563eb' },
+    { label: '৳0.50', val: 0.5, color: '#8b5cf6' },
+    { label: '৳5.00', val: 5.0, color: '#f59e0b' },
+    { label: '৳0.00', val: 0.0, color: '#ef4444' },
+    { label: '৳10.00', val: 10.0, color: '#0284c7' },
+    { label: '৳1.50', val: 1.5, color: '#10b981' },
+    { label: 'Try Again', val: 0.0, color: '#64748b' }
+  ];
+
+  const sliceAngle = (2 * Math.PI) / slices.length;
+
+  function drawWheel(currentAngle = 0) {
+    ctx.clearRect(0, 0, 300, 300);
+    ctx.save();
+    ctx.translate(150, 150);
+    ctx.rotate(currentAngle);
+
+    for (let i = 0; i < slices.length; i++) {
+      const angle = i * sliceAngle;
+      ctx.beginPath();
+      ctx.fillStyle = slices[i].color;
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 140, angle, angle + sliceAngle);
+      ctx.lineTo(0, 0);
+      ctx.fill();
+
+      // LABELS
+      ctx.save();
+      ctx.rotate(angle + sliceAngle / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 13px Segoe UI';
+      ctx.fillText(slices[i].label, 125, 5);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  drawWheel();
+
+  // CHECK TODAY SPINS
+  const today = new Date().toISOString().split('T')[0];
+  db.ref(`user_spins/${currentUser.uid}/${today}`).once('value', snap => {
+    const spinsCount = snap.exists() ? Number(snap.val().count || 0) : 0;
+    const remainingSpins = Math.max(0, 3 - spinsCount);
+    if (document.getElementById('spin-count-summary')) {
+      document.getElementById('spin-count-summary').innerText = `আজকের অবশিষ্ট স্পিন: ${remainingSpins} টি`;
+    }
+  });
+}
+
+let isSpinning = false;
+window.spinWheelNow = function() {
+  if (!currentUser || isSpinning) return;
 
   const today = new Date().toISOString().split('T')[0];
-  const reward = currentTask.reward;
-  const isFree = currentTask.isFreeTask === true;
+  const spinRef = db.ref(`user_spins/${currentUser.uid}/${today}`);
 
-  // ATOMIC DATABASE TRANSACTION ON TASK COMPLETION STATUS
-  const taskRef = db.ref(`user_tasks/${currentUser.uid}/${today}/${currentTask.taskId}/completed`);
-
-  taskRef.transaction((currentStatus) => {
-    if (currentStatus === true) {
-      return; // ABORT TRANSACTION IF ALREADY COMPLETED BY A PREVIOUS CLICK!
-    }
-    return true; // MARK COMPLETED ATOMICALLY IN DB
-  }, (error, committed) => {
-    if (error || !committed) {
-      isTaskClaiming = false;
-      if (claimBtn) claimBtn.disabled = false;
-      showCustomAlert("আপনি এই টাস্কের রিওয়ার্ড ইতিমধ্যেই পেয়ে গেছেন!", "পুনরাবৃত্তি সম্ভব নয়", "warning");
-      closeTaskModal();
+  spinRef.once('value', snap => {
+    const currentCount = snap.exists() ? Number(snap.val().count || 0) : 0;
+    if (currentCount >= 3) {
+      showCustomAlert("আজকের সর্বোচ্চ ৩টি স্পিনের সীমানা পূর্ণ হয়ে গেছে!", "সীমা অতিক্রম ⚠️", "warning");
       return;
     }
 
-    // TASK IS ATOMICALLY MARKED COMPLETED -> NOW CREDIT USER BALANCE ATOMICALLY
-    db.ref('users/' + currentUser.uid).transaction((uData) => {
-      if (!uData) return uData;
-      uData.incomeBalance = (uData.incomeBalance || 0) + reward;
-      uData.todayIncome = (uData.todayIncome || 0) + reward;
-      uData.totalIncome = (uData.totalIncome || 0) + reward;
-      return uData;
-    }, (balErr, balCommitted) => {
-      isTaskClaiming = false;
-      if (claimBtn) claimBtn.disabled = false;
+    isSpinning = true;
+    const spinBtn = document.getElementById('btn-spin-now');
+    if (spinBtn) spinBtn.disabled = true;
 
-      // RECORD TRANSACTION HISTORY
-      db.ref('history').push().set({
-        uid: currentUser.uid,
-        type: 'Task Reward',
-        amount: reward,
-        title: isFree ? 'Completed Free Task' : 'Completed VIP Task',
-        status: 'approved',
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      });
+    const canvas = document.getElementById('wheel-canvas');
+    const ctx = canvas.getContext('2d');
+    const slices = [
+      { label: '৳1.00', val: 1.0, color: '#05b381' },
+      { label: '৳2.00', val: 2.0, color: '#2563eb' },
+      { label: '৳0.50', val: 0.5, color: '#8b5cf6' },
+      { label: '৳5.00', val: 5.0, color: '#f59e0b' },
+      { label: '৳0.00', val: 0.0, color: '#ef4444' },
+      { label: '৳10.00', val: 10.0, color: '#0284c7' },
+      { label: '৳1.50', val: 1.5, color: '#10b981' },
+      { label: 'Try Again', val: 0.0, color: '#64748b' }
+    ];
 
-      document.getElementById('task-processing-view').classList.add('hidden');
-      document.getElementById('task-success-view').classList.remove('hidden');
-      document.getElementById('success-reward-val').innerText = '+৳' + reward.toFixed(2);
+    const randomIndex = Math.floor(Math.random() * slices.length);
+    const winningSlice = slices[randomIndex];
 
-      initIncomeChartRealtime();
-    });
+    let currentRotation = 0;
+    const totalRotation = 360 * 5 + (360 - (randomIndex * (360 / slices.length)) - 22.5);
+    const duration = 4000;
+    const start = Date.now();
+
+    function animate() {
+      const now = Date.now();
+      const elapsed = now - start;
+      if (elapsed < duration) {
+        const progress = elapsed / duration;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentRotation = (totalRotation * easeOut * Math.PI) / 180;
+        
+        ctx.clearRect(0, 0, 300, 300);
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(currentRotation);
+        for (let i = 0; i < slices.length; i++) {
+          const angle = (i * (2 * Math.PI)) / slices.length;
+          ctx.beginPath();
+          ctx.fillStyle = slices[i].color;
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, 140, angle, angle + (2 * Math.PI) / slices.length);
+          ctx.lineTo(0, 0);
+          ctx.fill();
+          ctx.save();
+          ctx.rotate(angle + (2 * Math.PI) / slices.length / 2);
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px Segoe UI';
+          ctx.fillText(slices[i].label, 125, 5);
+          ctx.restore();
+        }
+        ctx.restore();
+
+        requestAnimationFrame(animate);
+      } else {
+        isSpinning = false;
+        if (spinBtn) spinBtn.disabled = false;
+
+        // INCREMENT SPIN COUNT & CREDIT REWARD
+        spinRef.update({ count: currentCount + 1 });
+
+        if (winningSlice.val > 0) {
+          db.ref('users/' + currentUser.uid).transaction((uData) => {
+            if (!uData) return uData;
+            uData.incomeBalance = (uData.incomeBalance || 0) + winningSlice.val;
+            uData.totalIncome = (uData.totalIncome || 0) + winningSlice.val;
+            return uData;
+          }, () => {
+            db.ref('history').push().set({
+              uid: currentUser.uid, type: 'Spin Win', amount: winningSlice.val, title: `Spin & Win Bonus`, status: 'approved', timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            showCustomAlert(`🎉 অভিনন্দন! আপনি স্পিন করে ৳${winningSlice.val.toFixed(2)} ইনকাম ব্যালেন্সে জিতে নিয়েছেন!`, "স্পিন বিজয়ী 🎰", "success");
+          });
+        } else {
+          showCustomAlert("ধন্যবাদ! আবার চেষ্টা করুন।", "স্পিন সম্পন্ন 🎡", "info");
+        }
+      }
+    }
+
+    animate();
   });
-});
+};
 
 // DEPOSIT FLOW
 window.goToDepositStep = function(step) {
-  document.getElementById('dep-step-1').classList.add('hidden');
-  document.getElementById('dep-step-2').classList.add('hidden');
-  document.getElementById('dep-step-3').classList.add('hidden');
-  document.getElementById('dep-step-' + step).classList.remove('hidden');
+  if (document.getElementById('dep-step-1')) document.getElementById('dep-step-1').classList.add('hidden');
+  if (document.getElementById('dep-step-2')) document.getElementById('dep-step-2').classList.add('hidden');
+  if (document.getElementById('dep-step-3')) document.getElementById('dep-step-3').classList.add('hidden');
+  if (document.getElementById('dep-step-' + step)) document.getElementById('dep-step-' + step).classList.remove('hidden');
 };
 
 window.selectDepositMethod = function(method) {
   selectedDepositMethodName = method;
-  document.getElementById('selected-method-title').innerText = method;
+  if (document.getElementById('selected-method-title')) document.getElementById('selected-method-title').innerText = method;
   goToDepositStep(2);
 };
 
@@ -1031,7 +1128,7 @@ window.onDepositPlanTargetChange = function(selectEl) {
 
 window.setQuickAmount = function(amt, el) {
   selectedDepositAmountVal = amt;
-  document.getElementById('input-dep-amount').value = amt;
+  if (document.getElementById('input-dep-amount')) document.getElementById('input-dep-amount').value = amt;
   document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
 };
@@ -1041,8 +1138,8 @@ window.proceedToStep3 = function() {
   if (!inputAmt || inputAmt < 500) return showCustomAlert('সর্বনিম্ন ৫০০ টাকা ডিপোজিট করতে হবে।', 'ডিপোজিট লিমিট', 'warning');
 
   selectedDepositAmountVal = inputAmt;
-  document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
-  document.getElementById('step3-confirm-amount').innerText = '৳ ' + selectedDepositAmountVal;
+  if (document.getElementById('step3-amount-display')) document.getElementById('step3-amount-display').innerText = '৳ ' + selectedDepositAmountVal;
+  if (document.getElementById('step3-confirm-amount')) document.getElementById('step3-confirm-amount').innerText = '৳ ' + selectedDepositAmountVal;
 
   db.ref('payment_gateways').once('value', snap => {
     let targetNum = '01719856165';
@@ -1051,7 +1148,7 @@ window.proceedToStep3 = function() {
         if (c.val().name === selectedDepositMethodName) targetNum = c.val().number || targetNum;
       });
     }
-    document.getElementById('target-phone-num').innerText = targetNum;
+    if (document.getElementById('target-phone-num')) document.getElementById('target-phone-num').innerText = targetNum;
   });
 
   goToDepositStep(3);
@@ -1070,7 +1167,6 @@ window.submitDepositFinal = function() {
   if (!trxId) return showCustomAlert('অনুগ্রহ করে Transaction ID প্রদান করুন।', 'তথ্য অসম্পূর্ণ', 'warning');
 
   isSubmittingDeposit = true;
-
   const targetPlanSelect = document.getElementById('dep-target-plan-select');
   let targetPlanData = null;
 
@@ -1142,8 +1238,8 @@ function checkAndRenderEWalletView() {
     if (setView) setView.classList.remove('hidden');
 
     const w = userData.wallet;
-    document.getElementById('saved-wallet-type-num').innerText = `${w.accountType} - ${w.walletNumber}`;
-    document.getElementById('saved-wallet-name').innerText = `নাম: ${w.fullName}`;
+    if (document.getElementById('saved-wallet-type-num')) document.getElementById('saved-wallet-type-num').innerText = `${w.accountType} - ${w.walletNumber}`;
+    if (document.getElementById('saved-wallet-name')) document.getElementById('saved-wallet-name').innerText = `নাম: ${w.fullName}`;
   }
 }
 
@@ -1168,35 +1264,21 @@ window.saveEWalletSetup = async function(e) {
   const walletNum = document.getElementById('ewallet-number').value.trim();
   const pin = document.getElementById('ewallet-pin').value.trim();
 
-  if (!fullName || !walletNum || !pin) {
-    showCustomAlert('সকল তথ্য সঠিকভাবে পূরণ করুন!', 'তথ্য অসম্পূর্ণ', 'warning');
-    return;
-  }
+  if (!fullName || !walletNum || !pin) return showCustomAlert('সকল তথ্য সঠিকভাবে পূরণ করুন!', 'তথ্য অসম্পূর্ণ', 'warning');
+  if (pin.length !== 5 || isNaN(pin)) return showCustomAlert('উইথড্র পিন অবশ্যই ৫ সংখ্যার হতে হবে!', 'ভুল পিন', 'warning');
 
-  if (pin.length !== 5 || isNaN(pin)) {
-    showCustomAlert('উইথড্র পিন অবশ্যই ৫ সংখ্যার হতে হবে!', 'ভুল পিন', 'warning');
-    return;
-  }
-
-  // CHECK IF WALLET NUMBER IS ALREADY USED BY ANOTHER USER
   const walletSnap = await db.ref('wallets/' + walletNum).once('value');
   if (walletSnap.exists() && walletSnap.val() !== currentUser.uid) {
-    showCustomAlert('এই ওয়ালেট নম্বরটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে ব্যবহার করা হয়েছে! আপনি এই নম্বরটি যুক্ত করতে পারবেন না।', 'ওয়ালেট নম্বর ব্যবহৃত', 'error');
+    showCustomAlert('এই ওয়ালেট নম্বরটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে ব্যবহার করা হয়েছে!', 'ওয়ালেট নম্বর ব্যবহৃত', 'error');
     return;
   }
 
-  // IF PREVIOUS WALLET WAS DIFFERENT, REMOVE OLD BINDING
   if (userData && userData.wallet && userData.wallet.walletNumber && userData.wallet.walletNumber !== walletNum) {
     await db.ref('wallets/' + userData.wallet.walletNumber).remove();
   }
 
   const updates = {};
-  updates[`users/${currentUser.uid}/wallet`] = {
-    accountType: accType,
-    fullName: fullName,
-    walletNumber: walletNum,
-    withdrawPin: pin
-  };
+  updates[`users/${currentUser.uid}/wallet`] = { accountType: accType, fullName: fullName, walletNumber: walletNum, withdrawPin: pin };
   updates[`wallets/${walletNum}`] = currentUser.uid;
 
   db.ref().update(updates).then(() => {
@@ -1216,11 +1298,10 @@ window.calculateWithdrawFeePreview = function() {
   const chargeFee = amt * (activeCharge / 100);
   const netAmount = Math.max(0, amt - chargeFee);
 
-  document.getElementById('wit-fee-amount').innerText = '৳' + chargeFee.toFixed(2);
-  document.getElementById('wit-net-receive').innerText = '৳' + netAmount.toFixed(2);
+  if (document.getElementById('wit-fee-amount')) document.getElementById('wit-fee-amount').innerText = '৳' + chargeFee.toFixed(2);
+  if (document.getElementById('wit-net-receive')) document.getElementById('wit-net-receive').innerText = '৳' + netAmount.toFixed(2);
 };
 
-// WITHDRAW ALL BALANCE FUNCTION
 window.selectAllBalanceForWithdraw = function() {
   if (!userData) return;
   const totalAvailable = (userData.depositBalance || 0) + (userData.incomeBalance || 0);
@@ -1237,7 +1318,7 @@ window.handleWithdrawSubmit = function(e) {
 
   if (!userData || !userData.vipLevel || userData.vipLevel <= 0) {
     showCustomAlert('উত্তোলন করার জন্য আপনাকে অবশ্যই একটি প্রিমিয়াম প্ল্যান এক্টিভ করতে হবে!', 'প্ল্যান প্রয়োজন', 'lock');
-    switchTab('tab-vip');
+    window.location.href = 'plans.html';
     return;
   }
 
@@ -1268,7 +1349,6 @@ window.handleWithdrawSubmit = function(e) {
   }
 
   isSubmittingWithdraw = true;
-
   let remAmt = amt;
   let newIncBal = userData.incomeBalance || 0;
   let newDepBal = userData.depositBalance || 0;
@@ -1290,17 +1370,7 @@ window.handleWithdrawSubmit = function(e) {
   db.ref().update(updates).then(() => {
     const witRef = db.ref('withdraws').push();
     return witRef.set({
-      id: witRef.key,
-      uid: currentUser.uid,
-      email: currentUser.email,
-      method: savedWallet.accountType,
-      walletNumber: savedWallet.walletNumber,
-      walletName: savedWallet.fullName,
-      amount: amt,
-      chargePercent: activeCharge,
-      netAmount: Math.max(0, amt - (amt * activeCharge / 100)),
-      status: 'pending',
-      timestamp: firebase.database.ServerValue.TIMESTAMP
+      id: witRef.key, uid: currentUser.uid, email: currentUser.email, method: savedWallet.accountType, walletNumber: savedWallet.walletNumber, walletName: savedWallet.fullName, amount: amt, chargePercent: activeCharge, netAmount: Math.max(0, amt - (amt * activeCharge / 100)), status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP
     });
   }).then(() => {
     isSubmittingWithdraw = false;
@@ -1423,26 +1493,13 @@ function initIncomeChartRealtime() {
       type: 'line',
       data: {
         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'আয় (৳)',
-          data: chartData,
-          borderColor: '#05b381',
-          backgroundColor: 'rgba(5, 179, 129, 0.12)',
-          fill: true,
-          tension: 0.35,
-          borderWidth: 2.5
-        }]
+        datasets: [{ label: 'আয় (৳)', data: chartData, borderColor: '#05b381', backgroundColor: 'rgba(5, 179, 129, 0.12)', fill: true, tension: 0.35, borderWidth: 2.5 }]
       },
-      options: { 
-        responsive: true, 
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
   });
 }
 
-// PRO LIVE WITHDRAW FEED STYLING
 function renderLiveWithdrawsInfinite() {
   const container = document.getElementById('live-withdraw-feed');
   if (!container) return;
@@ -1463,28 +1520,16 @@ function renderLiveWithdrawsInfinite() {
       <div class="live-withdraw-card-pro">
         <div class="live-withdraw-left">
           <div class="live-withdraw-avatar"><i class="fa-solid fa-wallet"></i></div>
-          <div class="live-withdraw-info">
-            <h5>${item.num} (${item.method})</h5>
-            <span>${item.time}</span>
-          </div>
+          <div class="live-withdraw-info"><h5>${item.num} (${item.method})</h5><span>${item.time}</span></div>
         </div>
-        <div class="live-withdraw-right">
-          <div class="live-withdraw-amount">${item.amount}</div>
-          <span class="live-withdraw-status">✓ Success</span>
-        </div>
+        <div class="live-withdraw-right"><div class="live-withdraw-amount">${item.amount}</div><span class="live-withdraw-status">✓ Success</span></div>
       </div>
       <div class="live-withdraw-card-pro" style="opacity:0.6;">
         <div class="live-withdraw-left">
           <div class="live-withdraw-avatar"><i class="fa-solid fa-wallet"></i></div>
-          <div class="live-withdraw-info">
-            <h5>${nextItem.num} (${nextItem.method})</h5>
-            <span>${nextItem.time}</span>
-          </div>
+          <div class="live-withdraw-info"><h5>${nextItem.num} (${nextItem.method})</h5><span>${nextItem.time}</span></div>
         </div>
-        <div class="live-withdraw-right">
-          <div class="live-withdraw-amount">${nextItem.amount}</div>
-          <span class="live-withdraw-status">✓ Success</span>
-        </div>
+        <div class="live-withdraw-right"><div class="live-withdraw-amount">${nextItem.amount}</div><span class="live-withdraw-status">✓ Success</span></div>
       </div>
     `;
     feedIndex = (feedIndex + 1) % mockFeed.length;
@@ -1493,7 +1538,7 @@ function renderLiveWithdrawsInfinite() {
   setInterval(rotateFeed, 3500);
 }
 
-// AUTHENTICATION WITH REGISTRATION BONUS CREDIT
+// AUTHENTICATION
 document.addEventListener('DOMContentLoaded', () => {
   loadSocialSupportLinks();
 
@@ -1507,8 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
       auth.signInWithEmailAndPassword(email, pass).catch(err => {
-        let msg = 'ভুল ইমেইল অথবা পাসওয়ার্ড প্রদান করেছেন!';
-        showCustomAlert(msg, "লগইন ব্যর্থ", "error");
+        showCustomAlert('ভুল ইমেইল অথবা পাসওয়ার্ড প্রদান করেছেন!', "লগইন ব্যর্থ", "error");
       });
     });
   }
@@ -1530,26 +1574,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const bonusAmt = parseFloat(bSnap.val()) || 0;
           
           db.ref('users/' + cred.user.uid).set({
-            uid: cred.user.uid,
-            name, email, phone, country,
-            avatar: DEFAULT_AVATAR,
-            depositBalance: 0,
-            incomeBalance: bonusAmt,
-            todayIncome: 0, 
-            totalIncome: bonusAmt, 
-            vipLevel: 0,
-            refCode: myRef, 
-            referredBy: refCode || '',
-            isBlocked: false
+            uid: cred.user.uid, name, email, phone, country, avatar: DEFAULT_AVATAR, depositBalance: 0, incomeBalance: bonusAmt, todayIncome: 0, totalIncome: bonusAmt, vipLevel: 0, refCode: myRef, referredBy: refCode || '', isBlocked: false
           }).then(() => {
             if (bonusAmt > 0) {
               db.ref('history').push().set({
-                uid: cred.user.uid,
-                type: 'Registration Bonus',
-                amount: bonusAmt,
-                title: 'Welcome Registration Bonus',
-                status: 'approved',
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                uid: cred.user.uid, type: 'Registration Bonus', amount: bonusAmt, title: 'Welcome Registration Bonus', status: 'approved', timestamp: firebase.database.ServerValue.TIMESTAMP
               });
             }
           });
