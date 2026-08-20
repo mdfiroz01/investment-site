@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EarnerApp - Wallet</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119e23c1aae6e24a70.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <header class="top-header">
+    <div class="header-left"><i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i><div style="display:flex; align-items:center; gap:8px;"><img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo"><h3 class="app-logo">EarnerApp</h3></div></div>
+    <div style="display:flex; align-items:center; gap:12px;"><div class="theme-toggle-btn" onclick="toggleAppTheme()"><i id="theme-icon" class="fa-solid fa-moon"></i></div><div class="notif-wrapper" onclick="openNotifModal()"><i class="fa-solid fa-bell notif-icon"></i><span class="notif-badge-dot"></span></div></div>
+  </header>
+
+  <div class="notice-board"><div class="notice-icon-box"><i class="fa-solid fa-bullhorn"></i></div><div class="notice-marquee-wrapper"><div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div></div></div>
+
+  <div class="app-viewport">
+    <div class="page-title-card">
+      <div class="page-title-icon-box"><i class="fa-solid fa-wallet"></i></div>
+      <div><h2>মাই ওয়ালেট</h2><p>ডিপোজিট ও ইনকাম ব্যালেন্স দেখুন এবং লেনদেন পরিচালনা করুন</p></div>
+    </div>
+
+    <div class="wallet-hero-card">
+      <p style="font-size:12px; opacity:0.9;">মোট ওয়ালেট ব্যালেন্স</p>
+      <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:6px 0; color:#ffffff;">৳০.০০</h1>
+      
+      <div class="wallet-breakdown-row">
+        <div><p>ডিপোজিট ব্যালেন্স</p><strong id="wallet-dep-bal">৳০.০০</strong></div>
+        <div style="border-left:1px solid rgba(255,255,255,0.3); padding-left:10px;"><p>ইনকাম ব্যালেন্স</p><strong id="wallet-inc-bal">৳০.০০</strong></div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:16px;">
+        <a href="deposit.html" class="btn-wallet-dep" style="text-decoration:none; display:inline-block;"><i class="fa-solid fa-wallet"></i> ডিপোজিট</a>
+        <a href="withdraw.html" class="btn-wallet-wit" style="text-decoration:none; display:inline-block;"><i class="fa-solid fa-hand-holding-dollar"></i> উত্তোলন</a>
+      </div>
+    </div>
+
+    <div class="content-card" style="margin-top:15px;">
+      <h4>সাম্প্রতিক লেনদেন ইতিহাস</h4>
+      <div id="wallet-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো লেনদেন রেকর্ড নেই</div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>হোম</span></a>
+    <a href="wallet.html" class="nav-item active"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></a>
+    <a href="plans.html" class="nav-item plan-center-btn"><div class="center-circle"><i class="fa-solid fa-layer-group"></i></div><span>প্ল্যান</span></a>
+    <a href="withdraw.html" class="nav-item"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>উত্তোলন</span></a>
+    <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></a>
+  </nav>
+
+  <div id="common-ui-wrapper"></div>
+  <script src="firebase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
