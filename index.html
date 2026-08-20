@@ -2,24 +2,14 @@
 <html lang="bn" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <!-- VIEWPORT META TAG TO DISABLE ZOOM -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>EarnerApp - Premium Platform</title>
 
-  <!-- FAVICON ICON -->
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
-
-  <!-- OPEN GRAPH META TAGS -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
-  <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
-  <meta property="og:image" content="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
-
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -29,8 +19,6 @@
   <!-- AUTH MODAL CONTAINER -->
   <div id="auth-container" class="modal-overlay">
     <div class="modal-content">
-      
-      <!-- 1. LOGIN FORM -->
       <form id="login-form">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
@@ -54,14 +42,12 @@
         </p>
       </form>
 
-      <!-- 2. REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         
-        <!-- REGISTRATION BONUS NOTICE BANNER -->
         <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
           🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
         </div>
@@ -96,7 +82,6 @@
         </p>
       </form>
 
-      <!-- 3. FORGOT PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
@@ -115,7 +100,7 @@
     </div>
   </div>
 
-  <!-- UNIVERSAL CUSTOM ALERT MODAL -->
+  <!-- CUSTOM ALERTS & MODALS -->
   <div id="app-alert-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div id="app-alert-icon" style="margin-bottom: 12px;"></div>
@@ -125,7 +110,6 @@
     </div>
   </div>
 
-  <!-- UNIVERSAL CUSTOM CONFIRM MODAL -->
   <div id="app-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div style="margin-bottom: 12px;">
@@ -202,9 +186,12 @@
       <li onclick="switchTab('tab-home'); closeSidebar()"><i class="fa-solid fa-house"></i> হোম ড্যাশবোর্ড</li>
       <li onclick="switchTab('tab-wallet'); closeSidebar()"><i class="fa-solid fa-wallet"></i> মাই ওয়ালেট</li>
       <li onclick="switchTab('tab-tasks'); closeSidebar()"><i class="fa-solid fa-list-check"></i> দৈনিক টাস্ক</li>
+      <li onclick="switchTab('tab-spin'); closeSidebar()"><i class="fa-solid fa-spinner"></i> লাকি স্পিন হুইল</li>
+      <li onclick="switchTab('tab-quiz'); closeSidebar()"><i class="fa-solid fa-brain"></i> ম্যাথ কুইজ ಗেম</li>
       <li onclick="switchTab('tab-vip'); closeSidebar()"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
       <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
       <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
+      <li onclick="switchTab('tab-tutorials'); closeSidebar()"><i class="fa-solid fa-circle-play"></i> ভিডিও টিউটোরিয়াল</li>
       <li onclick="switchTab('tab-profile'); closeSidebar()"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
       <li onclick="toggleAppTheme(); closeSidebar()"><i class="fa-solid fa-circle-half-stroke"></i> ডার্ক / লাইট মোড</li>
       <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
@@ -256,7 +243,7 @@
       </div>
     </header>
 
-    <!-- FIXED NOTICE BOARD WITH MEGAPHONE OVERLAP FIX -->
+    <!-- FIXED NOTICE BOARD -->
     <div class="notice-board">
       <div class="notice-icon-box">
         <i class="fa-solid fa-bullhorn"></i>
@@ -295,12 +282,28 @@
         </div>
       </div>
 
-      <!-- QUICK MENU BUTTONS -->
+      <!-- NEW FEATURE: DAILY LOGIN CHECK-IN CARD -->
+      <div class="daily-checkin-card">
+        <div class="daily-checkin-left">
+          <div class="daily-checkin-icon"><i class="fa-solid fa-gift"></i></div>
+          <div class="daily-checkin-info">
+            <h4>দৈনিক হাজিরা বোনাস</h4>
+            <p>প্রতিদিন ঢুকলেই ফ্রি বোনাস পান</p>
+          </div>
+        </div>
+        <button class="btn-daily-checkin" id="btn-claim-daily-bonus" onclick="claimDailyCheckinBonus()">ক্লেইম করুন 🎁</button>
+      </div>
+
+      <!-- QUICK MENU BUTTONS (8-GRID) -->
       <div class="quick-menu-grid">
         <div class="menu-card" onclick="switchTab('tab-tasks')"><i class="fa-solid fa-list-check"></i><span>টাস্ক</span></div>
+        <div class="menu-card" onclick="switchTab('tab-spin')"><i class="fa-solid fa-dharmachakra" style="color:#f59e0b"></i><span>স্পিন</span></div>
+        <div class="menu-card" onclick="switchTab('tab-quiz')"><i class="fa-solid fa-brain" style="color:#a855f7"></i><span>কুইজ</span></div>
         <div class="menu-card" onclick="switchTab('tab-vip')"><i class="fa-solid fa-crown"></i><span>প্ল্যান</span></div>
         <div class="menu-card" onclick="switchTab('tab-wallet')"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
         <div class="menu-card" onclick="switchTab('tab-withdraw')"><i class="fa-solid fa-hand-holding-dollar"></i><span>উত্তোলন</span></div>
+        <div class="menu-card" onclick="switchTab('tab-tutorials')"><i class="fa-solid fa-circle-play" style="color:#ef4444"></i><span>টিউটোরিয়াল</span></div>
+        <div class="menu-card" onclick="switchTab('tab-profile')"><i class="fa-solid fa-user-gear"></i><span>প্রোফাইল</span></div>
       </div>
 
       <!-- ACTIVE VIP PLAN BANNER CARD WITH LIVE TIMER -->
@@ -344,9 +347,61 @@
 
     </div>
 
+    <!-- NEW TAB 1: LUCKY SPIN WHEEL -->
+    <div id="tab-spin" class="tab-content">
+      <div class="page-title-card">
+        <div class="page-title-icon-box"><i class="fa-solid fa-dharmachakra"></i></div>
+        <div>
+          <h2>লাকি স্পিন হুইল</h2>
+          <p>হুইল ঘুরিয়ে জিতে নিন দৈনিক আকর্ষণীয় ক্যাশ বোনাস</p>
+        </div>
+      </div>
+
+      <div class="content-card spin-container-card">
+        <div class="spin-pointer-arrow"></div>
+        <div class="spin-wheel-box" id="spin-wheel-element">
+          <canvas id="spin-wheel-canvas" class="spin-wheel-canvas" width="250" height="250"></canvas>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;" id="spin-remaining-count">আজকের অবশিষ্ট স্পিন: 3 টি</p>
+        <button class="btn-action" id="btn-spin-now" onclick="spinLuckyWheel()">স্পিন করুন 🎡</button>
+      </div>
+    </div>
+
+    <!-- NEW TAB 2: MATH QUIZ GAME -->
+    <div id="tab-quiz" class="tab-content">
+      <div class="page-title-card">
+        <div class="page-title-icon-box"><i class="fa-solid fa-brain"></i></div>
+        <div>
+          <h2>ম্যাথ কুইজ গেম</h2>
+          <p>সহজ অংকের উত্তর দিন এবং জিতে নিন ইনকাম রিওয়ার্ড</p>
+        </div>
+      </div>
+
+      <div class="content-card quiz-card-box">
+        <span style="font-size:12px; color:#9ca3af;">প্রশ্ন নম্বর: <b id="quiz-curr-num">1/5</b></span>
+        <div class="quiz-question-text" id="quiz-question-display">12 + 15 = ?</div>
+
+        <div class="quiz-options-grid" id="quiz-options-container">
+          <!-- Quiz options rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW TAB 3: VIDEO TUTORIALS -->
+    <div id="tab-tutorials" class="tab-content">
+      <div class="page-title-card">
+        <div class="page-title-icon-box"><i class="fa-solid fa-circle-play"></i></div>
+        <div>
+          <h2>ভিডিও টিউটোরিয়াল</h2>
+          <p>কীভাবে কাজ করবেন ও আয় করবেন তার ভিডিও নির্দেশিকা</p>
+        </div>
+      </div>
+
+      <div id="tutorials-list-container" class="plans-wrapper"></div>
+    </div>
+
     <!-- TAB 2: WALLET PAGE -->
     <div id="tab-wallet" class="tab-content">
-      <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-wallet"></i></div>
         <div>
@@ -382,7 +437,6 @@
 
     <!-- TAB 3: PLANS -->
     <div id="tab-vip" class="tab-content">
-      <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-crown"></i></div>
         <div>
@@ -396,7 +450,6 @@
 
     <!-- TAB 4: TASKS -->
     <div id="tab-tasks" class="tab-content">
-      <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-list-check"></i></div>
         <div>
@@ -405,7 +458,6 @@
         </div>
       </div>
 
-      <!-- TASK PAGE 3-COLUMN COUNTER STATS GRID -->
       <div class="task-stats-grid">
         <div class="task-stat-box">
           <div class="task-stat-icon total"><i class="fa-solid fa-list-check"></i></div>
@@ -424,7 +476,6 @@
         </div>
       </div>
 
-      <!-- DYNAMIC ACTIVE PLAN BONUS BANNER ON TASK PAGE -->
       <div id="task-plan-bonus-banner" style="margin: 0 12px 12px 12px;"></div>
 
       <div id="tasks-list-container" class="plans-wrapper"></div>
@@ -432,8 +483,6 @@
 
     <!-- TAB 5: DEPOSIT -->
     <div id="tab-deposit" class="tab-content">
-      
-      <!-- STEP 1 -->
       <div id="dep-step-1">
         <div class="deposit-hero-banner">
           <p>ব্যালেন্স যোগ করুন ✨</p>
@@ -469,7 +518,6 @@
         </div>
       </div>
 
-      <!-- STEP 2 -->
       <div id="dep-step-2" class="hidden">
         <div class="deposit-hero-banner">
           <p>ডিপোজিট পরিমাণ ও প্ল্যান ✨</p>
@@ -509,7 +557,6 @@
         </div>
       </div>
 
-      <!-- STEP 3 -->
       <div id="dep-step-3" class="hidden">
         <div class="deposit-hero-banner">
           <p>ডিপোজিট ভেরিফাই ✨</p>
@@ -551,12 +598,10 @@
           <button class="btn-action" onclick="submitDepositFinal()">VERIFY</button>
         </div>
       </div>
-
     </div>
 
-    <!-- TAB 6: WITHDRAW PAGE (WITH ALL BALANCE BUTTON) -->
+    <!-- TAB 6: WITHDRAW PAGE -->
     <div id="tab-withdraw" class="tab-content">
-      <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-hand-holding-dollar"></i></div>
         <div>
@@ -565,7 +610,6 @@
         </div>
       </div>
 
-      <!-- VIEW A: WALLET NOT SET -->
       <div id="withdraw-wallet-not-set-card" class="content-card hidden" style="text-align:center; padding:30px 15px;">
         <i class="fa-solid fa-wallet" style="font-size:42px; color:var(--primary-color); margin-bottom:12px;"></i>
         <h3 style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:6px;">আপনি এখনো কোনো উইথড্র ওয়ালেট যুক্ত করেননি!</h3>
@@ -573,10 +617,7 @@
         <button class="btn-action" onclick="openWalletSetupModal()"><i class="fa-solid fa-plus"></i> ওয়ালেট যুক্ত করুন</button>
       </div>
 
-      <!-- VIEW B: WALLET SET (E-WALLET CARD & WITHDRAW FORM WITH ALL BUTTON) -->
       <div id="withdraw-wallet-set-view" class="hidden">
-        
-        <!-- SAVED WALLET DISPLAY CARD -->
         <div class="content-card" style="background: linear-gradient(135deg, #05b381 0%, #038d65 100%); color: white; border:none;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
@@ -611,7 +652,6 @@
             <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন</button>
           </form>
         </div>
-
       </div>
 
       <div class="content-card">
@@ -620,14 +660,24 @@
       </div>
     </div>
 
-    <!-- TAB 7: PROFILE -->
+    <!-- TAB 7: PROFILE & REFERRAL RANKS -->
     <div id="tab-profile" class="tab-content">
-      <!-- PROFESSIONAL PAGE HERO HEADER CARD -->
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-user-gear"></i></div>
         <div>
           <h2>একাউন্ট সেটিংস</h2>
-          <p>আপনার প্রোফাইল তথ্য ও রেফারেল লিঙ্ক দেখুন</p>
+          <p>আপনার প্রোফাইল তথ্য, রেফারেল র্যাংক ও লিংক দেখুন</p>
+        </div>
+      </div>
+
+      <!-- NEW FEATURE: REFERRAL RANK & BADGE DISPLAY -->
+      <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:11px; color:var(--text-muted)">আপনার রেফারেল র্যাংক</span>
+          <h3 id="usr-ref-rank-title" style="font-size:15px; margin-top:2px;">Bronze Promoter</h3>
+        </div>
+        <div id="usr-ref-rank-badge" class="ref-rank-badge-box rank-bronze">
+          <i class="fa-solid fa-award"></i> Bronze
         </div>
       </div>
 
@@ -648,7 +698,6 @@
 
       <div class="content-card">
         <h4><i class="fa-solid fa-users-viewfinder" style="color:var(--primary-color)"></i> রেফারেল কমিশন ইতিহাস</h4>
-        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">কোন ইউজার কোন প্ল্যান এক্টিভ করায় কত টাকা কমিশন পেয়েছেন</p>
         <div id="referral-history-list">
           <div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>
         </div>
