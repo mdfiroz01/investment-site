@@ -1,783 +1,734 @@
 
 <!DOCTYPE html>
-<html lang="bn" data-theme="light">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EarnerApp - Premium Platform</title>
-
-  <!-- FAVICON ICON -->
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
-
-  <!-- OPEN GRAPH META TAGS -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
-  <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
-  <meta property="og:image" content="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
-
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Nexora - Easy Earning App</title>
   
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Hind Siliguri & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center selection:bg-indigo-500 selection:text-white">
 
-  <!-- AUTH MODAL CONTAINER -->
-  <div id="auth-container" class="modal-overlay">
-    <div class="modal-content">
+  <!-- Mobile Container Wrapper -->
+  <div id="appContainer" class="w-full max-w-md bg-white min-h-screen shadow-2xl flex flex-col relative overflow-x-hidden">
+
+    <!-- Loading Splash -->
+    <div id="loadingSplash" class="fixed inset-0 max-w-md mx-auto bg-white z-50 flex flex-col items-center justify-center gap-4">
+      <div class="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-xl shadow-indigo-300 text-white font-black text-3xl animate-bounce">
+        ⚡
+      </div>
+      <div class="text-center">
+        <h2 class="text-2xl font-black text-slate-800">Nexora</h2>
+        <p class="text-xs font-bold text-indigo-600 tracking-widest uppercase">EASY EARNING APP</p>
+      </div>
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mt-2"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-xs w-full px-4 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
+      <div id="toastInner" class="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700">
+        <span id="toastMsg">বার্তা সফল হয়েছে</span>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white ml-2 text-sm">✕</button>
+      </div>
+    </div>
+
+    <!-- ================= AUTH VIEW ================= -->
+    <div id="authView" class="hidden flex-1 p-6 flex flex-col justify-center">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-indigo-600 text-white rounded-3xl flex items-center justify-center text-3xl font-black mx-auto mb-3 shadow-xl shadow-indigo-200">
+          ⚡
+        </div>
+        <h2 class="text-2xl font-black text-slate-900" id="authTitle">Nexora এ প্রবেশ করুন</h2>
+        <p class="text-xs text-slate-500 font-medium mt-1" id="authSubtitle">লগইন করতে আপনার ইমেইল ও পাসওয়ার্ড দিন</p>
+      </div>
+
+      <!-- Auth Switcher Tabs -->
+      <div class="flex bg-slate-100 p-1 rounded-2xl mb-5">
+        <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-xl text-xs font-black transition-all bg-white text-indigo-700 shadow-sm">লগইন</button>
+        <button id="tabSignup" onclick="switchAuthTab('signup')" class="flex-1 py-2.5 rounded-xl text-xs font-black transition-all text-slate-500 hover:text-slate-800">নতুন একাউন্ট (সাইন আপ)</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ইমেইল এড্রেস</label>
+          <input id="loginEmail" type="email" required placeholder="user@example.com" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">পাসওয়ার্ড</label>
+          <input id="loginPassword" type="password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-indigo-200 text-sm transition-all active:scale-98">
+          লগইন করুন 🚀
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" onsubmit="handleSignup(event)" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">আপনার নাম</label>
+          <input id="signupName" type="text" required placeholder="Full Name" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ইমেইল এড্রেস</label>
+          <input id="signupEmail" type="email" required placeholder="user@example.com" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label>
+          <input id="signupPassword" type="password" required minlength="6" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">রেফার কোড (যদি থাকে)</label>
+          <input id="signupReferral" type="text" placeholder="ঐচ্ছিক (যেমন: ABC123)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold uppercase text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+        </div>
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 text-xs text-indigo-800 font-bold flex items-center gap-2">
+          <span>🎁</span> সাইন আপ করলেই পাবেন নিশ্চিত ৳ <span id="signupBonusText">50</span> বোনাস!
+        </div>
+        <button type="submit" id="signupBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-indigo-200 text-sm transition-all active:scale-98">
+          একাউন্ট তৈরি করুন ✨
+        </button>
+      </form>
+    </div>
+
+    <!-- ================= MAIN APP VIEW ================= -->
+    <div id="mainView" class="hidden flex-1 flex flex-col min-h-screen pb-20">
       
-      <!-- 1. LOGIN FORM -->
-      <form id="login-form">
-        <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
-        </div>
-        <h2 style="text-align: center; margin-bottom: 18px; color: var(--primary-color);">লগইন করুন</h2>
-        <div class="form-group">
-          <label>ইমেইল অ্যাড্রেস</label>
-          <input type="email" id="login-email" class="form-control" required placeholder="example@mail.com">
-        </div>
-        <div class="form-group">
-          <label>পাসওয়ার্ড</label>
-          <input type="password" id="login-password" class="form-control" required placeholder="পাসওয়ার্ড লিখুন">
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 12px;">
-          <label><input type="checkbox" id="remember-me"> মনে রাখুন</label>
-          <a href="javascript:void(0)" onclick="showForgotForm(event)" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">পাসওয়ার্ড ভুলে গেছেন?</a>
-        </div>
-        <button type="submit" class="btn-action">লগইন</button>
-        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
-          একাউন্ট নেই? <a href="javascript:void(0)" onclick="showRegisterForm(event)" style="color: var(--primary-color); font-weight:700;">রেজিস্ট্রেশন করুন</a>
-        </p>
-      </form>
-
-      <!-- 2. REGISTER FORM -->
-      <form id="register-form" class="hidden">
-        <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
-        </div>
-        <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
-        
-        <!-- REGISTRATION BONUS NOTICE BANNER -->
-        <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
-          🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
-        </div>
-
-        <div class="form-group">
-          <label>সম্পূর্ণ নাম</label>
-          <input type="text" id="reg-name" class="form-control" required placeholder="আপনার নাম">
-        </div>
-        <div class="form-group">
-          <label>ইমেইল</label>
-          <input type="email" id="reg-email" class="form-control" required placeholder="example@mail.com">
-        </div>
-        <div class="form-group">
-          <label>ফোন নম্বর</label>
-          <input type="tel" id="reg-phone" class="form-control" required placeholder="01700000000">
-        </div>
-        <div class="form-group">
-          <label>কান্ট্রি</label>
-          <input type="text" id="reg-country" class="form-control" required placeholder="Bangladesh" value="Bangladesh">
-        </div>
-        <div class="form-group">
-          <label>পাসওয়ার্ড</label>
-          <input type="password" id="reg-password" class="form-control" required placeholder="সর্বনিম্ন ৬ অক্ষর">
-        </div>
-        <div class="form-group">
-          <label>রেফারেল কোড (ঐচ্ছিক)</label>
-          <input type="text" id="reg-ref" class="form-control" placeholder="রেফার কোড">
-        </div>
-        <button type="submit" class="btn-action">রেজিস্টার করুন</button>
-        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
-          একাউন্ট আছে? <a href="javascript:void(0)" onclick="showLoginForm(event)" style="color: var(--primary-color); font-weight:700;">লগইন করুন</a>
-        </p>
-      </form>
-
-      <!-- 3. FORGOT PASSWORD FORM -->
-      <form id="forgot-password-form" class="hidden">
-        <div style="text-align:center; margin-bottom:15px;">
-          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
-        </div>
-        <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary-color);">পাসওয়ার্ড রিসেট</h2>
-        <div class="form-group">
-          <label>রেজিস্টার্ড ইমেইল অ্যাড্রেস</label>
-          <input type="email" id="reset-email" class="form-control" required placeholder="example@mail.com">
-        </div>
-        <button type="submit" class="btn-action">রিসেট লিংক পাঠান ✉️</button>
-        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
-          পাসওয়ার্ড মনে পড়েছে? <a href="javascript:void(0)" onclick="showLoginForm(event)" style="color: var(--primary-color); font-weight:700;">লগইন করুন</a>
-        </p>
-      </form>
-
-    </div>
-  </div>
-
-  <!-- UNIVERSAL CUSTOM ALERT MODAL -->
-  <div id="app-alert-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align: center; padding: 25px 20px;">
-      <div id="app-alert-icon" style="margin-bottom: 12px;"></div>
-      <h3 id="app-alert-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">বিজ্ঞপ্তি</h3>
-      <p id="app-alert-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p>
-      <button class="btn-action" onclick="closeCustomAlert()">ঠিক আছে 👍</button>
-    </div>
-  </div>
-
-  <!-- UNIVERSAL CUSTOM CONFIRM MODAL -->
-  <div id="app-confirm-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align: center; padding: 25px 20px;">
-      <div style="margin-bottom: 12px;">
-        <i class="fa-solid fa-circle-question" style="font-size:42px; color:var(--primary-color);"></i>
-      </div>
-      <h3 id="app-confirm-title" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">নিশ্চিতকরণ</h3>
-      <p id="app-confirm-msg" style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;"></p>
-      <div style="display:flex; gap:10px;">
-        <button class="btn-action" style="background:#64748b;" onclick="closeCustomConfirm()">বাতিল</button>
-        <button class="btn-action" onclick="executeCustomConfirm()">হ্যাঁ, নিশ্চিত 👍</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- E-WALLET SETUP MODAL -->
-  <div id="wallet-setup-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-wallet" style="color:var(--primary-color)"></i> E-Wallet সেটআপ করুন</h3>
-        <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeWalletSetupModal()"></i>
-      </div>
-      
-      <form id="ewallet-setup-form" onsubmit="saveEWalletSetup(event)">
-        <div class="form-group">
-          <label>অ্যাকাউন্ট টাইপ সিলেক্ট করুন</label>
-          <select id="ewallet-type" class="form-control" required>
-            <option value="bKash">bKash (বিকাশ)</option>
-            <option value="Nagad">Nagad (নগদ)</option>
-            <option value="Rocket">Rocket (রকেট)</option>
-            <option value="USDT">USDT (TRC20)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>আপনার সম্পূর্ণ নাম</label>
-          <input type="text" id="ewallet-fullname" class="form-control" required placeholder="আপনার সঠিক নাম">
-        </div>
-        <div class="form-group">
-          <label>ওয়ালেট / অ্যাকাউন্ট নম্বর</label>
-          <input type="text" id="ewallet-number" class="form-control" required placeholder="01700000000">
-        </div>
-        <div class="form-group">
-          <label>উইথড্র পিন (৫ সংখ্যার গোপন পিন)</label>
-          <input type="password" id="ewallet-pin" class="form-control" required maxlength="5" pattern="\d{5}" placeholder="৫ সংখ্যার পিন দিন (e.g. 12345)">
-        </div>
-
-        <p style="font-size:11px; color:var(--danger); margin-bottom:12px;">* এক ওয়ালেট নম্বর একাধিক একাউন্টে সেট করা যাবে না।</p>
-        <button type="submit" class="btn-action">ওয়ালেট সেভ করুন 👍</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- WELCOME NOTICE MODAL -->
-  <div id="welcome-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align:center;">
-      <div id="welcome-img-box"></div>
-      <h3 id="welcome-title" style="font-size:18px; color:var(--primary-color); margin-bottom:8px;">স্বাগতম!</h3>
-      <p id="welcome-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:15px; line-height:1.5;"></p>
-      <div id="welcome-btn-container" style="margin-bottom:10px;"></div>
-      <button class="btn-continue-sm" style="background:#64748b;" onclick="closeWelcomeModal()">বন্ধ করুন</button>
-    </div>
-  </div>
-
-  <!-- SIDEBAR DRAWER OVERLAY -->
-  <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
-  <div id="sidebar-drawer" class="sidebar-drawer">
-    <div class="sidebar-header">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
-        <h3 style="color:var(--primary-color); font-size: 20px; font-weight: 800;">EarnerApp</h3>
-      </div>
-      <i class="fa-solid fa-xmark" style="font-size:22px; cursor:pointer;" onclick="closeSidebar()"></i>
-    </div>
-    <ul class="sidebar-menu">
-      <li onclick="switchTab('tab-home'); closeSidebar()"><i class="fa-solid fa-house"></i> হোম ড্যাশবোর্ড</li>
-      <li onclick="switchTab('tab-wallet'); closeSidebar()"><i class="fa-solid fa-wallet"></i> মাই ওয়ালেট</li>
-      <li onclick="switchTab('tab-tasks'); closeSidebar()"><i class="fa-solid fa-list-check"></i> দৈনিক টাস্ক</li>
-      <li onclick="switchTab('tab-spin'); closeSidebar()"><i class="fa-solid fa-spinner"></i> লাকি স্পিন হুইল</li>
-      <li onclick="switchTab('tab-quiz'); closeSidebar()"><i class="fa-solid fa-brain"></i> ম্যাথ কুইজ গেম</li>
-      <li onclick="switchTab('tab-vip'); closeSidebar()"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
-      <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
-      <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
-      <li onclick="switchTab('tab-tutorials'); closeSidebar()"><i class="fa-solid fa-circle-play"></i> ভিডিও টিউটোরিয়াল</li>
-      <li onclick="switchTab('tab-profile'); closeSidebar()"><i class="fa-solid fa-user-gear"></i> একাউন্ট সেটিংস</li>
-      <li onclick="toggleAppTheme(); closeSidebar()"><i class="fa-solid fa-circle-half-stroke"></i> ডার্ক / লাইট মোড</li>
-      <li onclick="logout(); closeSidebar()"><i class="fa-solid fa-right-from-bracket" style="color:var(--danger)"></i> লগআউট</li>
-    </ul>
-  </div>
-
-  <!-- NOTIFICATION MODAL -->
-  <div id="notif-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-        <h3 style="font-size:16px; color:var(--text-main);"><i class="fa-solid fa-bell" style="color:var(--primary-color)"></i> নোটিফিকেশনসমূহ</h3>
-        <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:18px;" onclick="closeNotifModal()"></i>
-      </div>
-      <div id="notif-modal-body">
-        <div class="notif-item">
-          <i class="fa-solid fa-bullhorn" style="color:var(--primary-color); font-size:20px;"></i>
+      <!-- Top Sticky Header -->
+      <header class="px-4 py-3.5 border-b bg-white/95 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between shadow-xs">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigateTo('home')">
+          <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-md shadow-indigo-200 text-white font-black text-xl">
+            ⚡
+          </div>
           <div>
-            <h5 style="font-size:13px;" id="notif-title">স্বাগতম EarnerApp এ!</h5>
-            <p style="font-size:11px; color:var(--text-muted);" id="notif-desc">আপনার আয়ের যাত্রা শুরু করতে নতুন প্ল্যান অ্যাক্টিভ করুন।</p>
+            <h1 class="font-black text-lg leading-tight tracking-tight text-slate-900" id="navAppName">Nexora</h1>
+            <p class="text-[9px] text-indigo-600 font-extrabold tracking-widest uppercase">EASY EARNING APP</p>
           </div>
         </div>
-      </div>
-      <button class="btn-action" style="margin-top:15px;" onclick="closeNotifModal()">বন্ধ করুন</button>
-    </div>
-  </div>
 
-  <!-- MAIN APP CONTAINER -->
-  <div id="app-container" class="app-viewport hidden">
-
-    <!-- TOP HEADER -->
-    <header class="top-header">
-      <div class="header-left">
-        <i class="fa-solid fa-bars menu-icon" onclick="openSidebar()"></i>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="header-logo-img" alt="Logo">
-          <h3 class="app-logo">EarnerApp</h3>
-        </div>
-      </div>
-      
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div class="theme-toggle-btn" onclick="toggleAppTheme()" title="থিম পরিবর্তন">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
-        </div>
-
-        <div class="notif-wrapper" onclick="openNotifModal()">
-          <i class="fa-solid fa-bell notif-icon"></i>
-          <span class="notif-badge-dot"></span>
-        </div>
-      </div>
-    </header>
-
-    <!-- FIXED NOTICE BOARD WITH MEGAPHONE OVERLAP FIX -->
-    <div class="notice-board">
-      <div class="notice-icon-box">
-        <i class="fa-solid fa-bullhorn"></i>
-      </div>
-      <div class="notice-marquee-wrapper">
-        <div class="notice-text" id="notice-text">স্বাগতম! আমাদের প্ল্যাটফর্মে প্রতিদিনের সহজ টাস্ক পূরণ করে আয় শুরু করুন।</div>
-      </div>
-    </div>
-
-    <!-- BKASH STYLE USER PROFILE CARD -->
-    <div class="bkash-card">
-      <div class="bkash-user-info">
-        <img id="usr-avatar" src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="bkash-avatar" alt="Avatar">
-        <div class="bkash-details">
-          <h4 id="usr-name">Loading...</h4>
-          <span id="usr-id">ID: ------</span>
-          <span class="active-plan-badge" id="usr-vip">এক্টিভ প্ল্যান: নো প্ল্যান</span>
-        </div>
-      </div>
-      
-      <div class="bkash-balance-btn" onclick="toggleBkashBalance()">
-        <div class="bkash-btn-inner">
-          <i class="fa-solid fa-wallet"></i>
-          <span id="bkash-balance-text">ট্যাপ করে ব্যালেন্স দেখুন</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 1: DASHBOARD -->
-    <div id="tab-home" class="tab-content active">
-
-      <!-- CAROUSEL BANNER SLIDER -->
-      <div class="slider-container-card hidden" id="homepage-slider-card">
-        <div class="slider-wrapper">
-          <img id="slider-img" src="" alt="Banner Slider" class="slider-img">
-        </div>
-      </div>
-
-      <!-- DAILY LOGIN CHECK-IN CARD -->
-      <div class="daily-checkin-card">
-        <div class="daily-checkin-left">
-          <div class="daily-checkin-icon"><i class="fa-solid fa-gift"></i></div>
-          <div class="daily-checkin-info">
-            <h4>দৈনিক হাজিরা বোনাস</h4>
-            <p>প্রতিদিন ঢুকলেই ফ্রি বোনাস পান</p>
-          </div>
-        </div>
-        <button class="btn-daily-checkin" id="btn-claim-daily-bonus" onclick="claimDailyCheckinBonus()">ক্লেইম করুন 🎁</button>
-      </div>
-
-      <!-- QUICK MENU BUTTONS (PRO 8-GRID WITH ICON WRAPPERS) -->
-      <div class="quick-menu-grid">
-        <div class="menu-card" onclick="switchTab('tab-tasks')"><div class="menu-card-icon-wrap"><i class="fa-solid fa-list-check"></i></div><span>টাস্ক</span></div>
-        <div class="menu-card" onclick="switchTab('tab-spin')"><div class="menu-card-icon-wrap" style="color:#f59e0b; background:rgba(245,158,11,0.12);"><i class="fa-solid fa-dharmachakra"></i></div><span>স্পিন</span></div>
-        <div class="menu-card" onclick="switchTab('tab-quiz')"><div class="menu-card-icon-wrap" style="color:#a855f7; background:rgba(168,85,247,0.12);"><i class="fa-solid fa-brain"></i></div><span>কুইজ</span></div>
-        <div class="menu-card" onclick="switchTab('tab-vip')"><div class="menu-card-icon-wrap" style="color:#f59e0b; background:rgba(245,158,11,0.12);"><i class="fa-solid fa-crown"></i></div><span>প্ল্যান</span></div>
-        <div class="menu-card" onclick="switchTab('tab-wallet')"><div class="menu-card-icon-wrap"><i class="fa-solid fa-wallet"></i></div><span>ওয়ালেট</span></div>
-        <div class="menu-card" onclick="switchTab('tab-withdraw')"><div class="menu-card-icon-wrap"><i class="fa-solid fa-hand-holding-dollar"></i></div><span>উত্তোলন</span></div>
-        <div class="menu-card" onclick="switchTab('tab-tutorials')"><div class="menu-card-icon-wrap" style="color:#ef4444; background:rgba(239,68,68,0.12);"><i class="fa-solid fa-circle-play"></i></div><span>টিউটোরিয়াল</span></div>
-        <div class="menu-card" onclick="switchTab('tab-profile')"><div class="menu-card-icon-wrap"><i class="fa-solid fa-user-gear"></i></div><span>প্রোফাইল</span></div>
-      </div>
-
-      <!-- ACTIVE VIP PLAN BANNER CARD WITH LIVE TIMER -->
-      <div id="dashboard-active-plan-card"></div>
-
-      <!-- INCOME METRICS -->
-      <div class="dashboard-grid">
-        <div class="metric-card">
-          <i class="fa-solid fa-calendar-day icon-today"></i>
-          <div>
-            <p>আজকের ইনকাম</p>
-            <h3 id="bal-today">৳০.০০</h3>
-          </div>
-        </div>
-        <div class="metric-card">
-          <i class="fa-solid fa-chart-pie icon-total"></i>
-          <div>
-            <p>মোট ইনকাম</p>
-            <h3 id="bal-total-inc">৳০.০০</h3>
-          </div>
-        </div>
-      </div>
-
-      <!-- REALTIME INCOME ANALYTICS CHART -->
-      <div class="content-card">
-        <div class="card-title">
-          <h4><i class="fa-solid fa-chart-line" style="color:var(--primary-color)"></i> আয় গ্রাফচার্ট (রিয়েল-টাইম)</h4>
-          <span style="font-size:11px; color:var(--text-muted)">গত ৭ দিন</span>
-        </div>
-        <canvas id="incomeChart"></canvas>
-      </div>
-
-      <!-- INFINITE LIVE WITHDRAW FEED -->
-      <div class="content-card">
-        <div class="card-title">
-          <h4><i class="fa-solid fa-circle-dot live-dot"></i> লাইভ পেমেন্ট উইথড্র</h4>
-          <span class="badge-live">LIVE</span>
-        </div>
-        <div id="live-withdraw-feed" style="min-height:100px;"></div>
-      </div>
-
-    </div>
-
-    <!-- NEW TAB 1: LUCKY SPIN WHEEL -->
-    <div id="tab-spin" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-dharmachakra"></i></div>
-        <div>
-          <h2>লাকি স্পিন হুইল</h2>
-          <p>হুইল ঘুরিয়ে জিতে নিন দৈনিক আকর্ষণীয় ক্যাশ বোনাস</p>
-        </div>
-      </div>
-
-      <div class="content-card spin-container-card">
-        <div class="spin-pointer-arrow"></div>
-        <div class="spin-wheel-box" id="spin-wheel-element">
-          <canvas id="spin-wheel-canvas" class="spin-wheel-canvas" width="250" height="250"></canvas>
-        </div>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;" id="spin-remaining-count">আজকের অবশিষ্ট স্পিন: 3 টি</p>
-        <button class="btn-action" id="btn-spin-now" onclick="spinLuckyWheel()">স্পিন করুন 🎡</button>
-      </div>
-    </div>
-
-    <!-- NEW TAB 2: MATH QUIZ GAME -->
-    <div id="tab-quiz" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-brain"></i></div>
-        <div>
-          <h2>ম্যাথ কুইজ গেম</h2>
-          <p>সহজ অংকের উত্তর দিন এবং জিতে নিন ইনকাম রিওয়ার্ড</p>
-        </div>
-      </div>
-
-      <div class="content-card quiz-card-box">
-        <span style="font-size:12px; color:#9ca3af;">প্রশ্ন নম্বর: <b id="quiz-curr-num">1/5</b></span>
-        <div class="quiz-question-text" id="quiz-question-display">12 + 15 = ?</div>
-
-        <div class="quiz-options-grid" id="quiz-options-container">
-          <!-- Quiz options rendered dynamically -->
-        </div>
-      </div>
-    </div>
-
-    <!-- NEW TAB 3: VIDEO TUTORIALS -->
-    <div id="tab-tutorials" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-circle-play"></i></div>
-        <div>
-          <h2>ভিডিও টিউটোরিয়াল</h2>
-          <p>কীভাবে কাজ করবেন ও আয় করবেন তার ভিডিও নির্দেশিকা</p>
-        </div>
-      </div>
-
-      <div id="tutorials-list-container" class="plans-wrapper"></div>
-    </div>
-
-    <!-- TAB 2: WALLET PAGE -->
-    <div id="tab-wallet" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-wallet"></i></div>
-        <div>
-          <h2>মাই ওয়ালেট</h2>
-          <p>ডিপোজিট ও ইনকাম ব্যালেন্স দেখুন এবং লেনদেন পরিচালনা করুন</p>
-        </div>
-      </div>
-
-      <div class="wallet-hero-card">
-        <p style="font-size:12px; opacity:0.9;">মোট ওয়ালেট ব্যালেন্স</p>
-        <h1 id="wallet-balance-display" style="font-size:32px; font-weight:900; margin:6px 0; color:#ffffff;">৳০.০০</h1>
-        
-        <div class="wallet-breakdown-row">
-          <div><p>ডিপোজিট ব্যালেন্স</p><strong id="wallet-dep-bal">৳০.০০</strong></div>
-          <div style="border-left:1px solid rgba(255,255,255,0.3); padding-left:10px;"><p>ইনকাম ব্যালেন্স</p><strong id="wallet-inc-bal">৳০.০০</strong></div>
-        </div>
-
-        <div style="display:flex; gap:12px; margin-top:16px;">
-          <button class="btn-wallet-dep" onclick="switchTab('tab-deposit')">
-            <i class="fa-solid fa-wallet"></i> ডিপোজিট
-          </button>
-          <button class="btn-wallet-wit" onclick="switchTab('tab-withdraw')">
-            <i class="fa-solid fa-hand-holding-dollar"></i> উত্তোলন
+        <div class="flex items-center gap-2">
+          <a id="adminBtn" href="admin.html" class="hidden px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 font-extrabold text-xs rounded-xl flex items-center gap-1 hover:bg-indigo-100">
+            ⚙️ Admin
+          </a>
+          <button onclick="handleLogout()" title="Logout" class="p-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
+      </header>
+
+      <!-- Global Notice Marquee -->
+      <div id="noticeMarqueeContainer" class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white text-[11px] font-bold px-4 py-2 flex items-center gap-2 overflow-hidden shadow-inner">
+        <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0 animate-bounce"></i>
+        <marquee id="noticeMarqueeText" class="leading-tight">স্বাগতম Nexora এ! কাজ সম্পন্ন করুন এবং নিশ্চিত নগদ বোনাস অর্জন করুন।</marquee>
       </div>
 
-      <div class="content-card" style="margin-top:15px;">
-        <h4>সাম্প্রতিক লেনদেন ইতিহাস</h4>
-        <div id="wallet-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো লেনদেন রেকর্ড নেই</div>
-      </div>
-    </div>
+      <!-- PAGE CONTAINERS -->
+      <main class="flex-1 p-4 space-y-5">
+        
+        <!-- 1. HOME SCREEN -->
+        <div id="pageHome" class="space-y-4">
+          
+          <!-- Balance Card -->
+          <div class="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-3xl p-5 text-white shadow-xl shadow-indigo-200/50 relative overflow-hidden">
+            <div class="space-y-4 relative z-10">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="text-indigo-200 text-[10px] font-black uppercase tracking-widest">মেইন ব্যালেন্স</p>
+                  <h2 class="text-3xl font-black en-num" id="userMainBalance">৳ 0.00</h2>
+                </div>
+                <div class="text-right">
+                  <p class="text-indigo-200 text-[10px] font-black uppercase tracking-widest">বোনাস ব্যালেন্স</p>
+                  <p class="text-xl font-black text-amber-300 en-num" id="userBonusBalance">৳ 0.00</p>
+                </div>
+              </div>
 
-    <!-- TAB 3: PLANS -->
-    <div id="tab-vip" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-crown"></i></div>
-        <div>
-          <h2>প্রিমিয়াম প্ল্যানসমূহ</h2>
-          <p>প্ল্যান এক্টিভ করতে ডিপোজিট ব্যালেন্স ব্যবহার করতে হবে</p>
-        </div>
-      </div>
-
-      <div id="vip-plans-container" class="plans-wrapper"></div>
-    </div>
-
-    <!-- TAB 4: TASKS -->
-    <div id="tab-tasks" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-list-check"></i></div>
-        <div>
-          <h2>দৈনিক টাস্কসমূহ</h2>
-          <p id="task-limit-status-summary">আপনার বর্তমান VIP ও ফ্রি টাস্ক সম্পন্ন করুন</p>
-        </div>
-      </div>
-
-      <div class="task-stats-grid">
-        <div class="task-stat-box">
-          <div class="task-stat-icon total"><i class="fa-solid fa-list-check"></i></div>
-          <div class="task-stat-num" id="stat-task-total">0</div>
-          <div class="task-stat-label">মোট টাস্ক</div>
-        </div>
-        <div class="task-stat-box">
-          <div class="task-stat-icon completed"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="task-stat-num" id="stat-task-completed">0</div>
-          <div class="task-stat-label">সম্পন্ন</div>
-        </div>
-        <div class="task-stat-box">
-          <div class="task-stat-icon available"><i class="fa-solid fa-clock"></i></div>
-          <div class="task-stat-num" id="stat-task-available">0</div>
-          <div class="task-stat-label">উপলব্ধ</div>
-        </div>
-      </div>
-
-      <div id="task-plan-bonus-banner" style="margin: 0 12px 12px 12px;"></div>
-
-      <div id="tasks-list-container" class="plans-wrapper"></div>
-    </div>
-
-    <!-- TAB 5: DEPOSIT -->
-    <div id="tab-deposit" class="tab-content">
-      <div id="dep-step-1">
-        <div class="deposit-hero-banner">
-          <p>ব্যালেন্স যোগ করুন ✨</p>
-          <h1>Deposit</h1>
-          <sub>পেমেন্ট মেথড সিলেক্ট করে Send Money করে balance add করুন।</sub>
-          <div class="pill-badge"><i class="fa-solid fa-wallet"></i> Dep Balance: <span id="dep-total-bal">৳0.00</span></div>
-        </div>
-
-        <div class="instruction-card">
-          <div class="instruction-title">
-            <i class="fa-solid fa-circle-info"></i>
-            <div>
-              <h4 style="font-size:15px; color:var(--text-main)">কীভাবে ডিপোজিট করবেন</h4>
-              <span style="font-size:11px; color:var(--text-muted)">নিচের ধাপগুলো follow করুন</span>
+              <!-- Quick Deposit & Withdraw Buttons -->
+              <div class="grid grid-cols-2 gap-2.5 pt-1">
+                <button onclick="openModal('depositModal')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95">
+                  <i data-lucide="arrow-down-left" class="w-4 h-4"></i> ডিপোজিট করুন
+                </button>
+                <button onclick="openModal('withdrawModal')" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95">
+                  <i data-lucide="arrow-up-right" class="w-4 h-4"></i> উইথড্র করুন
+                </button>
+              </div>
             </div>
           </div>
-          <div class="instruction-steps">
-            <div class="step-row"><span class="step-num">1</span> নিচ থেকে আপনার পছন্দের payment method সিলেক্ট করুন।</div>
-            <div class="step-row"><span class="step-num">2</span> পরবর্তী পেজ থেকে নম্বর কপি করে Send Money করুন।</div>
-            <div class="step-row"><span class="step-num">3</span> Amount এবং Transaction ID বসিয়ে submit করুন।</div>
-            <div class="step-row"><span class="step-num">4</span> যাচাইয়ের পর এডমিন এপ্রুভ করলে ব্যালেন্স যোগ হবে।</div>
-          </div>
-        </div>
 
-        <div class="content-card">
-          <h4 style="margin-bottom:12px; font-size:15px; color:var(--text-main)">পেমেন্ট মেথড সিলেক্ট করুন</h4>
-          <div id="deposit-methods-grid" class="payment-grid"></div>
-        </div>
-
-        <div class="content-card">
-          <h4>ডিপোজিট ইতিহাস</h4>
-          <div id="dep-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো ডিপোজিট রেকর্ড নেই</div>
-        </div>
-      </div>
-
-      <div id="dep-step-2" class="hidden">
-        <div class="deposit-hero-banner">
-          <p>ডিপোজিট পরিমাণ ও প্ল্যান ✨</p>
-          <h1>Amount & Plan</h1>
-          <sub>ডাইরেক্ট প্ল্যান এক্টিভ করার জন্য প্ল্যান সিলেক্ট করা যেতে পারে</sub>
-        </div>
-
-        <div class="content-card">
-          <h4 id="selected-method-title">মেথড</h4>
-          <span style="font-size:11px; color:var(--text-muted)">ডিপোজিট টাইপ সিলেক্ট করুন</span>
-        </div>
-
-        <div class="content-card">
-          <div class="form-group">
-            <label>ডিপোজিটের উদ্দেশ্য (Target Plan)</label>
-            <select id="dep-target-plan-select" class="form-control" onchange="onDepositPlanTargetChange(this)">
-              <option value="wallet">সাধারণ ওয়ালেট ডিপোজিট (General Deposit)</option>
-            </select>
-          </div>
-
-          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:8px;">পরিমাণ (৳)</label>
-          <input type="number" id="input-dep-amount" class="form-control" placeholder="সর্বনিম্ন 500" value="500">
-
-          <p style="font-size:12px; margin-top:15px; font-weight:700; color:var(--text-main)">দ্রুত সিলেক্ট</p>
-          <div class="quick-amount-grid">
-            <div class="amount-btn active" onclick="setQuickAmount(500, this)">500</div>
-            <div class="amount-btn" onclick="setQuickAmount(1000, this)">1,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(1500, this)">1,500</div>
-            <div class="amount-btn" onclick="setQuickAmount(2000, this)">2,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(5000, this)">5,000</div>
-            <div class="amount-btn" onclick="setQuickAmount(10000, this)">10,000</div>
-          </div>
-        </div>
-
-        <div style="margin: 0 12px 12px 12px;">
-          <button class="btn-action" onclick="proceedToStep3()">পরবর্তী ></button>
-        </div>
-      </div>
-
-      <div id="dep-step-3" class="hidden">
-        <div class="deposit-hero-banner">
-          <p>ডিপোজিট ভেরিফাই ✨</p>
-          <h1>Verify</h1>
-          <sub>Send Money করার পর Transaction ID দিয়ে request submit করুন।</sub>
-        </div>
-
-        <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <span style="font-size:11px; color:var(--text-muted)">পরিমাণ</span>
-            <h3 id="step3-amount-display" style="color:var(--primary-color)">৳ 500</h3>
-          </div>
-          <button class="btn-continue-sm" style="width:auto; padding:6px 14px;" onclick="goToDepositStep(2)">পরিবর্তন</button>
-        </div>
-
-        <div class="instruction-card">
-          <div class="form-group">
-            <label style="color:var(--text-main); font-weight:700;">Transaction ID দিন</label>
-            <input type="text" id="input-trx-id" class="form-control" placeholder="ট্রানজেকশন আইডি দিন">
-          </div>
-
-          <div class="instruction-steps">
-            <div class="step-row"><span class="step-num">1</span> আপনার পেমেন্ট মোবাইল অ্যাপ বা ডায়াল কোডে যান।</div>
-            <div class="step-row"><span class="step-num">2</span> Send Money / Cash In অপশন সিলেক্ট করুন।</div>
-            <div class="step-row"><span class="step-num">3</span> প্রাপক নম্বর হিসেবে নিচের নম্বরটি ব্যবহার করুন।</div>
-            
-            <div style="background:var(--primary-light); border:1px dashed var(--primary-color); border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-              <strong id="target-phone-num" style="font-size:16px; color:var(--primary-color)">01719856165</strong>
-              <button class="btn-copy" onclick="copyPhoneNum()"><i class="fa-solid fa-copy"></i> Copy</button>
+          <!-- Account Activation Banner -->
+          <div id="activationBanner" class="p-4 rounded-3xl border flex items-center justify-between shadow-xs bg-amber-50 border-amber-200">
+            <div class="flex items-center gap-3">
+              <div id="activationBadgeIcon" class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold bg-amber-100 text-amber-700">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 id="activationStatusText" class="font-extrabold text-slate-800 text-xs">
+                  একাউন্ট স্ট্যাটাস: ইন-একটিভ
+                </h4>
+                <p id="activationSubText" class="text-[10px] text-slate-500 font-medium mt-0.5">
+                  একটিভেশন ফি ৳ <span id="activationFeeText">100</span>
+                </p>
+              </div>
             </div>
-
-            <div class="step-row"><span class="step-num">4</span> টাকার পরিমাণ: <b id="step3-confirm-amount" style="color:var(--primary-color)">৳ 500</b></div>
-            <div class="step-row"><span class="step-num">5</span> Payment complete হলে confirmation message থেকে Transaction ID কপি করুন।</div>
-            <div class="step-row"><span class="step-num">6</span> উপরে Transaction ID বসিয়ে VERIFY বাটনে ক্লিক করুন।</div>
+            <button id="activationActionBtn" onclick="openModal('activationModal')" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95">
+              একটিভ করুন
+            </button>
           </div>
-        </div>
 
-        <div style="margin: 0 12px 12px 12px;">
-          <button class="btn-action" onclick="submitDepositFinal()">VERIFY</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 6: WITHDRAW PAGE -->
-    <div id="tab-withdraw" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-        <div>
-          <h2>টাকা উত্তোলন করুন</h2>
-          <p id="withdraw-rules-summary">সর্বনিম্ন উত্তোলন ও প্রসেসিং চার্জ প্রযোজ্য</p>
-        </div>
-      </div>
-
-      <div id="withdraw-wallet-not-set-card" class="content-card hidden" style="text-align:center; padding:30px 15px;">
-        <i class="fa-solid fa-wallet" style="font-size:42px; color:var(--primary-color); margin-bottom:12px;"></i>
-        <h3 style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:6px;">আপনি এখনো কোনো উইথড্র ওয়ালেট যুক্ত করেননি!</h3>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">টাকা তোলার আগে আপনার বিকাশ, নগদ বা রকেট ওয়ালেট যুক্ত করুন।</p>
-        <button class="btn-action" onclick="openWalletSetupModal()"><i class="fa-solid fa-plus"></i> ওয়ালেট যুক্ত করুন</button>
-      </div>
-
-      <div id="withdraw-wallet-set-view" class="hidden">
-        <div class="content-card" style="background: linear-gradient(135deg, #05b381 0%, #038d65 100%); color: white; border:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <p style="font-size:11px; opacity:0.85;">আপনার নিবন্ধিত E-Wallet</p>
-              <h3 id="saved-wallet-type-num" style="font-size:18px; font-weight:800; color:#fff; margin:2px 0;">bKash - 01700000000</h3>
-              <span id="saved-wallet-name" style="font-size:12px; opacity:0.9;">নাম: User Name</span>
+          <!-- Daily Bonus Card -->
+          <div class="bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-3xl p-4 shadow-lg shadow-orange-200/50 flex items-center justify-between relative overflow-hidden">
+            <div class="flex items-center gap-3 relative z-10">
+              <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl">
+                🎁
+              </div>
+              <div>
+                <h4 class="font-black text-sm">দৈনিক চেক-ইন বোনাস</h4>
+                <p class="text-xs text-orange-100">প্রতিদিন পান নিশ্চিত <span class="font-black en-num" id="dailyBonusAmtText">৳ 15</span></p>
+              </div>
             </div>
-            <button class="btn-action-sm" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid #fff;" onclick="openWalletSetupModal()"><i class="fa-solid fa-pen"></i> পরিবর্তন</button>
+            <button id="claimDailyBonusBtn" onclick="claimDailyBonus()" class="bg-white text-orange-600 hover:bg-orange-50 font-black text-xs px-4 py-2.5 rounded-2xl shadow-md transition-all active:scale-95 flex-shrink-0 relative z-10">
+              দাবি করুন ⚡
+            </button>
           </div>
-        </div>
 
-        <div class="content-card">
-          <form id="withdraw-form" onsubmit="handleWithdrawSubmit(event)">
-            <div class="form-group">
-              <label>উত্তোলনের পরিমাণ (৳)</label>
-              <div style="position:relative; display:flex; align-items:center;">
-                <input type="number" id="wit-amount" class="form-control" required placeholder="0" oninput="calculateWithdrawFeePreview()" style="padding-right: 65px;">
-                <button type="button" class="btn-all-bal" onclick="selectAllBalanceForWithdraw()">ALL</button>
+          <!-- Side-by-Side Website Age & Timer Cards -->
+          <div class="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
+            <div class="bg-[#f5f7ff] border border-[#dce3fb] rounded-2xl p-2.5 text-center flex flex-col justify-between shadow-2xs">
+              <p class="text-[10px] sm:text-[11px] font-extrabold text-[#3c3bb6] border-b border-[#e1e7fc] pb-1 mb-2 tracking-tight">
+                ওয়েবসাইট এর বর্তমান বয়স
+              </p>
+              <div class="grid grid-cols-5 gap-0.5 text-center items-end en-num">
+                <div class="flex flex-col items-center">
+                  <span id="ageMonths" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">মাস</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="ageDays" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">দিন</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="ageHours" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">ঘন্টা</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="ageMinutes" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">মিনিট</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="ageSeconds" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">সেকেন্ড</span>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label>৫ সংখ্যার উইথড্র পিন (Withdraw PIN)</label>
-              <input type="password" id="wit-pin-input" class="form-control" required maxlength="5" pattern="\d{5}" placeholder="৫ সংখ্যার পিন লিখুন">
+            <div class="bg-[#fff5f6] border border-[#fbdde1] rounded-2xl p-2.5 text-center flex flex-col justify-between shadow-2xs">
+              <p class="text-[10px] sm:text-[11px] font-extrabold text-[#b82d43] border-b border-[#fce4e8] pb-1 mb-2 tracking-tight">
+                ওয়েবসাইট টি চালু থাকবে
+              </p>
+              <div class="grid grid-cols-5 gap-0.5 text-center items-end en-num">
+                <div class="flex flex-col items-center">
+                  <span id="expYears" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">বছর</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="expMonths" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">মাস</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="expDays" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">দিন</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="expHours" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">ঘন্টা</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span id="expSeconds" class="text-xs sm:text-sm font-black text-slate-800">0</span>
+                  <span class="text-[8px] font-bold text-slate-500">সেকেন্ড</span>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div id="wit-fee-preview-box" style="background:var(--border-color); opacity:0.85; padding:10px; border-radius:10px; margin-bottom:14px; font-size:12px;">
-              <div>প্রসেসিং চার্জ: <strong id="wit-fee-amount" style="color:var(--danger)">৳০.০০</strong></div>
-              <div>আপনি পাবেন: <strong id="wit-net-receive" style="color:var(--primary-color)">৳০.০০</strong></div>
+          <!-- Feature Navigation Grid -->
+          <div>
+            <h3 class="font-black text-slate-800 text-sm mb-3">সকল আর্নিং ফিচার</h3>
+            <div class="grid grid-cols-3 gap-2.5">
+              <button onclick="navigateTo('spin')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="disc" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">স্পিন হুইল</span>
+              </button>
+
+              <button onclick="navigateTo('scratch')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-amber-50 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform">
+                  <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">স্ক্র্যাচ কার্ড</span>
+              </button>
+
+              <button onclick="navigateTo('earn')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-emerald-50 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="zap" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">ম্যাথ কুইজ</span>
+              </button>
+
+              <button onclick="navigateTo('plans')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-purple-50 rounded-2xl text-purple-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="crown" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">ভিআইপি প্ল্যান</span>
+              </button>
+
+              <button onclick="navigateTo('referral')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-sky-50 rounded-2xl text-sky-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="share-2" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">রেফার ও আয়</span>
+              </button>
+
+              <button onclick="navigateTo('leaderboard')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-amber-50 rounded-2xl text-amber-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="trophy" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">লিডারবোর্ড</span>
+              </button>
+
+              <button onclick="navigateTo('history')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-rose-50 rounded-2xl text-rose-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="history" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">হিস্ট্রি</span>
+              </button>
+
+              <button onclick="openModal('depositModal')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-emerald-50 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">ডিপোজিট</span>
+              </button>
+
+              <button onclick="openModal('withdrawModal')" class="bg-white border-2 border-indigo-50/80 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-2xs hover:border-indigo-200 transition-all active:scale-95 text-center group">
+                <div class="p-2.5 bg-amber-50 rounded-2xl text-amber-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                </div>
+                <span class="font-extrabold text-slate-800 text-xs">উইথড্র</span>
+              </button>
             </div>
+          </div>
 
-            <button type="submit" class="btn-action">উত্তোলনের আবেদন করুন</button>
-          </form>
+          <!-- Video Tutorials Section -->
+          <div class="space-y-3 pt-2">
+            <div class="flex items-center justify-between px-1">
+              <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-1.5">
+                <i data-lucide="video" class="w-4 h-4 text-indigo-600"></i> ভিডিও টিউটোরিয়াল
+              </h3>
+              <button onclick="navigateTo('support')" class="text-indigo-600 text-xs font-bold hover:underline">সকল ভিডিও</button>
+            </div>
+            <div id="homeVideosContainer" class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
         </div>
-      </div>
 
-      <div class="content-card">
-        <h4>উত্তোলন ইতিহাস</h4>
-        <div id="wit-history-list" style="padding:10px 0; font-size:12px; color:var(--text-muted)">কোনো উইথড্র রেকর্ড নেই</div>
-      </div>
+        <!-- 2. SPIN WHEEL SCREEN -->
+        <div id="pageSpin" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">লাকি স্পিন হুইল</h2>
+              <p class="text-xs text-slate-500 font-bold">চাকা ঘুরিয়ে জিতে নিন আকর্ষণীয় ক্যাশ পুরস্কার</p>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 flex justify-between items-center text-xs">
+            <span class="text-slate-600 font-bold">আজকের বাকি সুযোগ:</span>
+            <span id="spinRemainingText" class="font-black text-indigo-700 text-sm en-num">10 / 10</span>
+          </div>
+
+          <div class="bg-white border-2 border-indigo-50 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg relative overflow-hidden">
+            <div class="wheel-pointer z-20 mb-[-12px]"></div>
+
+            <div class="relative w-[280px] h-[280px] sm:w-[300px] sm:h-[300px] flex items-center justify-center my-2">
+              <canvas id="wheelCanvas" width="300" height="300" class="rounded-full shadow-2xl transition-transform ease-out" style="transform: rotate(0deg);"></canvas>
+              <div class="absolute w-12 h-12 bg-white rounded-full border-4 border-slate-900 shadow-xl flex items-center justify-center text-indigo-600 font-black text-sm z-10">
+                ⚡
+              </div>
+            </div>
+
+            <div id="spinResultBox" class="hidden mt-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3 rounded-2xl text-center font-black text-sm animate-bounce">
+              🎉 অভিনন্দন! আপনি জিতেছেন <span id="spinWinAmount">৳ 0</span>
+            </div>
+
+            <button id="spinActionBtn" onclick="spinTheWheel()" class="w-full max-w-xs bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-indigo-200 text-sm mt-4 transition-all active:scale-95">
+              স্পিন করুন 🎯
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. SCRATCH CARD SCREEN -->
+        <div id="pageScratch" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">লাকি স্ক্র্যাচ কার্ড</h2>
+              <p class="text-xs text-slate-500 font-bold">কার্ডের ওপর আঙুল ঘষে বোনাস জিতে নিন</p>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-100 rounded-2xl p-3 flex justify-between items-center text-xs">
+            <span class="text-slate-600 font-bold">আজকের বাকি স্ক্র্যাচ:</span>
+            <span id="scratchRemainingText" class="font-black text-amber-700 text-sm en-num">5 / 5</span>
+          </div>
+
+          <div class="bg-white border-2 border-indigo-50 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg">
+            <div class="relative w-[280px] h-[170px] rounded-3xl overflow-hidden shadow-xl border-4 border-indigo-100 flex items-center justify-center bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+              <div class="text-center p-4">
+                <span class="text-3xl font-black">🎁</span>
+                <h3 class="text-3xl font-black mt-1 en-num" id="scratchPrizeVal">৳ 10</h3>
+                <p class="text-xs font-bold text-amber-100">ক্যাশ রিওয়ার্ড</p>
+              </div>
+
+              <canvas id="scratchCanvas" width="280" height="170" class="absolute inset-0 z-10 cursor-pointer touch-none"></canvas>
+            </div>
+
+            <div id="scratchResultBox" class="hidden mt-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3 rounded-2xl text-center font-black text-sm">
+              ✨ ওয়াও! আপনি রিওয়ার্ড আনলক করেছেন!
+            </div>
+
+            <button id="scratchClaimBtn" onclick="claimScratchReward()" class="hidden w-full max-w-xs bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-emerald-200 text-sm mt-4 transition-all active:scale-95">
+              ব্যালেন্সে যোগ করুন 💰
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. EARN ZONE / MATH QUIZ -->
+        <div id="pageEarn" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">ম্যাথ কুইজ ও টাস্ক</h2>
+              <p class="text-xs text-slate-500 font-bold">সহজ অংক সমাধান করে সরাসরি টাকা আয় করুন</p>
+            </div>
+          </div>
+
+          <div id="quizContainer" class="bg-[#f4efe6] rounded-3xl p-5 min-h-[380px] flex flex-col justify-between shadow-md">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-slate-600" id="quizStepText">Question 1/3</span>
+                <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-black text-xs en-num" id="quizRewardText">+৳ 6</span>
+              </div>
+
+              <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden mb-5">
+                <div id="quizProgressBar" class="h-full bg-amber-500 rounded-full transition-all duration-300" style="width: 33%;"></div>
+              </div>
+
+              <div class="bg-[#fbf7f0] border border-[#eee7da] rounded-3xl p-6 text-center shadow-xs mb-4">
+                <p class="text-slate-500 font-bold text-xs uppercase tracking-wider">Solve this equation</p>
+                <h2 id="quizQuestionText" class="text-4xl font-black text-slate-900 tracking-tight my-2 en-num">18 + 18 = ?</h2>
+              </div>
+
+              <div id="quizOptionsGrid" class="grid grid-cols-2 gap-3 my-2">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <button id="quizSubmitBtn" onclick="handleQuizNext()" class="w-full bg-[#d06238] hover:bg-[#bd552f] text-white font-black text-base py-3.5 rounded-2xl shadow-md text-center transition-all mt-4">
+              পরবর্তী (Next) ➡️
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. VIP PLANS SCREEN -->
+        <div id="pagePlans" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">ভিআইপি আর্নিং প্ল্যান</h2>
+              <p class="text-xs text-slate-500 font-bold">প্ল্যান কিনে আপনার প্রতিদিনের ইনকাম বাড়িয়ে নিন</p>
+            </div>
+          </div>
+
+          <div id="plansListContainer" class="space-y-4">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- 6. REFERRAL SCREEN -->
+        <div id="pageReferral" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">রেফার ও ইনকাম</h2>
+              <p class="text-xs text-slate-500 font-bold">বন্ধুদের আমন্ত্রণ জানিয়ে প্রতি রেফারে পান বোনাস</p>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-sky-600 to-indigo-700 rounded-3xl p-6 text-white text-center shadow-xl shadow-sky-200/50 space-y-3">
+            <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl mx-auto">
+              🤝
+            </div>
+            <h3 class="text-xl font-black">প্রতি রেফারে নিশ্চিত ৳ <span id="refBonusAmtText">20</span></h3>
+            <p class="text-xs text-sky-100">আপনার বন্ধু আপনার রেফার কোড দিয়ে একাউন্ট তৈরি করলেই আপনি পাবেন নগদ টাকা!</p>
+          </div>
+
+          <div class="bg-white border-2 border-indigo-50 rounded-3xl p-5 shadow-xs space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">আপনার রেফারেল কোড</label>
+              <div class="flex items-center gap-2">
+                <input id="refCodeInput" readonly class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-black text-indigo-700 tracking-wider outline-none" value="NX100">
+                <button onclick="copyReferralCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs px-4 py-3.5 rounded-2xl shadow-md transition-all flex items-center gap-1">
+                  <i data-lucide="copy" class="w-4 h-4"></i> কপি
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">সরাসরি শেয়ার লিংক</label>
+              <button onclick="shareReferralLink()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+                <i data-lucide="share-2" class="w-4 h-4"></i> বন্ধুদের সাথে শেয়ার করুন
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. LEADERBOARD SCREEN -->
+        <div id="pageLeaderboard" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">টপ আর্নার লিডারবোর্ড</h2>
+              <p class="text-xs text-slate-500 font-bold">আমাদের প্ল্যাটফর্মের সর্বোচ্চ আয়কারী ইউজারগণ</p>
+            </div>
+          </div>
+
+          <div id="leaderboardList" class="space-y-2.5">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- 8. HISTORY SCREEN -->
+        <div id="pageHistory" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">লেনদেন ও উপার্জনের হিস্ট্রি</h2>
+              <p class="text-xs text-slate-500 font-bold">আপনার অ্যাকাউন্টের সকল লেনদেনের বিবরণ</p>
+            </div>
+          </div>
+
+          <div id="historyListContainer" class="space-y-2.5">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- 9. SUPPORT VIDEOS SCREEN -->
+        <div id="pageSupport" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('home')" class="p-2 bg-slate-100 rounded-xl text-slate-700 hover:bg-slate-200"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <div>
+              <h2 class="text-lg font-black text-slate-800">টিউটোরিয়াল ও সহায়তা</h2>
+              <p class="text-xs text-slate-500 font-bold">সহজে কাজ করার ভিডিও গাইড</p>
+            </div>
+          </div>
+
+          <div id="supportVideosList" class="space-y-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Bottom Sticky Navigation Bar -->
+      <nav class="fixed bottom-0 w-full max-w-md bg-white border-t px-4 py-2.5 flex items-center justify-around z-40 shadow-lg">
+        <button id="navHome" onclick="navigateTo('home')" class="flex flex-col items-center gap-0.5 text-indigo-600">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          <span class="text-[10px] font-black">হোম</span>
+          <div class="w-1.5 h-1.5 bg-indigo-600 rounded-full mt-0.5"></div>
+        </button>
+        <button id="navSpin" onclick="navigateTo('spin')" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600">
+          <i data-lucide="disc" class="w-5 h-5"></i>
+          <span class="text-[10px] font-black">স্পিন</span>
+        </button>
+        <button id="navScratch" onclick="navigateTo('scratch')" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+          <span class="text-[10px] font-black">স্ক্র্যাচ</span>
+        </button>
+        <button id="navReferral" onclick="navigateTo('referral')" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600">
+          <i data-lucide="share-2" class="w-5 h-5"></i>
+          <span class="text-[10px] font-black">রেফার</span>
+        </button>
+        <button id="navPlans" onclick="navigateTo('plans')" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600">
+          <i data-lucide="crown" class="w-5 h-5"></i>
+          <span class="text-[10px] font-black">প্ল্যান</span>
+        </button>
+      </nav>
+
     </div>
 
-    <!-- TAB 7: PROFILE & REFERRAL RANKS -->
-    <div id="tab-profile" class="tab-content">
-      <div class="page-title-card">
-        <div class="page-title-icon-box"><i class="fa-solid fa-user-gear"></i></div>
-        <div>
-          <h2>একাউন্ট সেটিংস</h2>
-          <p>আপনার প্রোফাইল তথ্য, রেফারেল র্যাংক ও লিংক দেখুন</p>
-        </div>
-      </div>
+    <!-- ================= MODALS ================= -->
 
-      <!-- REFERRAL RANK & BADGE DISPLAY -->
-      <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span style="font-size:11px; color:var(--text-muted)">আপনার রেফারেল র্যাংক</span>
-          <h3 id="usr-ref-rank-title" style="font-size:15px; margin-top:2px;">Bronze Promoter</h3>
+    <!-- Deposit Modal -->
+    <div id="depositModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
+            <i data-lucide="arrow-down-left" class="w-5 h-5 text-emerald-600"></i> ডিপোজিট রিকোয়েস্ট
+          </h3>
+          <button onclick="closeModal('depositModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-        <div id="usr-ref-rank-badge" class="ref-rank-badge-box rank-bronze">
-          <i class="fa-solid fa-award"></i> Bronze
-        </div>
-      </div>
 
-      <div class="content-card">
-        <h4>প্রোফাইল আপডেট</h4>
-        <form id="profile-update-form" style="margin-top:15px;" onsubmit="handleProfileUpdate(event)">
-          <div class="form-group"><label>নাম</label><input type="text" id="prof-name" class="form-control" required></div>
-          <div class="form-group"><label>ফোন</label><input type="text" id="prof-phone" class="form-control" required></div>
-          <button type="submit" class="btn-action">সেভ করুন</button>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">পেমেন্ট মাধ্যম বেছে নিন</label>
+          <div id="depositMethodList" class="grid grid-cols-2 gap-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <div id="depositMethodDetails" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 space-y-1.5 text-xs text-slate-700">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-600">পার্সোনাল নম্বর:</span>
+            <div class="flex items-center gap-1 font-black text-indigo-700 en-num">
+              <span id="depositNumberText">01700000000</span>
+              <button onclick="copyDepositNumber()" class="text-indigo-600 hover:text-indigo-800 ml-1 p-1 bg-white rounded-md shadow-xs">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <p id="depositInstructionText" class="text-[11px] text-slate-500 font-medium">Send Money করে নিচে ট্রানজেকশন আইডি দিন।</p>
+        </div>
+
+        <form onsubmit="handleDepositSubmit(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">পরিমাণ (টাকা)</label>
+            <input id="depositAmount" type="number" required min="50" placeholder="৳ 100" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold en-num outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">যে নম্বর থেকে পাঠিয়েছেন</label>
+            <input id="depositSender" type="tel" required placeholder="017XXXXXXXX" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold en-num outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">ট্রানজেকশন আইডি (TrxID)</label>
+            <input id="depositTrxId" type="text" required placeholder="8N76ASDF" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold uppercase en-num outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <button type="submit" id="depositSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-2xl shadow-lg shadow-emerald-200 text-xs transition active:scale-98">
+            ডিপোজিট সাবমিট করুন 🚀
+          </button>
         </form>
       </div>
+    </div>
 
-      <div class="content-card">
-        <h4>রেফারেল লিংক</h4>
-        <input type="text" id="ref-link-input" class="form-control" readonly style="margin: 10px 0;">
-        <button class="btn-action" style="background:var(--accent-purple)" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i> লিংক কপি করুন</button>
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
+            <i data-lucide="arrow-up-right" class="w-5 h-5 text-amber-600"></i> টাকা উইথড্র করুন
+          </h3>
+          <button onclick="closeModal('withdrawModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-100 rounded-2xl p-3 flex justify-between items-center text-xs">
+          <span class="text-slate-600 font-bold">উইথড্রযোগ্য মেইন ব্যালেন্স:</span>
+          <span id="withdrawAvailBal" class="font-black text-amber-700 text-sm en-num">৳ 0.00</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">পেমেন্ট মাধ্যম বেছে নিন</label>
+          <div id="withdrawMethodList" class="grid grid-cols-2 gap-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <form onsubmit="handleWithdrawSubmit(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">উইথড্র পরিমাণ (টাকা)</label>
+            <input id="withdrawAmount" type="number" required min="50" placeholder="৳ 100" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold en-num outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">আপনার একাউন্ট নম্বর</label>
+            <input id="withdrawNumber" type="tel" required placeholder="01XXXXXXXXX" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-bold en-num outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <button type="submit" id="withdrawSubmitBtn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-3 rounded-2xl shadow-lg shadow-amber-200 text-xs transition active:scale-98">
+            উইথড্র রিকোয়েস্ট পাঠান ⚡
+          </button>
+        </form>
       </div>
+    </div>
 
-      <div class="content-card">
-        <h4><i class="fa-solid fa-users-viewfinder" style="color:var(--primary-color)"></i> রেফারেল কমিশন ইতিহাস</h4>
-        <div id="referral-history-list">
-          <div style="text-align:center; padding:10px; font-size:12px; color:var(--text-muted)">কোনো রেফারেল কমিশন রেকর্ড নেই</div>
+    <!-- Activation Modal -->
+    <div id="activationModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600"></i> একাউন্ট একটিভ করুন
+          </h3>
+          <button onclick="closeModal('activationModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+            🛡️
+          </div>
+          <h4 class="font-extrabold text-sm text-slate-800">একাউন্ট একটিভেশনের সুবিধা</h4>
+          <p class="text-xs text-slate-500">একাউন্ট একটিভ করলে আনলিমিটেড উইথড্র ও ভিআইপি প্ল্যানের সুবিধা আনলক হবে।</p>
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <button onclick="activateWithBonus()" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 p-3 rounded-2xl flex items-center justify-between text-left transition">
+            <div>
+              <p class="text-xs font-black text-indigo-900">🎁 বোনাস ব্যালেন্স দিয়ে একটিভ</p>
+              <p class="text-[10px] text-indigo-600 font-bold">খরচ হবে: ৳ <span id="actBonusFeeText">100</span></p>
+            </div>
+            <span class="text-xs bg-indigo-600 text-white font-black px-2.5 py-1 rounded-xl">একটিভ</span>
+          </button>
+
+          <button onclick="activateWithMain()" class="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 p-3 rounded-2xl flex items-center justify-between text-left transition">
+            <div>
+              <p class="text-xs font-black text-emerald-900">💳 মেইন ব্যালেন্স দিয়ে একটিভ</p>
+              <p class="text-[10px] text-emerald-600 font-bold">খরচ হবে: ৳ <span id="actMainFeeText">100</span></p>
+            </div>
+            <span class="text-xs bg-emerald-600 text-white font-black px-2.5 py-1 rounded-xl">একটিভ</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION BAR -->
-    <nav class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('tab-home', this)"><i class="fa-solid fa-house"></i><span>হোম</span></div>
-      <div class="nav-item" onclick="switchTab('tab-wallet', this)"><i class="fa-solid fa-wallet"></i><span>ওয়ালেট</span></div>
-      <div class="nav-item plan-center-btn" onclick="switchTab('tab-vip', this)"><div class="center-circle"><i class="fa-solid fa-layer-group"></i></div><span>প্ল্যান</span></div>
-      <div class="nav-item" onclick="switchTab('tab-withdraw', this)"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>উত্তোলন</span></div>
-      <div class="nav-item" onclick="switchTab('tab-profile', this)"><i class="fa-solid fa-user"></i><span>একাউন্ট</span></div>
-    </nav>
-
-  </div>
-
-  <!-- FLOATING SUPPORT FAB BUTTON -->
-  <div class="fab-support-container" id="fab-support-container">
-    <div class="fab-support-menu" id="fab-support-menu"></div>
-    <button class="fab-main-btn" onclick="toggleSupportFab()" title="সাপোর্ট ও সোশ্যাল মিডিয়া">
-      <i class="fa-solid fa-headset fab-icon"></i>
-    </button>
-  </div>
-
-  <!-- REWARD CELEBRATION MODAL -->
-  <div id="task-modal" class="modal-overlay hidden">
-    <div class="modal-content reward-pop-card">
-      <div id="task-processing-view">
-        <div class="reward-icon-circle">
-          <i class="fa-solid fa-trophy gold-coin-glow"></i>
+    <!-- Video Player Modal -->
+    <div id="videoModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 rounded-3xl overflow-hidden w-full max-w-md relative shadow-2xl">
+        <button onclick="closeVideoModal()" class="absolute top-3 right-3 z-10 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center font-bold">✕</button>
+        <div class="aspect-video w-full">
+          <iframe id="videoIframe" src="" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-        <h3 id="task-modal-title" style="color:var(--primary-color); font-size:18px; margin-bottom:4px;">টাস্ক প্রসেসিং হচ্ছে...</h3>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">দয়া করে অপেক্ষা করুন...</p>
-        
-        <div class="progress-bar-wrap">
-          <div id="task-progress" class="progress-bar-fill"></div>
-        </div>
-        
-        <div id="reward-amount-pop" class="hidden" style="margin:12px 0;">
-          <span style="font-size:12px; color:var(--text-muted);">আপনার অর্জিত রিওয়ার্ড</span>
-          <h1 id="pop-reward-val" style="font-size:32px; font-weight:900; color:var(--primary-color);">+৳০.০০</h1>
-        </div>
-
-        <button id="btn-claim-task" class="btn-action hidden" style="margin-top: 10px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
-          <i class="fa-solid fa-gift"></i> রিওয়ার্ড দাবি করুন 🚀
-        </button>
-      </div>
-
-      <div id="task-success-view" class="hidden">
-        <div class="reward-icon-circle" style="background:#d1fae5;">
-          <i class="fa-solid fa-circle-check" style="font-size:36px; color:#10b981;"></i>
-        </div>
-        <h3 style="color:#10b981; font-size:20px; font-weight:800; margin-bottom:6px;">🎉 রিওয়ার্ড জমা হয়েছে!</h3>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
-          <strong id="success-reward-val" style="color:var(--primary-color); font-size:20px;">+৳০.০০</strong><br>
-          সফলভাবে আপনার ইনকাম ওয়ালেটে জমা হয়েছে।
-        </p>
-        <button class="btn-action" style="margin-top:10px;" onclick="closeTaskModal()">ঠিক আছে 👍</button>
       </div>
     </div>
+
   </div>
 
-  <script src="firebase.js"></script>
+  <!-- App Custom Logic JS -->
   <script src="script.js"></script>
 </body>
 </html>
