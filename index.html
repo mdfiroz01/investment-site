@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="bn" data-theme="light">
 <head>
@@ -5,11 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>EarnerApp - Premium Platform</title>
 
+  <!-- FAVICON ICON -->
   <link rel="icon" type="image/png" href="https://i.postimg.cc/nLWFr8bT/file-00000000bd4482119c9000fc41b37ec4.png">
+
+  <!-- OPEN GRAPH META TAGS -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="EarnerApp - প্রিমিয়াম অনলাইন আর্নিং প্ল্যাটফর্ম">
+  <meta property="og:description" content="সহজ দৈনিক টাস্ক সম্পন্ন করে এবং প্রিমিয়াম প্ল্যান এক্টিভ করে ঘরে বসে আয় শুরু করুন।">
+  <meta property="og:image" content="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png">
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -19,6 +29,8 @@
   <!-- AUTH MODAL CONTAINER -->
   <div id="auth-container" class="modal-overlay">
     <div class="modal-content">
+      
+      <!-- 1. LOGIN FORM -->
       <form id="login-form">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" id="login-app-logo" class="auth-ring-avatar" alt="Logo">
@@ -42,12 +54,14 @@
         </p>
       </form>
 
+      <!-- 2. REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
         </div>
         <h2 style="text-align: center; margin-bottom: 6px; color: var(--primary-color);">নতুন একাউন্ট</h2>
         
+        <!-- REGISTRATION BONUS NOTICE BANNER -->
         <div id="reg-bonus-banner" class="hidden" style="background:var(--primary-light); color:var(--primary-color); padding:8px 12px; border-radius:10px; font-size:12px; font-weight:800; text-align:center; margin-bottom:14px; border:1px dashed var(--primary-color);">
           🎉 রেজিস্ট্রেশন করলেই পাচ্ছেন <span id="reg-bonus-amount">৳0</span> বোনাস!
         </div>
@@ -82,6 +96,7 @@
         </p>
       </form>
 
+      <!-- 3. FORGOT PASSWORD FORM -->
       <form id="forgot-password-form" class="hidden">
         <div style="text-align:center; margin-bottom:15px;">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="auth-ring-avatar" alt="Logo">
@@ -100,7 +115,7 @@
     </div>
   </div>
 
-  <!-- CUSTOM ALERTS & MODALS -->
+  <!-- UNIVERSAL CUSTOM ALERT MODAL -->
   <div id="app-alert-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div id="app-alert-icon" style="margin-bottom: 12px;"></div>
@@ -110,6 +125,7 @@
     </div>
   </div>
 
+  <!-- UNIVERSAL CUSTOM CONFIRM MODAL -->
   <div id="app-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center; padding: 25px 20px;">
       <div style="margin-bottom: 12px;">
@@ -187,7 +203,7 @@
       <li onclick="switchTab('tab-wallet'); closeSidebar()"><i class="fa-solid fa-wallet"></i> মাই ওয়ালেট</li>
       <li onclick="switchTab('tab-tasks'); closeSidebar()"><i class="fa-solid fa-list-check"></i> দৈনিক টাস্ক</li>
       <li onclick="switchTab('tab-spin'); closeSidebar()"><i class="fa-solid fa-spinner"></i> লাকি স্পিন হুইল</li>
-      <li onclick="switchTab('tab-quiz'); closeSidebar()"><i class="fa-solid fa-brain"></i> ম্যাথ কুইজ ಗেম</li>
+      <li onclick="switchTab('tab-quiz'); closeSidebar()"><i class="fa-solid fa-brain"></i> ম্যাথ কুইজ গেম</li>
       <li onclick="switchTab('tab-vip'); closeSidebar()"><i class="fa-solid fa-crown"></i> প্রিমিয়াম প্ল্যান</li>
       <li onclick="switchTab('tab-deposit'); closeSidebar()"><i class="fa-solid fa-wallet"></i> ডিপোজিট করুন</li>
       <li onclick="switchTab('tab-withdraw'); closeSidebar()"><i class="fa-solid fa-money-bill-transfer"></i> উত্তোলন করুন</li>
@@ -282,7 +298,7 @@
         </div>
       </div>
 
-      <!-- NEW FEATURE: DAILY LOGIN CHECK-IN CARD -->
+      <!-- DAILY LOGIN CHECK-IN CARD -->
       <div class="daily-checkin-card">
         <div class="daily-checkin-left">
           <div class="daily-checkin-icon"><i class="fa-solid fa-gift"></i></div>
@@ -307,7 +323,7 @@
       </div>
 
       <!-- ACTIVE VIP PLAN BANNER CARD WITH LIVE TIMER -->
-      <div id="dashboard-active-plan-card" class="content-card"></div>
+      <div id="dashboard-active-plan-card"></div>
 
       <!-- INCOME METRICS -->
       <div class="dashboard-grid">
@@ -372,7 +388,7 @@
       <div class="page-title-card">
         <div class="page-title-icon-box"><i class="fa-solid fa-brain"></i></div>
         <div>
-          <h2>ম্যাথ কুইজ গেম</h2>
+          <h2>ম্যাচ কুইজ গেম</h2>
           <p>সহজ অংকের উত্তর দিন এবং জিতে নিন ইনকাম রিওয়ার্ড</p>
         </div>
       </div>
@@ -670,7 +686,7 @@
         </div>
       </div>
 
-      <!-- NEW FEATURE: REFERRAL RANK & BADGE DISPLAY -->
+      <!-- REFERRAL RANK & BADGE DISPLAY -->
       <div class="content-card" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
           <span style="font-size:11px; color:var(--text-muted)">আপনার রেফারেল র্যাংক</span>
