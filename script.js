@@ -119,7 +119,7 @@ let systemWithdrawChargePercent = 5;
 let systemRegBonus = 0;
 let activePlanTimerInterval = null;
 
-// NEW SYSTEM VARIABLES
+// PROCESSING FLAGS TO PREVENT RAPID MULTI-CLICK DUPLICATES
 let isTaskClaiming = false;
 let isClaimingBonus = false;
 let isBuyingPlaning = false;
@@ -345,7 +345,7 @@ function loadUserData() {
   });
 }
 
-// NEW FEATURE 1: DAILY LOGIN CHECK-IN BONUS
+// DAILY LOGIN CHECK-IN BONUS
 function checkDailyCheckinStatus() {
   if (!currentUser) return;
   const today = new Date().toISOString().split('T')[0];
@@ -367,10 +367,10 @@ function checkDailyCheckinStatus() {
 window.claimDailyCheckinBonus = function() {
   if (!currentUser || !userData) return;
   const today = new Date().toISOString().split('T')[0];
-  const bonusAmt = 5; // Default ৳5 daily login bonus
+  const bonusAmt = 5;
 
   db.ref(`user_daily_bonus/${currentUser.uid}/${today}`).transaction(status => {
-    if (status && status.claimed === true) return; // Abort if already claimed
+    if (status && status.claimed === true) return;
     return { claimed: true, timestamp: firebase.database.ServerValue.TIMESTAMP };
   }, (err, committed) => {
     if (err || !committed) {
@@ -398,7 +398,7 @@ window.claimDailyCheckinBonus = function() {
   });
 };
 
-// NEW FEATURE 2: LUCKY SPIN WHEEL SYSTEM
+// LUCKY SPIN WHEEL SYSTEM
 const spinRewards = [1, 2, 5, 0, 10, 3, 15, 0];
 const spinColors = ['#05b381', '#1e293b', '#6c5ce7', '#ef4444', '#f59e0b', '#0284c7', '#10b981', '#64748b'];
 
@@ -465,7 +465,7 @@ window.spinLuckyWheel = function() {
   }, 4200);
 };
 
-// NEW FEATURE 3: MATH QUIZ GAME
+// MATH QUIZ GAME
 function generateNewQuizQuestion() {
   const num1 = Math.floor(Math.random() * 20) + 1;
   const num2 = Math.floor(Math.random() * 20) + 1;
@@ -510,7 +510,7 @@ window.submitQuizAnswer = function(selectedOpt) {
   }
 };
 
-// NEW FEATURE 4: REFERRAL RANK CALCULATOR
+// REFERRAL RANK CALCULATOR
 function calculateReferralRank() {
   if (!currentUser) return;
   db.ref('users').orderByChild('referredBy').equalTo(userData.refCode || '').once('value', snap => {
@@ -540,7 +540,7 @@ function calculateReferralRank() {
   });
 }
 
-// NEW FEATURE 5: TUTORIALS LOADER
+// TUTORIALS LOADER
 function loadTutorialsList() {
   db.ref('social_support').once('value', snap => {
     const container = document.getElementById('tutorials-list-container');
@@ -550,7 +550,7 @@ function loadTutorialsList() {
       <div class="tutorial-video-card">
         <div class="tutorial-thumb-box">
           <img src="https://i.postimg.cc/kXTyBwGr/file-00000000a5dc82119e23c1aae6e24a70.png" class="tutorial-thumb-img">
-          <div class="tutorial-play-btn" onclick="showCustomAlert('অ্যাপ কাজ শেখার জন্য ইউজার টেলিগ্রাম গ্রূপ জয়েন করুন।', 'টিউটোরিয়াল গাইড', 'info')"><i class="fa-solid fa-play"></i></div>
+          <div class="tutorial-play-btn" onclick="showCustomAlert('আপনার সাপোর্ট গ্রূপে জয়েন করে সমস্ত টিউটোরিয়াল ও লাইভ সাহায্য পান।', 'টিউটোরিয়াল গাইড', 'info')"><i class="fa-solid fa-play"></i></div>
         </div>
         <div style="padding:12px;">
           <h4 style="font-size:14px;">কীভাবে দৈনিক টাস্ক পূরণ করে ইনকাম করবেন</h4>
@@ -1140,7 +1140,7 @@ window.startTask = function(taskId, reward, isFreeTask = false) {
   }, 500);
 };
 
-// ATOMIC TASK REWARD CLAIMING WITH FIREBASE DATABASE TRANSACTION LOCK (PREVENTS DUPES)
+// ATOMIC TASK REWARD CLAIMING WITH FIREBASE DATABASE TRANSACTION LOCK
 document.getElementById('btn-claim-task').addEventListener('click', () => {
   if (!activeTaskObj || !userData || isTaskClaiming) return;
 
@@ -1159,9 +1159,9 @@ document.getElementById('btn-claim-task').addEventListener('click', () => {
 
   taskRef.transaction((currentStatus) => {
     if (currentStatus === true) {
-      return; // ABORT IF ALREADY COMPLETED BY A PREVIOUS CLICK!
+      return;
     }
-    return true; // MARK COMPLETED ATOMICALLY IN DB
+    return true;
   }, (error, committed) => {
     if (error || !committed) {
       isTaskClaiming = false;
